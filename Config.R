@@ -7,7 +7,7 @@ library(readxl)
 # C:\Users\genoveva\ownCloud\NiN_Mareano\inputs
 
 #userName <- "C:/Users/genoveva/OneDrive - Havforskningsinstituttet/General/" # geno's path
-userName <- "C:/Users/a21448/Havforskningsinstituttet/NiN + MAREANO - General" # bex's path
+userName <- "C:/Users/a21448/Havforskningsinstituttet/NiN + MAREANO - General/" # bex's path
 #userName <- "C:/Users/Wilson_Margaret/Havforskningsinstituttet/NiN + MAREANO - General" # Margaret's path
 
 
