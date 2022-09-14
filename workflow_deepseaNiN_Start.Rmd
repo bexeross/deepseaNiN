@@ -396,7 +396,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png("SplitRev2_procrustes_r6.png", width=1000, height=700,)
+png(file.path(dataPath,"procrustes_r6.png"), width=1000, height=700,)
 plot(procr_r6)
 dev.off()
 ```
@@ -425,7 +425,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = "SplitRev2_correlationPCAvsNMDS_r6.png",
+ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
