@@ -1,0 +1,718 @@
+---
+title: "MAREANO - NiN: First run"
+authors: Thijs van Son, Rune Halvorsen
+date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_notebook: 
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    fig_width: 7
+    fig_height: 7
+always_allow_html: true 
+---
+
+## Packages
+```{r}
+library(dplyr)
+library(ggcorrplot)
+library(ggpubr)
+library(patchwork)
+# library("here")
+# library("bookdown")
+# library("downloadthis")
+library(vegan)
+library(plyr)
+library(e1071)
+library(tidyverse)
+library(viridis)
+library(GGally)
+library(ggrepel)
+library(ggordiplots)
+library(readr)
+library(RColorBrewer)
+
+
+source("gg_ordisurf_viridis.R")
+```
+
+
+## Data
+```{r}
+
+env_orig <- read.csv(file = "EnvRaw3.csv") %>% as.data.frame
+otu_orig <- read.csv(file = "HI_OTURaw3.csv") %>% as.data.frame
+
+# Sorting and ordering by SampID
+env_orig <- env_orig[order(env_orig$SampID), ]
+otu_orig <- otu_orig[order(otu_orig$SampID), ]
+
+table(env_orig$SampID == otu_orig$SampID)
+
+
+
+
+dim(env_orig)
+dim(otu_orig)
+```
+
+
+### Data cleaning
+```{r}
+## Removing NAs
+otuCompl <- otu_orig[complete.cases(env_orig), ]
+envCompl <- env_orig[complete.cases(env_orig), ]
+
+## Removing observations with less than 4 OTUs
+sel <- rowSums(otuCompl[, -c(1:3)]) >= 4
+otuSel <- otuCompl[sel, ]
+envSel <- envCompl[sel, ]
+
+## Removing phosphate
+envSel <- envSel %>% select(-phosphate_mean.tif)
+
+dim(otuSel); dim(envSel)
+```
+
+
+### [Optional] Data thinning
+```{r, eval=FALSE}
+# otu_red <- otu1[1:500, ]
+# otu <- otu_red
+# 
+# env_red <- env[1:500, ]
+# env <- env_red
+```
+
+
+### Splitting in subsets
+```{r}
+## Class 1
+otu1 <- subset(otuSel, envSel$SplitRev == 1)
+env1 <- envSel %>% filter(SplitRev == 1)
+
+## Class 2
+otu2 <- subset(otuSel, envSel$SplitRev == 2)
+env2 <- envSel %>% filter(SplitRev == 2)
+
+## Class 4
+otu3 <- subset(otuSel, envSel$SplitRev == 3)
+env3 <- envSel %>% filter(SplitRev == 3)
+
+## Class 4
+otu4 <- subset(otuSel, envSel$SplitRev == 4)
+env4 <- envSel %>% filter(SplitRev == 4)
+
+## Class 6
+otu6 <- subset(otuSel, envSel$SplitRev == 6)
+env6 <- envSel %>% filter(SplitRev == 6)
+
+## Class 7
+otu7 <- subset(otuSel, envSel$SplitRev == 7)
+env7 <- envSel %>% filter(SplitRev == 7)
+
+## Class 8
+otu8 <- subset(otuSel, envSel$SplitRev == 8)
+env8 <- envSel %>% filter(SplitRev == 8)
+```
+
+## Selecting subset
+```{r}
+## Selecting 
+otu <- otu2
+env <- env2
+
+env$coords.x1<-as.numeric(env$coords.x1)
+env$coords.x2<-as.numeric(env$coords.x2)
+```
+
+
+## Abundance weighting
+Make function
+You might have to drop variables that have been imported as character
+```{r}
+otu_pa <- decostand(x = otu[, -c(1:3)],
+                    method = "pa")
+
+# y = ax^w         # power transformation formula
+dt <- otu[, -c(1:3)]          # species data to transform
+x_mn <- min(dt[dt > 0])
+x_mx <- max(dt)
+rng <- 6           # abundance range
+w <- log(rng) / (log(x_mx) - log(x_mn))
+a <- x_mn^(-w)
+# otu_6 <- a * dt[, -c(1:3)]^w
+otu_6 <- a * dt^w
+range(otu_6)
+```
+
+## Ordination methods
+### DCA PA
+```{r}
+dca_pa <- decorana(veg = otu_pa)
+```
+
+
+### GNMDS PA
+#### Distances
+```{r, eval=FALSE}
+## Bray-Curtis
+dist_pa <- vegdist(x = otu_pa, method = "bray")
+
+## Geodist
+ep <- 0.8     # epsilon
+geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
+
+saveRDS(geodist_pa,
+        file = "SplitRev2_geodist_pa_gr6.rds")
+```
+
+#### Ordination
+```{r, eval=FALSE}
+# monoMDS
+d <- 2
+mds_pa <- list()
+
+for (i in 1:100) {
+  mds_pa[[i]]<-monoMDS(geodist_pa,
+                    matrix(c(runif(dim(otu_pa)[1]*d)),
+                           nrow = dim(otu_pa)[1]),
+                    k = d,
+                    model = "global",
+                    maxit = 2000,
+                    smin = 1e-7,
+                    sfgrmin = 1e-7)
+}
+
+saveRDS(mds_pa,
+        file = "../SplitRev2_mds_pa_split6.rds")
+```
+
+##### Best nmds solution - PA
+Make function?
+```{r, eval=TRUE}
+# Loading geodist object
+# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_pa_full.rds")
+
+# Loading mds results
+# mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
+
+## Extracting the stress of each nmds iteration
+mds_stress_pa<-unlist(lapply(mds_pa, function(v){v[[22]]})) 
+
+ordered_pa <-order(mds_stress_pa)
+
+## Best, second best, and worst solution
+mds_stress_pa[ordered_pa[1]]
+mds_stress_pa[ordered_pa[2]]
+mds_stress_pa[ordered_pa[10]]
+
+## Scaling of axes to half change units and varimax rotation by postMDS
+mds_best_pa<-postMDS(mds_pa[[ordered_pa[1]]],
+                  geodist_pa, 
+                  pc = TRUE, 
+                  halfchange = TRUE, 
+                  threshold = ep)     # Is this threshold related to the epsilon above?
+mds_best_pa
+
+mds_secbest_pa <- postMDS(mds_pa[[ordered_pa[2]]],
+                          geodist_pa, 
+                          pc = TRUE, 
+                          halfchange = TRUE, 
+                          threshold = ep)
+mds_secbest_pa
+
+## Procrustes comparisons
+procr_pa <- procrustes(mds_best_pa,
+                    mds_secbest_pa,
+                    permutations=999)
+protest(mds_best_pa,
+        mds_secbest_pa,
+        permutations=999)
+
+plot(procr_pa)
+
+png("SplitRev2_procrustes_pa.png", width=1000, height=700,)
+plot(procr_pa)
+dev.off()
+```
+
+##### Correlation of axis: DCA vs NMDS - PA
+```{r}
+# Extracting ordination axis
+ax <- 2
+axis_pa <- cbind(mds_best_pa$points,
+                 scores(dca_pa,
+                        display = "sites",
+                        origin = TRUE)[, 1:ax])
+
+ggcorr(axis_pa, 
+       method=c("everything","kendall"), 
+       label = TRUE,
+       label_size = 3, 
+       label_color = "black",  
+       nbreaks = 8,
+       label_round = 3,
+       low = "red",
+       mid = "white",
+       high = "green")
+
+ggsave(filename = "SplitRev2_correlationPCAvsNMDS_PA.png",
+       device = "png",
+       dpi=300 )
+
+# Switching direction of NMDS1
+# mds_best$points[, 1] <- -mds_best$points[, 1]
+
+```
+
+
+### DCA R6
+```{r}
+dca_r6 <- decorana(veg = otu_6)
+```
+
+
+### GNMDS R6
+#### Distances
+```{r}
+## Bray-Curtis
+dist_r6 <- vegdist(x = otu_6, method = "bray")
+
+## Geodist
+ep <- 0.80     # epsilon
+geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
+```
+
+#### Ordination
+```{r, eval=FALSE}
+# monoMDS
+d <- 2
+mds_r6 <- list()
+
+for (i in 1:200) {
+  mds_r6[[i]]<-monoMDS(geodist_r6,
+                    matrix(c(runif(dim(otu_6)[1]*d)),
+                           nrow = dim(otu_6)[1]),
+                    k = d,
+                    model = "global",
+                    maxit = 2000,
+                    smin = 1e-7,
+                    sfgrmin = 1e-7)
+}
+
+saveRDS(mds_pa,
+        file = "../SplitRev2_mds_r6_split6.rds")
+```
+
+##### Best nmds solution - PA
+```{r, eval=TRUE}
+# Loading geodist object
+# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds")
+
+# Loading mds results
+# mds <- readRDS(file = "../SplitRev2_mds.rds")
+
+## Extracting the stress of each nmds iteration
+mds_stress_r6<-unlist(lapply(mds_r6, function(v){v[[22]]})) 
+
+ordered_r6 <-order(mds_stress_r6)
+
+## Best, second best, and worst solution
+mds_stress_r6[ordered_r6[1]]
+mds_stress_r6[ordered_r6[2]]
+mds_stress_r6[ordered_r6[100]]
+
+## Scaling of axes to half change units and varimax rotation by postMDS
+mds_best_r6<-postMDS(mds_r6[[ordered_r6[1]]],
+                     geodist_r6, 
+                     pc = TRUE, 
+                     halfchange = TRUE, 
+                     threshold = ep)     # Is this threshold related to the epsilon above?
+mds_best_r6
+
+mds_secbest_r6<-postMDS(mds_r6[[ordered_r6[2]]],
+                        geodist_r6, 
+                        pc = TRUE, 
+                        halfchange = TRUE, 
+                        threshold = ep)
+mds_secbest_r6
+
+## Procrustes comparisons
+procr_r6 <- procrustes(mds_best_r6,
+                       mds_secbest_r6,
+                       permutations=999)
+protest(mds_best_r6,
+        mds_secbest_r6,
+        permutations=999)
+
+plot(procr_r6)
+
+png("SplitRev2_procrustes_r6.png", width=1000, height=700,)
+plot(procr_r6)
+dev.off()
+```
+
+##### Correlation of axis: DCA vs NMDS - PA
+```{r}
+# Extracting ordination axis
+ax <- 2
+axis_r6 <- cbind(mds_best_r6$points,
+                 scores(dca_r6,
+                        display = "sites",
+                        origin = TRUE)[, 1:ax])
+
+ggcorr(axis_r6, 
+       method=c("everything","kendall"), 
+       label = TRUE,
+       label_size = 3, 
+       label_color = "black",  
+       nbreaks = 8,
+       label_round = 3,
+       low = "red",
+       mid = "white",
+       high = "green")
+
+ggsave(filename = "SplitRev2_correlationPCAvsNMDS_r6.png",
+       device = "png",
+       dpi=300 )
+
+# Switching direction of NMDS1
+# mds_best$points[, 1] <- -mds_best$points[, 1]
+
+```
+
+### Plotting DCA & GNMDS
+```{r}
+## Adding scores to data frame
+otu_6$gnmds1 <- mds_best_r6$points[, 1]
+otu_6$gnmds2 <- mds_best_r6$points[, 2]
+otu_6$dca1 <- scores(dca_r6, display = "sites", origin = TRUE)[, 1]
+otu_6$dca2 <- scores(dca_r6, display = "sites", origin = TRUE)[, 2]
+
+p_gnmds_r6 <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS",
+          subtitle = "First run") +
+  geom_point(colour = "red") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_dca_r6 <- ggplot(data = otu_6,
+                   aes(x = dca1,
+                       y = -dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("DCA",
+          subtitle = "First run") +
+  geom_point(colour = "red") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_gnmds_r6 + p_dca_r6
+
+ggsave("SplitRev2_gnmds_dca.png",
+       device = "png", 
+       dpi=300)
+
+```
+
+## Species-environment relationships
+### Selecting ordination
+```{r}
+ord <- mds_best_r6
+
+## Axis scores if selected ord is GNMDS
+axis <- ord$points %>% as.data.frame
+
+## Axis scores if selected ord is DCA
+# axis <- scores(ord,
+#                display = "sites",
+#                origin = TRUE)[, 1:ax])
+
+```
+
+### Correlation ordination axes and environmental variables
+#### Removing non-env vars
+```{r}
+env_corr <- env %>% select(-c(Lnr,
+                              Tot1810,
+                              SplitRaw,
+                              Split,
+                              SplitRev,
+                              RegionSimp,
+                              SampID,
+                              samp,
+                              no,
+                              T,
+                              B,
+                              class))
+
+env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
+env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
+
+str(env_corr)
+```
+
+#### Correlations
+```{r}
+# Vector to hold correlations
+cor_ax1 <- NULL
+cor_ax2 <- NULL
+pv_ax1 <- NULL
+pv_ax2 <- NULL
+
+# NMDS1
+for( i in seq(length(env_corr))) {
+  ct.i <- cor.test(axis$MDS1,
+                   env_corr[, i],
+                   method = "kendall")
+  cor_ax1[i] <- ct.i$estimate
+  pv_ax1[i] <- ct.i$p.value
+}
+
+# NMDS2
+for( i in seq(length(env_corr))) {
+  ct.i <- cor.test(axis$MDS2,
+                   env_corr[, i],
+                   method = "kendall")
+  cor_ax2[i] <- ct.i$estimate
+  pv_ax2[i] <- ct.i$p.value
+}
+
+cor_tab <- data.frame(env = names(env_corr),
+                      ord_ax1 = cor_ax1,
+                      pval_ax1 = pv_ax1,
+                      ord_ax2 = cor_ax2,
+                      pval_ax2 = pv_ax2)
+
+cor_tab
+
+write.csv(x = cor_tab,
+          file = "SplitRev2_cor-table_r6_200rep.csv",
+          row.names = FALSE)
+```
+
+### Sel env var & removal NAs
+```{r}
+env_os <- env[, c("bathy.tif",
+                  "hard.tif",
+                  "dissox_mean.tif",
+                  "mud.tif",
+                  "salt_min.tif",
+                  "salt_std.tif",
+                  "coords.x2",
+                  "spd_mean.tif",
+                  "gelatinous_snow",
+                  "temp_mean.tif",
+                  "pebble",
+                  "icecover_mean.tif",
+                  "gravel.tif")]
+env_os
+str(env_os)
+
+```
+
+
+### Ordisurfs
+```{r}
+ordsrfs <- list(length = ncol(env_os))
+
+for (i in seq(ncol(env_os))) {
+  os.i <- gg_ordisurf(ord = ord,
+                      env.var = env_os[, i],
+                      pt.size = 1,
+                      # binwidth = 0.05,
+                      var.label = names(env_os)[i],
+                      gen.text.size = 10,
+                      title.text.size = 15,
+                      leg.text.size = 10)
+  
+  ordsrfs[[i]] <- os.i$plot
+}
+
+ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
+                         nrow = 5,
+                         ncol = 3)
+
+ordsrfs_plt
+
+ggexport(ordsrfs_plt,
+          filename = "SplitRev2_ordisurfs_full_sel.png",
+          width = 1000,
+          height = 2000)
+
+png("SplitRev2_ordisurfs_full_sel.png", width=2000, height=2200)
+ordsrfs_plt
+dev.off()
+```
+
+### Envfit
+```{r}
+## Envfot plot
+gg_envfit(ord = ord,
+          env = env_os,
+          pt.size = 1)
+
+ggsave(filename = "SplitRev2_EnvFit.png",
+       device = "png",
+       dpi=300 )
+
+
+## Envfit analysis
+
+ef <- envfit(ord = ord,
+             env = env_os,
+             # na.rm = TRUE
+             )
+efDF <- as.data.frame(scores(ef,
+                             display = "vectors"))
+```
+
+
+### Data split plot
+#### Attaching ordination scores
+```{r}
+env$gnmds1 <- axis$MDS1
+env$gnmds2 <- axis$MDS2
+```
+
+#### Plots
+```{r}
+TB_splitRaw <- ggplot(data = env,
+                      aes(x = temp_mean.tif,
+                          y = bathy.tif)) +
+  theme_classic() +
+  geom_point(aes(colour = SplitRaw),
+             size = 2) +
+  scale_colour_brewer(palette = "Paired") +
+  # geom_vline(xintercept = 0) +
+  # geom_segment(aes(x = 2, y = 0,
+  #                  xend = 2, yend = -675)) +
+  # geom_segment(aes(x = 0, y = -700,
+  #                  xend = 5, yend = -575)) +
+  # geom_segment(aes(x = 0, y = -700,
+  #                  xend = -1.5, yend = -700)) +
+  # geom_segment(aes(x = 0, y = -425,
+  #                  xend = 2, yend = -325)) +
+  # geom_segment(aes(x = 2, y = -500,
+  #                  xend = 5, yend = -400)) +
+  # geom_segment(aes(x = 5, y = -400,
+  #                  xend = 8, yend = 0)) +
+  # geom_segment(aes(x = 0, y = -425,
+  #                  xend = -1.5, yend = -425)) +
+  # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) +
+  # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) +
+  # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) +
+  # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) +
+  # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) +
+  # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) +
+  # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) +
+  # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) +
+  ggtitle("Temp (mean) vs Bathy - coloured by SplitRaw")
+
+TB_split <- ggplot(data = env,
+                      aes(x = temp_mean.tif,
+                          y = bathy.tif)) +
+  theme_classic() +
+  geom_point(aes(colour = Split),
+             size = 2) +
+  scale_colour_brewer(palette = "Paired") +
+  # geom_vline(xintercept = 0) +
+  # geom_segment(aes(x = 2, y = 0,
+  #                  xend = 2, yend = -675)) +
+  # geom_segment(aes(x = 0, y = -700,
+  #                  xend = 5, yend = -575)) +
+  # geom_segment(aes(x = 0, y = -700,
+  #                  xend = -1.5, yend = -700)) +
+  # geom_segment(aes(x = 0, y = -425,
+  #                  xend = 2, yend = -325)) +
+  # geom_segment(aes(x = 2, y = -500,
+  #                  xend = 5, yend = -400)) +
+  # geom_segment(aes(x = 5, y = -400,
+  #                  xend = 8, yend = 0)) +
+  # geom_segment(aes(x = 0, y = -425,
+  #                  xend = -1.5, yend = -425)) +
+  # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) +
+  # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) +
+  # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) +
+  # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) +
+  # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) +
+  # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) +
+  # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) +
+  # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) +
+  ggtitle("Temp (mean) vs Bathy - coloured by Split")
+
+EN_split <- ggplot(data = env,
+              aes(x = coords.x1,
+                  y = coords.x2)) +
+  theme_classic() +
+  geom_point(aes(colour = Split),
+             size = 2) +
+  scale_colour_brewer(palette = "Paired") +
+  ggtitle("Easting vs Northing - coloured by Split")
+
+EN_split + TB_split
+
+
+
+```
+
+### Coordinates coloured by GNMDS1 & 2
+```{r}
+EN1 <- ggplot(data = env,
+              aes(x = coords.x1,
+                  y = coords.x2)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Easting vs Northing - coloured by GNMDS1")
+
+EN2 <- ggplot(data = env,
+              aes(x = coords.x1,
+                  y = coords.x2)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Easting vs Northing - coloured by GNMDS2")
+
+EN_temp <- ggplot(data = env,
+              aes(x = coords.x1,
+                  y = coords.x2)) +
+  theme_classic() +
+  geom_point(aes(colour = temp_mean.tif),
+             size = 2) +
+  scale_colour_gradient2(low = "Blue",
+                         mid = "yellow",
+                         high = "red",
+                         midpoint = 4) +
+  ggtitle("Easting vs Northing - coloured by temp")
+
+EN1 + EN2
+```
+
+
+## Convert to r script
+```{r}
+library(knitr)
+knitr::purl(input = "first-run.Rmd",
+            output = "first-run.r")
+```
+
