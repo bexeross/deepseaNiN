@@ -313,6 +313,7 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ```
 
 #### Ordination
+took 20mins
 ```{r, eval=FALSE}
 # monoMDS
 d <- 2
@@ -329,8 +330,8 @@ for (i in 1:200) {
                     sfgrmin = 1e-7)
 }
 
-saveRDS(mds_pa,
-        file = file.path(dataPath,"mds_r6.rds")
+saveRDS(mds_r6,
+        file = file.path(dataPath,"mds_r6.rds"))
 ```
 
 ##### Best nmds solution - PA
