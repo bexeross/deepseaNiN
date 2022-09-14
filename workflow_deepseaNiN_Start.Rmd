@@ -89,6 +89,10 @@ dim(otuSel); dim(envSel)
 otu<-otuSel[,-c(1)]
 env<-envSel[, -c(1:2,4:20)]
 
+table(is.na(otu))
+
+table(is.na(env))
+
 #str(otuSel)
 #str(envSel)
 ```
