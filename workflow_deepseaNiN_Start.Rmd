@@ -192,7 +192,7 @@ ep <- 0.8     # epsilon
 geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 
 saveRDS(geodist_pa,
-        file = "SplitRev2_geodist_pa_gr6.rds")
+        file = (file.path(dataPath,"geodist_pa.rds")))
 ```
 
 #### Ordination
@@ -213,7 +213,7 @@ for (i in 1:100) {
 }
 
 saveRDS(mds_pa,
-        file = "../SplitRev2_mds_pa_split6.rds")
+        file = (file.path(dataPath,"mds_pa.rds")
 ```
 
 ##### Best nmds solution - PA
@@ -260,7 +260,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png("SplitRev2_procrustes_pa.png", width=1000, height=700,)
+png(file=file.path(dataPath,"procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -285,7 +285,7 @@ ggcorr(axis_pa,
        mid = "white",
        high = "green")
 
-ggsave(filename = "SplitRev2_correlationPCAvsNMDS_PA.png",
+ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -330,7 +330,7 @@ for (i in 1:200) {
 }
 
 saveRDS(mds_pa,
-        file = "../SplitRev2_mds_r6_split6.rds")
+        file = file.path(dataPath,"mds_r6.rds")
 ```
 
 ##### Best nmds solution - PA
