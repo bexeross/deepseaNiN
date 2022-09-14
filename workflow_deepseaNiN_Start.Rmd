@@ -190,7 +190,11 @@ dist_pa <- vegdist(x = otu_pa, method = "bray")
 ## Geodist
 ep <- 0.8     # epsilon
 geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
+```
 
+
+##### Save the result
+```{r}
 saveRDS(geodist_pa,
         file = (file.path(dataPath,"geodist_pa.rds")))
 ```
@@ -212,16 +216,24 @@ for (i in 1:100) {
                     sfgrmin = 1e-7)
 }
 
-saveRDS(mds_pa,
-        file = (file.path(dataPath,"mds_pa.rds")
 ```
+
+##### Save the result
+```{r}
+saveRDS(mds_pa,
+        file = file.path(dataPath,"mds_pa.rds"))
+```
+
 
 ##### Best nmds solution - PA
 Make function?
 ```{r, eval=TRUE}
 # Loading geodist object
 # geodist_nfi <- readRDS(file = "../SplitRev2_geodist_pa_full.rds")
+```
 
+
+```{r}
 # Loading mds results
 # mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
 
@@ -285,15 +297,18 @@ ggcorr(axis_pa,
        mid = "white",
        high = "green")
 
+
+```
+
+##### Save the figure
+```{r}
 ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
 # Switching direction of NMDS1
 # mds_best$points[, 1] <- -mds_best$points[, 1]
-
 ```
-
 
 ### DCA R6
 ```{r}
@@ -329,8 +344,12 @@ for (i in 1:200) {
                     sfgrmin = 1e-7)
 }
 
+```
+
+##### Save the result
+```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"mds_r6.rds")
+        file = file.path(dataPath,"mds_r6.rds"))
 ```
 
 ##### Best nmds solution - PA
@@ -401,13 +420,16 @@ ggcorr(axis_r6,
        mid = "white",
        high = "green")
 
+```
+
+##### Save the figure
+```{r}
 ggsave(filename = "SplitRev2_correlationPCAvsNMDS_r6.png",
        device = "png",
        dpi=300 )
 
 # Switching direction of NMDS1
 # mds_best$points[, 1] <- -mds_best$points[, 1]
-
 ```
 
 ### Plotting DCA & GNMDS
@@ -450,10 +472,14 @@ p_dca_r6 <- ggplot(data = otu_6,
 
 p_gnmds_r6 + p_dca_r6
 
+
+```
+
+##### Save the figure
+```{r}
 ggsave("SplitRev2_gnmds_dca.png",
        device = "png", 
        dpi=300)
-
 ```
 
 ## Species-environment relationships
@@ -575,7 +601,10 @@ ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
                          ncol = 3)
 
 ordsrfs_plt
+```
 
+##### Save some outputs
+```{r}
 ggexport(ordsrfs_plt,
           filename = "SplitRev2_ordisurfs_full_sel.png",
           width = 1000,
@@ -593,11 +622,6 @@ gg_envfit(ord = ord,
           env = env_os,
           pt.size = 1)
 
-ggsave(filename = "SplitRev2_EnvFit.png",
-       device = "png",
-       dpi=300 )
-
-
 ## Envfit analysis
 
 ef <- envfit(ord = ord,
@@ -606,6 +630,13 @@ ef <- envfit(ord = ord,
              )
 efDF <- as.data.frame(scores(ef,
                              display = "vectors"))
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = "SplitRev2_EnvFit.png",
+       device = "png",
+       dpi=300 )
 ```
 
 
