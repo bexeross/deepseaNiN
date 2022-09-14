@@ -40,8 +40,8 @@ source("gg_ordisurf_viridis.R")
 ## Data
 ```{r}
 
-env_orig <- read.csv(file = "EnvRaw3.csv") %>% as.data.frame
-otu_orig <- read.csv(file = "HI_OTURaw3.csv") %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"samples_env.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"widedata_2022-09-13.csv")) %>% as.data.frame
 
 # Sorting and ordering by SampID
 env_orig <- env_orig[order(env_orig$SampID), ]
