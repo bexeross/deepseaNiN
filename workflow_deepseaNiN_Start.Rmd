@@ -86,8 +86,11 @@ dim(otuSel); dim(envSel)
 
 ### Whole dataset for first run
 ```{r}
-otu<-otuSel
-env<-envSel
+otu<-otuSel[,-c(1)]
+env<-envSel[, -c(1:2,4:20)]
+
+#str(otuSel)
+#str(envSel)
 ```
 
 
@@ -132,8 +135,10 @@ env<-envSel
 
 ## format data correctly
 ```{r}
-env$coords.x1<-as.numeric(env$coords.x1)
-env$coords.x2<-as.numeric(env$coords.x2)
+#env$coords.x1<-as.numeric(env$coords.x1)
+#env$coords.x2<-as.numeric(env$coords.x2)
+
+
 ```
 
 
@@ -141,11 +146,12 @@ env$coords.x2<-as.numeric(env$coords.x2)
 Make function
 You might have to drop variables that have been imported as character
 ```{r}
-otu_pa <- decostand(x = otu[, -c(1:3)],
+
+otu_pa <- decostand(x = otu[, -c(1)],
                     method = "pa")
 
 # y = ax^w         # power transformation formula
-dt <- otu[, -c(1:3)]          # species data to transform
+dt <- otu[, -c(1:2)]          # species data to transform
 x_mn <- min(dt[dt > 0])
 x_mx <- max(dt)
 rng <- 6           # abundance range
