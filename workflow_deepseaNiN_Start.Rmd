@@ -43,25 +43,33 @@ source("gg_ordisurf_viridis.R")
 env_orig <- read.csv(file.path(dataPath,"envData_2022-09-13.csv")) %>% as.data.frame
 otu_orig <- read.csv(file.path(dataPath,"widedata_2022-09-13.csv")) %>% as.data.frame
 
+#left join and split to ensure ordered identically
+
+#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
+
+otu_sort<-joinedDat %>% select(c(2:351))
+env_sort<-joinedDat %>% select(c(2,352:491))
+
 # Sorting and ordering by SampID
-env_orig <- env_orig[order(env_orig$SampID), ]
-otu_orig <- otu_orig[order(otu_orig$SampID), ]
+# env_orig <- env_orig[order(env_orig$SampID), ]
+# otu_orig <- otu_orig[order(otu_orig$SampID), ]
 
-table(env_orig$SampID == otu_orig$SampID)
-
-
+table(env_sort$SampID2 == otu_sort$SampID)
 
 
-dim(env_orig)
-dim(otu_orig)
+#must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
+
+dim(env_sort)
+dim(otu_sort)
 ```
 
 
 ### Data cleaning
 ```{r}
 ## Removing NAs
-otuCompl <- otu_orig[complete.cases(env_orig[, -c(1:20)]), ]
-envCompl <- env_orig[complete.cases(env_orig[, -c(1:20)]), ]
+otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:20)]), ]
+envCompl <- env_sort[complete.cases(env_sort[, -c(1:20)]), ]
 
 ## Removing observations with less than 4 OTUs
 sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
