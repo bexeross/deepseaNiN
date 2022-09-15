@@ -331,6 +331,13 @@ ep <- 0.80     # epsilon
 geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ```
 
+##### Save the result
+```{r}
+saveRDS(geodist_r6,
+        file = (file.path(dataPath,"geodist_r6.rds")))
+```
+
+
 #### Ordination
 took 20mins
 ```{r, eval=FALSE}
