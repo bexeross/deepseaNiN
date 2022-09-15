@@ -178,6 +178,8 @@ range(otu_6)
 ### DCA PA
 ```{r}
 dca_pa <- decorana(veg = otu_pa)
+
+print(dca_pa, head=T)
 ```
 
 
@@ -313,6 +315,8 @@ ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_PA.png"),
 ### DCA R6
 ```{r}
 dca_r6 <- decorana(veg = otu_6)
+
+print(dca_r6, head=T)
 ```
 
 
