@@ -95,7 +95,7 @@ dim(otuSel); dim(envSel)
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1)]
-env<-envSel[, -c(1:2,4:20)]
+env<-envSel[, -c(2:22)]
 
 table(is.na(otu))
 
@@ -489,7 +489,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave("SplitRev2_gnmds_dca.png",
+ggsave(file.path(dataPath,"gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -512,23 +512,14 @@ axis <- ord$points %>% as.data.frame
 ### Correlation ordination axes and environmental variables
 #### Removing non-env vars
 ```{r}
-env_corr <- env %>% select(-c(Lnr,
-                              Tot1810,
-                              SplitRaw,
-                              Split,
-                              SplitRev,
-                              RegionSimp,
-                              SampID,
-                              samp,
-                              no,
-                              T,
-                              B,
-                              class))
+env_cont<-env%>% select(-c(landscape,sedclass,gmorph, optional))
+env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
+env_corr <- env_cont %>% select(-c(SampID))
 
-env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
-env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
+# env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
+# env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
 
-str(env_corr)
+env_corr[(!is.numeric(env_corr)),]
 ```
 
 #### Correlations
@@ -566,8 +557,21 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = "SplitRev2_cor-table_r6_200rep.csv",
+          file = file.path(dataPath,"cor-table_r6_200rep.csv"),
           row.names = FALSE)
+```
+### Dot chart to check for gaps in correlation
+
+```{r}
+cor_a1_sort<-cor_tab%>%
+  mutate(abs_ord_ax1=abs(ord_ax1)) %>%
+  arrange(desc(abs_ord_ax1))
+
+dotchart(cor_a1_sort$abs_ord_ax1)
+
+cor_cut<-0.333 #decide
+
+cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 ```
 
 ### Sel env var & removal NAs
