@@ -576,19 +576,9 @@ cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 
 ### Sel env var & removal NAs
 ```{r}
-env_os <- env[, c("bathy.tif",
-                  "hard.tif",
-                  "dissox_mean.tif",
-                  "mud.tif",
-                  "salt_min.tif",
-                  "salt_std.tif",
-                  "coords.x2",
-                  "spd_mean.tif",
-                  "gelatinous_snow",
-                  "temp_mean.tif",
-                  "pebble",
-                  "icecover_mean.tif",
-                  "gravel.tif")]
+
+
+env_os <- env[, cor_sel$env]
 env_os
 str(env_os)
 
@@ -614,7 +604,7 @@ for (i in seq(ncol(env_os))) {
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
                          nrow = 5,
-                         ncol = 3)
+                         ncol = 5)
 
 ordsrfs_plt
 ```
