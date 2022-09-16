@@ -589,10 +589,24 @@ axis <- ord$points %>% as.data.frame
 
 ```
 
+### Create additional variables
+decided to make MLD-bathy vars
+```{r}
+env<-env%>% mutate ("MLDmean-bathy"=MLDmean_Robinson-(bathy*-1),
+                    "MLDmin-bathy"=MLDmin_Robinson-(bathy*-1),
+                    "MLDmax-bathy"=MLDmax_Robinson-(bathy*-1))
+```
+
+
+
 ### Correlation ordination axes and environmental variables
 #### Removing non-env vars
 ```{r}
-env_cont<-env%>% select(-c(landscape,sedclass,gmorph, optional))
+env_cont<-env%>% select(-c(landscape,sedclass,gmorph, #categorical
+                           optional, #not a var
+                           MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
+                           MLDsd_Robinson #not meaningful
+                           ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont %>% select(-c(SampID))
 
@@ -637,7 +651,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"cor-table_r6_200rep.csv"),
+          file = file.path(dataPath,"cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -652,12 +666,11 @@ dotchart(cor_a1_sort$abs_ord_ax1)
 cor_cut<-0.333 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
+cor_sel
 ```
 
-### Sel env var & removal NAs
+### Sel env var (top corr)
 ```{r}
-
-
 env_os <- env[, cor_sel$env]
 env_os
 str(env_os)
@@ -665,7 +678,7 @@ str(env_os)
 ```
 
 
-### Ordisurfs
+### Ordisurfs top corr
 ```{r}
 ordsrfs <- list(length = ncol(env_os))
 
@@ -688,18 +701,76 @@ ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
 
 ordsrfs_plt
 ```
-
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = "SplitRev2_ordisurfs_full_sel.png",
-          width = 1000,
+          filename = file.path(dataPath,"ordisurfs_top_corr.png"),
+          width = 2000,
           height = 2000)
 
-png("SplitRev2_ordisurfs_full_sel.png", width=2000, height=2200)
-ordsrfs_plt
-dev.off()
 ```
+
+
+### Sel env var (manual)
+```{r}
+env_os_m <- env[, c("Tmean_Robinson", #top corr
+                  "salt_max", #top corr
+                  "Smax_Robinson", #comparison to top corr
+                  "BO22_icecoverltmax_ss",#top corr
+                  "BO22_icecovermean_ss",#top corr
+                  "BO22_dissoxltmin_bdmean",#top corr
+                  "BO22_carbonphytoltmin_bdmean",#top corr
+                  "BO22_ppltmin_ss", #top corr
+                  "Y", #top corr
+                  "spd_std", #top corr ax2 (blended model)
+                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  "mud", #highest sed var ax1 + corr
+                  "gravel",#highest sed var ax1 - corr
+                  "BO22_silicateltmax_bdmean", #just under top corr ax1
+                  "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
+                  "MLDmin-bathy" #curiosity/comparison to highest rep of shallow water differences
+                )]
+env_os_m
+str(env_os_m)
+
+```
+
+
+### Ordisurfs top corr
+```{r}
+ordsrfs_m <- list(length = ncol(env_os_m))
+
+for (i in seq(ncol(env_os_m))) {
+  os.i_m <- gg_ordisurf(ord = ord,
+                      env.var = env_os_m[, i],
+                      pt.size = 1,
+                      # binwidth = 0.05,
+                      var.label = names(env_os_m)[i],
+                      gen.text.size = 10,
+                      title.text.size = 15,
+                      leg.text.size = 10)
+  
+  ordsrfs_m[[i]] <- os.i_m$plot
+}
+
+ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
+                         nrow = 4,
+                         ncol = 4)
+
+ordsrfs_plt_m
+```
+
+##### Save some outputs
+```{r}
+ggexport(ordsrfs_plt_m,
+          filename = file.path(dataPath,"ordisurfs_man_sel.png"),
+          width = 2000,
+          height = 2000)
+
+```
+
+
+
 
 ### Envfit
 ```{r}
