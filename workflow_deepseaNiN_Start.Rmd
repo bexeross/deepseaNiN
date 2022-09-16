@@ -338,13 +338,16 @@ saveRDS(geodist_r6,
 ```
 
 
-#### Ordination
+#### Ordination 
+
+##### 200 reps
 took 20mins
 ```{r, eval=FALSE}
 # monoMDS
 d <- 2
 mds_r6 <- list()
 
+Sys.time()
 for (i in 1:200) {
   mds_r6[[i]]<-monoMDS(geodist_r6,
                     matrix(c(runif(dim(otu_6)[1]*d)),
@@ -355,16 +358,91 @@ for (i in 1:200) {
                     smin = 1e-7,
                     sfgrmin = 1e-7)
 }
-
+Sys.time()
 ```
 
 ##### Save the result
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"mds_r6.rds"))
+        file = file.path(dataPath,"mds_r6.rds")) 
 ```
 
-##### Best nmds solution - PA
+#### 1000 reps
+took 1hr
+```{r, eval=FALSE}
+# monoMDS
+d <- 2
+mds_r6_1000 <- list()#obj added_1000
+
+Sys.time()
+for (i in 1:1000) {#change from 200 (200 ra in 20min, 1000 ran in 1hr)
+  mds_r6_1000[[i]]<-monoMDS(geodist_r6,#obj added _1000
+                    matrix(c(runif(dim(otu_6)[1]*d)),
+                           nrow = dim(otu_6)[1]),
+                    k = d,
+                    model = "global",
+                    maxit = 2000,
+                    smin = 1e-7,
+                    sfgrmin = 1e-7)
+}
+Sys.time()
+```
+
+##### Save the result
+```{r}
+saveRDS(mds_r6_1000, #obj added_1000
+        file = file.path(dataPath,"mds_r6_1000rep.rds")) #change from 200
+```
+
+##### Best nmds solution r6 1000 rep
+```{r, eval=TRUE}
+# Loading geodist object
+# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds")
+
+# Loading mds results
+# mds <- readRDS(file = "../SplitRev2_mds.rds")
+
+## Extracting the stress of each nmds iteration
+mds_stress_r6_1000<-unlist(lapply(mds_r6_1000, function(v){v[[22]]})) #adeed 1000
+
+ordered_r6_1000 <-order(mds_stress_r6_1000)
+
+## Best, second best, and worst solution
+mds_stress_r6_1000[ordered_r6_1000[1]]
+mds_stress_r6_1000[ordered_r6_1000[2]]
+mds_stress_r6_1000[ordered_r6_1000[100]]
+
+## Scaling of axes to half change units and varimax rotation by postMDS
+mds_best_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[1]]],
+                     geodist_r6, 
+                     pc = TRUE, 
+                     halfchange = TRUE, 
+                     threshold = ep)     # Is this threshold related to the epsilon above?
+mds_best_r6_1000
+
+mds_secbest_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[2]]],
+                        geodist_r6, 
+                        pc = TRUE, 
+                        halfchange = TRUE, 
+                        threshold = ep)
+mds_secbest_r6_1000
+
+## Procrustes comparisons
+procr_r6_1000 <- procrustes(mds_best_r6_1000,
+                       mds_secbest_r6_1000,
+                       permutations=999)
+protest(mds_best_r6_1000,
+        mds_secbest_r6_1000,
+        permutations=999)
+
+plot(procr_r6_1000)
+
+png(file.path(dataPath,"procrustes_r6_1000.png"), width=1000, height=700,) #added 1000
+plot(procr_r6_1000)
+dev.off()
+```
+
+##### Best nmds solution r6 200 rep
 ```{r, eval=TRUE}
 # Loading geodist object
 # geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds")
@@ -407,12 +485,12 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"procrustes_r6.png"), width=1000, height=700,)
+png(file.path(dataPath,"procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
 
-##### Correlation of axis: DCA vs NMDS - PA
+##### Correlation of axis: DCA vs NMDS 
 ```{r}
 # Extracting ordination axis
 ax <- 2
