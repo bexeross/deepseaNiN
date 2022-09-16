@@ -40,8 +40,8 @@ source("gg_ordisurf_viridis.R")
 ## Data
 ```{r}
 
-env_orig <- read.csv(file.path(dataPath,"envData_2022-09-13.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"widedata_2022-09-13.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
 
 #left join and split to ensure ordered identically
 
@@ -198,7 +198,7 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/geodist_pa.rds")))
 ```
 
 #### Ordination
@@ -223,7 +223,7 @@ for (i in 1:100) {
 ##### Save the result
 ```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"mds_pa.rds"))
+        file = file.path(dataPath,"inputs/mds_pa.rds"))
 ```
 
 
@@ -274,7 +274,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -304,7 +304,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -334,7 +334,7 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/geodist_r6.rds")))
 ```
 
 
@@ -364,7 +364,7 @@ Sys.time()
 ##### Save the result
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep
@@ -410,7 +410,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -439,7 +439,7 @@ Sys.time()
 ##### Save the result
 ```{r}
 saveRDS(mds_r6_1000, #obj added_1000
-        file = file.path(dataPath,"mds_r6_1000rep.rds")) #change from 200
+        file = file.path(dataPath,"inputs/mds_r6_1000rep.rds")) #change from 200
 ```
 
 ##### Best nmds solution r6 1000 rep
@@ -485,7 +485,7 @@ protest(mds_best_r6_1000,
 
 plot(procr_r6_1000)
 
-png(file.path(dataPath,"procrustes_r6_1000.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/procrustes_r6_1000.png"), width=1000, height=700,) #added 1000
 plot(procr_r6_1000)
 dev.off()
 ```
@@ -516,7 +516,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -569,7 +569,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -651,7 +651,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -704,7 +704,7 @@ ordsrfs_plt
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/ordisurfs_top_corr.png"),
           width = 2000,
           height = 2000)
 
@@ -764,7 +764,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"ordisurfs_man_sel.png"),
+          filename = file.path(dataPath,"outputs/ordisurfs_man_sel.png"),
           width = 2000,
           height = 1000)
 
@@ -777,13 +777,13 @@ ggexport(ordsrfs_plt_m,
 ```{r}
 ## Envfot plot
 gg_envfit(ord = ord,
-          env = env_os,
+          env = env_os_m,
           pt.size = 1)
 
 ## Envfit analysis
 
 ef <- envfit(ord = ord,
-             env = env_os,
+             env = env_os_m,
              # na.rm = TRUE
              )
 efDF <- as.data.frame(scores(ef,
@@ -792,11 +792,44 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = "SplitRev2_EnvFit.png",
+ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel.png"),
        device = "png",
        dpi=300 )
 ```
+### Decide Splits
 
+#### add axis vals, sampNo to env_os_m
+
+```{r}
+env_sub_meta<-env_os_m
+
+env_sub_meta$gnmds1 <- otu_6$gnmds1
+env_sub_meta$gnmds2 <- otu_6$gnmds2
+env_sub_meta$SampID <- otu_6$SampID
+```
+
+#### Plot var vs var with gnmds ax1 colours
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 200 rep axis 1")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
 
 ### Data split plot
 #### Attaching ordination scores
