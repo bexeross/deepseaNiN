@@ -728,7 +728,8 @@ env_os_m <- env[, c("Tmean_Robinson", #top corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
                   "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
-                  "MLDmin-bathy" #curiosity/comparison to highest rep of shallow water differences
+                  "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
+                  "bathy" #intuitive for comparisons
                 )]
 env_os_m
 str(env_os_m)
@@ -754,8 +755,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 3,
+                         ncol = 6)
 
 ordsrfs_plt_m
 ```
@@ -765,7 +766,7 @@ ordsrfs_plt_m
 ggexport(ordsrfs_plt_m,
           filename = file.path(dataPath,"ordisurfs_man_sel.png"),
           width = 2000,
-          height = 2000)
+          height = 1000)
 
 ```
 
