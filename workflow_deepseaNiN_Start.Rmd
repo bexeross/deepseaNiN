@@ -775,15 +775,56 @@ ggexport(ordsrfs_plt_m,
 
 ### Envfit
 ```{r}
+## Select if any var should be excluded from envfit (makes less busy to read)
+env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
+                  "salt_max", #top corr
+                  #"Smax_Robinson", #comparison to top corr
+                  #"BO22_icecoverltmax_ss",#top corr
+                  "BO22_icecovermean_ss",#top corr
+                  "BO22_dissoxltmin_bdmean",#top corr
+                  #"BO22_carbonphytoltmin_bdmean",#top corr
+                  #"BO22_ppltmin_ss", #top corr
+                  "Y", #top corr
+                  "spd_std", #top corr ax2 (blended model)
+                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  "mud", #highest sed var ax1 + corr
+                  "gravel",#highest sed var ax1 - corr
+                  "BO22_silicateltmax_bdmean", #just under top corr ax1
+                  "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
+                 # "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
+                  "bathy" #intuitive for comparisons
+                
+  
+)]
+
+colnames(env_os_m_envfit)<-c("TmeanR", #top corr
+                  "S_max", #top corr
+                  #"Smax_Robinson", #comparison to top corr
+                  #"BO22_icecoverltmax_ss",#top corr
+                  "icecovmean",#top corr
+                  "dissoxltmin",#top corr
+                  #"BO22_carbonphytoltmin_bdmean",#top corr
+                  #"BO22_ppltmin_ss", #top corr
+                  "Y", #top corr
+                  "spd_std", #top corr ax2 (blended model)
+                  "CSpdsdR", #comparison to top corr ax2 (blended model)
+                  "mud", #highest sed var ax1 + corr
+                  "gravel",#highest sed var ax1 - corr
+                  "SiLtmax", #just under top corr ax1
+                  "lightbotltmin", #highest rep of shallow water differences
+                 # "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
+                  "bathy" #intuitive for comparisons 
+                 )
+
 ## Envfot plot
 gg_envfit(ord = ord,
-          env = env_os_m,
+          env = env_os_m_envfit,
           pt.size = 1)
 
 ## Envfit analysis
 
 ef <- envfit(ord = ord,
-             env = env_os_m,
+             env = env_os_m_envfit,
              # na.rm = TRUE
              )
 efDF <- as.data.frame(scores(ef,
@@ -792,7 +833,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel.png"),
+ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel_cln.png"),
        device = "png",
        dpi=300 )
 ```
