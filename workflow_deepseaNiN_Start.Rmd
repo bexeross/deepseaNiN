@@ -901,12 +901,12 @@ tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
                           y = BO22_dissoxltmin_bdmean)) +
   theme_classic() +
-  geom_point(aes(colour = gnmds1),
+  geom_point(aes(colour = bathy),
              size = 2) +
   scale_colour_gradient2(low = "red",
                          mid = "yellow",
                          high = "green") +
-  ggtitle("Temp (mean Robinson) v disox lt min - coloured by gnmds r6 200 rep axis 1")
+  ggtitle("Temp (mean Robinson) v disox lt min - coloured by depth")
 
 tb_ax1
 
@@ -914,7 +914,7 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_depth.png"),
        device = "png",
        dpi=300 )
 ```
