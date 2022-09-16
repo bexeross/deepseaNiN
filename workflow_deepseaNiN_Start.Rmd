@@ -806,9 +806,11 @@ env_sub_meta<-env_os_m
 env_sub_meta$gnmds1 <- otu_6$gnmds1
 env_sub_meta$gnmds2 <- otu_6$gnmds2
 env_sub_meta$SampID <- otu_6$SampID
+env_sub_meta$X <- env$X.y
 ```
 
 #### Plot var vs var with gnmds ax1 colours
+##### Bathy v Temp
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
@@ -827,6 +829,51 @@ tb_ax1
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
+##### X v Y
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Geography (X v Y) - coloured by gnmds r6 200 rep axis 1")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/X_v_Y_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
+##### Temp v disoxltmin
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = BO22_dissoxltmin_bdmean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Temp (mean Robinson) v disox lt min - coloured by gnmds r6 200 rep axis 1")
+
+tb_ax1
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
