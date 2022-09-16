@@ -64,6 +64,22 @@ dim(env_sort)
 dim(otu_sort)
 ```
 
+#### Plot map to check location of samples
+```{r}
+env_sort_locations<- ggplot(data = env_sort,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Location of samples in sorted env file")
+
+env_sort_locations
+```
+
 
 ### Data cleaning
 ```{r}
@@ -81,7 +97,40 @@ envSel <- envCompl[sel, ]
 
 dim(otuSel); dim(envSel)
 ```
+#### Show what samples are left after complete cases and >4 OTUs filters
+```{r}
+env_sel_locations<- ggplot(data = envSel,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Location of samples in sorted env file")
 
+env_sel_locations
+```
+
+#### Show what got removed in complete cases filter
+```{r}
+envCompl_ccrem<-envCompl%>%filter(!SampID%in%envSel$SampID)
+
+envCompl_ccrem_locations<- ggplot(data = envCompl_ccrem,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Location of removed complete case samples resulting in envSel file")
+
+envCompl_ccrem_locations
+```
+####
 
 ### [Optional] Data thinning
 ```{r, eval=FALSE}
