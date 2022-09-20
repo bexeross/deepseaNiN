@@ -765,6 +765,7 @@ cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
 ```
 
+
 ### Sel env var (top corr)
 ```{r}
 env_os <- env[, cor_sel$env]
@@ -792,8 +793,8 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 5,
-                         ncol = 5)
+                         nrow = 4,
+                         ncol = 4)
 
 ordsrfs_plt
 ```
