@@ -680,7 +680,7 @@ ggsave(file.path(dataPath,"outputs/gnmds_dca_r6.png"),
 ## Species-environment relationships
 ### Selecting ordination
 ```{r}
-ord <- mds_best_r6_1000
+ord <- mds_best_r6
 
 ## Axis scores if selected ord is GNMDS
 axis <- ord$points %>% as.data.frame
@@ -784,7 +784,7 @@ cor_a1_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.33 #decide
+cor_cut<-0.35 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -818,8 +818,8 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 5,
+                         ncol = 3)
 
 ordsrfs_plt
 ```
@@ -828,29 +828,29 @@ ordsrfs_plt
 ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/ordisurfs_top_corr.png"),
           width = 2000,
-          height = 2000)
+          height = 3000)
 
 ```
 
 
 ### Sel env var (manual)
 ```{r}
-env_os_m <- env[, c("Tmean_Robinson", #top corr
+env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
-                  "BO22_icecoverltmax_ss",#top corr
+                  "swDensRob_avs", #top corr
+                  "BO22_icecoverltmax_ss",#top corr ax2
                   "BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxltmin_bdmean",#top corr
-                  "BO22_carbonphytoltmin_bdmean",#top corr
+                  "BO22_dissoxmean_bdmean",#top corr
+                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "BO22_ppltmin_ss", #top corr
+                  "X.y", #comparison to Y
                   "Y", #top corr
                   "spd_std", #top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  #"BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
-                  "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
                   "bathy" #intuitive for comparisons
                 )]
 env_os_m
@@ -877,8 +877,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 3,
-                         ncol = 6)
+                         nrow = 4,
+                         ncol = 4)
 
 ordsrfs_plt_m
 ```
@@ -888,7 +888,7 @@ ordsrfs_plt_m
 ggexport(ordsrfs_plt_m,
           filename = file.path(dataPath,"outputs/ordisurfs_man_sel.png"),
           width = 2000,
-          height = 1000)
+          height = 2000)
 
 ```
 
@@ -900,42 +900,42 @@ ggexport(ordsrfs_plt_m,
 ## Select if any var should be excluded from envfit (makes less busy to read)
 env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
-                  #"Smax_Robinson", #comparison to top corr
-                  #"BO22_icecoverltmax_ss",#top corr
-                  "BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxltmin_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr
-                  #"BO22_ppltmin_ss", #top corr
+                  "Smax_Robinson", #comparison to top corr
+                  "swDensRob_avs", #top corr
+                  "BO22_icecoverltmax_ss",#top corr ax2
+               #   "BO22_icecovermean_ss",#top corr
+                  "BO22_dissoxmean_bdmean",#top corr
+                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+                  "BO22_ppltmin_ss", #top corr
+                  "X.y", #comparison to Y
                   "Y", #top corr
-                 # "spd_std", #top corr ax2 (blended model)
+                  "spd_std", #top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                 # "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
-                 # "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
                   "bathy" #intuitive for comparisons
                 
   
 )]
 
 colnames(env_os_m_envfit)<-c("TmeanR", #top corr
-                  "S_max", #top corr
-                  #"Smax_Robinson", #comparison to top corr
-                  #"BO22_icecoverltmax_ss",#top corr
-                  "icecovmean",#top corr
-                  "dissoxltmin",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr
-                  #"BO22_ppltmin_ss", #top corr
+                  "salt_max", #top corr
+                  "SmaxR", #comparison to top corr
+                  "swDensR", #top corr
+                  "icecovmax",#top corr ax2
+               #   "icecovav",#top corr
+                  "dissoxav",#top corr
+                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+                  "ppltmin", #top corr
+                  "X", #comparison to Y
                   "Y", #top corr
-                 # "spd_std", #top corr ax2 (blended model)
+                  "spd_std", #top corr ax2 (blended model)
                   "CSpdsdR", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "SiLtmax", #just under top corr ax1
-                 # "lightbotltmin", #highest rep of shallow water differences
-                #  "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
-                  "bathy" #intuitive for comparisons 
+                  "bathy" #intuitive for comparisons
                  )
 
 ## Envfot plot
@@ -959,7 +959,7 @@ ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel_cln.png"),
        device = "png",
        dpi=300 )
 ```
-### Decide Splits
+### Finding Regional (biogeographic) Splits
 
 #### add axis vals, sampNo to env_os_m
 
