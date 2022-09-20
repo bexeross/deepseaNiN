@@ -31,9 +31,23 @@ library(ggrepel)
 library(ggordiplots)
 library(readr)
 library(RColorBrewer)
+library(oce) 
 
 
 source("gg_ordisurf_viridis.R")
+```
+
+## Load R objects from previous runs if needed
+
+Only do this if you have already run this script and would like to avoid rerunning the longer steps
+```{r}
+geodist_pa<-readRDS(file.path(dataPath,"inputs/geodist_pa.rds"))
+geodist_r6<-readRDS(file.path(dataPath,"inputs/geodist_r6.rds"))
+
+mds_pa<-readRDS(file.path(dataPath,"inputs/mds_pa.rds"))
+mds_r6<-readRDS(file.path(dataPath,"inputs/mds_r6.rds"))
+mds_r6_1000rep<-readRDS(file.path(dataPath,"inputs/mds_r6_1000rep.rds"))
+
 ```
 
 
@@ -690,6 +704,9 @@ env$MLDmin_bathy<-cut(env$MLDmin_bathy,
 env$MLDmax_bathy<-cut(env$MLDmax_bathy, 
       breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
       labels=c('belowMLD','onPycno','inMixLayer'))
+
+
+
 ```
 
 
