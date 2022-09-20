@@ -64,6 +64,16 @@ dim(env_sort)
 dim(otu_sort)
 ```
 
+#### remove any variables with not enough coverage
+```{r}
+
+env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
+                               "BO22_lightbotltmax_bdmean",
+                               "BO22_lightbotltmin_bdmean",
+                               "BO22_lightbotrange_bdmean"))
+```
+
+
 #### Plot map to check location of samples
 ```{r}
 env_sort_locations<- ggplot(data = env_sort,
@@ -92,8 +102,10 @@ sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
 otuSel <- otuCompl[sel, ]
 envSel <- envCompl[sel, ]
 
+
 ## Removing phosphate
 #envSel <- envSel %>% select(-phosphate_mean.tif)
+
 
 dim(otuSel); dim(envSel)
 ```
@@ -115,7 +127,7 @@ env_sel_locations
 
 #### Show what got removed in complete cases filter
 ```{r}
-envCompl_ccrem<-envCompl%>%filter(!SampID%in%envSel$SampID)
+envCompl_ccrem<-env_sort%>%filter(!SampID%in%envCompl$SampID)
 
 envCompl_ccrem_locations<- ggplot(data = envCompl_ccrem,
                       aes(x = X.y,
@@ -130,7 +142,27 @@ envCompl_ccrem_locations<- ggplot(data = envCompl_ccrem,
 
 envCompl_ccrem_locations
 ```
-####
+#### Show what got removed in <4 OTUs filter
+
+
+```{r}
+inv.sel <- rowSums(otuCompl[, -c(1:2)]) < 4
+env.invSel <- envCompl[inv.sel, ]
+
+env.invSel_locations<- ggplot(data = env.invSel,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Location of removed samples with <4 OTUs resulting in envSel file")
+
+env.invSel_locations
+
+```
 
 ### [Optional] Data thinning
 ```{r, eval=FALSE}
@@ -234,7 +266,7 @@ print(dca_pa, head=T)
 
 ### GNMDS PA
 #### Distances
-```{r, eval=FALSE}
+```{r}
 ## Bray-Curtis
 dist_pa <- vegdist(x = otu_pa, method = "bray")
 
@@ -251,8 +283,11 @@ saveRDS(geodist_pa,
 ```
 
 #### Ordination
-```{r, eval=FALSE}
-# monoMDS
+
+#### monoMDS
+```{r}
+
+Sys.time()
 d <- 2
 mds_pa <- list()
 
@@ -391,7 +426,7 @@ saveRDS(geodist_r6,
 
 ##### 200 reps
 took 20mins
-```{r, eval=FALSE}
+```{r}
 # monoMDS
 d <- 2
 mds_r6 <- list()
@@ -466,7 +501,7 @@ dev.off()
 
 #### 1000 reps
 took 1hr
-```{r, eval=FALSE}
+```{r}
 # monoMDS
 d <- 2
 mds_r6_1000 <- list()#obj added_1000
@@ -545,7 +580,7 @@ dev.off()
 ```{r}
 # Extracting ordination axis
 ax <- 2
-axis_r6 <- cbind(mds_best_r6$points,
+axis_r6 <- cbind(mds_best_r6_1000$points,
                  scores(dca_r6,
                         display = "sites",
                         origin = TRUE)[, 1:ax])
@@ -576,8 +611,8 @@ ggsave(filename = file.path(dataPath,"outputs/correlationPCAvsNMDS_r6.png"),
 ### Plotting DCA & GNMDS
 ```{r}
 ## Adding scores to data frame
-otu_6$gnmds1 <- mds_best_r6$points[, 1]
-otu_6$gnmds2 <- mds_best_r6$points[, 2]
+otu_6$gnmds1 <- mds_best_r6_1000$points[, 1]
+otu_6$gnmds2 <- mds_best_r6_1000$points[, 2]
 otu_6$dca1 <- scores(dca_r6, display = "sites", origin = TRUE)[, 1]
 otu_6$dca2 <- scores(dca_r6, display = "sites", origin = TRUE)[, 2]
 
@@ -626,7 +661,7 @@ ggsave(file.path(dataPath,"outputs/gnmds_dca_r6.png"),
 ## Species-environment relationships
 ### Selecting ordination
 ```{r}
-ord <- mds_best_r6
+ord <- mds_best_r6_1000
 
 ## Axis scores if selected ord is GNMDS
 axis <- ord$points %>% as.data.frame
@@ -641,9 +676,20 @@ axis <- ord$points %>% as.data.frame
 ### Create additional variables
 decided to make MLD-bathy vars
 ```{r}
-env<-env%>% mutate ("MLDmean-bathy"=MLDmean_Robinson-(bathy*-1),
-                    "MLDmin-bathy"=MLDmin_Robinson-(bathy*-1),
-                    "MLDmax-bathy"=MLDmax_Robinson-(bathy*-1))
+env<-env %>% 
+  mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
+          "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
+          "MLDmax_bathy"=MLDmax_Robinson-(bathy*-1))
+
+env$MLDmean_bathy<-cut(env$MLDmean_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
+env$MLDmin_bathy<-cut(env$MLDmin_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
+env$MLDmax_bathy<-cut(env$MLDmax_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
 ```
 
 
@@ -651,7 +697,7 @@ env<-env%>% mutate ("MLDmean-bathy"=MLDmean_Robinson-(bathy*-1),
 ### Correlation ordination axes and environmental variables
 #### Removing non-env vars
 ```{r}
-env_cont<-env%>% select(-c(landscape,sedclass,gmorph, #categorical
+env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy #categorical
                            optional, #not a var
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
                            MLDsd_Robinson #not meaningful
@@ -712,7 +758,7 @@ cor_a1_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1)
 
-cor_cut<-0.333 #decide
+cor_cut<-0.33 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -776,7 +822,7 @@ env_os_m <- env[, c("Tmean_Robinson", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
+                  #"BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
                   "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
                   "bathy" #intuitive for comparisons
                 )]
@@ -834,12 +880,12 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr
                   #"BO22_ppltmin_ss", #top corr
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                 # "spd_std", #top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
+                 # "BO22_lightbotltmin_bdmean", #highest rep of shallow water differences
                  # "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
                   "bathy" #intuitive for comparisons
                 
@@ -855,13 +901,13 @@ colnames(env_os_m_envfit)<-c("TmeanR", #top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr
                   #"BO22_ppltmin_ss", #top corr
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                 # "spd_std", #top corr ax2 (blended model)
                   "CSpdsdR", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "SiLtmax", #just under top corr ax1
-                  "lightbotltmin", #highest rep of shallow water differences
-                 # "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
+                 # "lightbotltmin", #highest rep of shallow water differences
+                #  "MLDmin-bathy", #curiosity/comparison to highest rep of shallow water differences
                   "bathy" #intuitive for comparisons 
                  )
 
@@ -911,7 +957,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   scale_colour_gradient2(low = "red",
                          mid = "yellow",
                          high = "green") +
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 200 rep axis 1")
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 1000 rep axis 1")
 
 tb_ax1
 
@@ -922,25 +968,49 @@ ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
-##### X v Y
+##### Salinity v Temp
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = X,
-                          y = Y)) +
+                      aes(x = Smax_Robinson,
+                          y = Tmean_Robinson)) +
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 2) +
   scale_colour_gradient2(low = "red",
                          mid = "yellow",
                          high = "green") +
-  ggtitle("Geography (X v Y) - coloured by gnmds r6 200 rep axis 1")
+  ggtitle("Temp (mean Robinson) vs Salinity (max Robinson) - coloured by gnmds r6 1000 rep axis 1")
 
 tb_ax1
 
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/X_v_Y_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/tempRmean_v_salinityRmax_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
+
+
+##### X v Y
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Geography (X v Y) - coloured by mean temp")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/X_v_Y_tmeanR.png"),
        device = "png",
        dpi=300 )
 ```
@@ -950,12 +1020,12 @@ tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
                           y = BO22_dissoxltmin_bdmean)) +
   theme_classic() +
-  geom_point(aes(colour = bathy),
+  geom_point(aes(colour = gnmds1),
              size = 2) +
   scale_colour_gradient2(low = "red",
                          mid = "yellow",
                          high = "green") +
-  ggtitle("Temp (mean Robinson) v disox lt min - coloured by depth")
+  ggtitle("Temp (mean Robinson) v disox lt min - coloured by gnmds axis 1")
 
 tb_ax1
 
@@ -963,143 +1033,144 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_depth.png"),
+ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_gnmds1.png"),
        device = "png",
        dpi=300 )
+Sys.time()
 ```
 
-### Data split plot
-#### Attaching ordination scores
-```{r}
-env$gnmds1 <- axis$MDS1
-env$gnmds2 <- axis$MDS2
-```
+<!-- ### Data split plot -->
+<!-- #### Attaching ordination scores -->
+<!-- ```{r} -->
+<!-- env$gnmds1 <- axis$MDS1 -->
+<!-- env$gnmds2 <- axis$MDS2 -->
+<!-- ``` -->
 
-#### Plots
-```{r}
-TB_splitRaw <- ggplot(data = env,
-                      aes(x = temp_mean.tif,
-                          y = bathy.tif)) +
-  theme_classic() +
-  geom_point(aes(colour = SplitRaw),
-             size = 2) +
-  scale_colour_brewer(palette = "Paired") +
-  # geom_vline(xintercept = 0) +
-  # geom_segment(aes(x = 2, y = 0,
-  #                  xend = 2, yend = -675)) +
-  # geom_segment(aes(x = 0, y = -700,
-  #                  xend = 5, yend = -575)) +
-  # geom_segment(aes(x = 0, y = -700,
-  #                  xend = -1.5, yend = -700)) +
-  # geom_segment(aes(x = 0, y = -425,
-  #                  xend = 2, yend = -325)) +
-  # geom_segment(aes(x = 2, y = -500,
-  #                  xend = 5, yend = -400)) +
-  # geom_segment(aes(x = 5, y = -400,
-  #                  xend = 8, yend = 0)) +
-  # geom_segment(aes(x = 0, y = -425,
-  #                  xend = -1.5, yend = -425)) +
-  # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) +
-  # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) +
-  # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) +
-  # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) +
-  # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) +
-  # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) +
-  # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) +
-  # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) +
-  ggtitle("Temp (mean) vs Bathy - coloured by SplitRaw")
+<!-- #### Plots -->
+<!-- ```{r} -->
+<!-- TB_splitRaw <- ggplot(data = env, -->
+<!--                       aes(x = temp_mean.tif, -->
+<!--                           y = bathy.tif)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = SplitRaw), -->
+<!--              size = 2) + -->
+<!--   scale_colour_brewer(palette = "Paired") + -->
+<!--   # geom_vline(xintercept = 0) + -->
+<!--   # geom_segment(aes(x = 2, y = 0, -->
+<!--   #                  xend = 2, yend = -675)) + -->
+<!--   # geom_segment(aes(x = 0, y = -700, -->
+<!--   #                  xend = 5, yend = -575)) + -->
+<!--   # geom_segment(aes(x = 0, y = -700, -->
+<!--   #                  xend = -1.5, yend = -700)) + -->
+<!--   # geom_segment(aes(x = 0, y = -425, -->
+<!--   #                  xend = 2, yend = -325)) + -->
+<!--   # geom_segment(aes(x = 2, y = -500, -->
+<!--   #                  xend = 5, yend = -400)) + -->
+<!--   # geom_segment(aes(x = 5, y = -400, -->
+<!--   #                  xend = 8, yend = 0)) + -->
+<!--   # geom_segment(aes(x = 0, y = -425, -->
+<!--   #                  xend = -1.5, yend = -425)) + -->
+<!--   # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) + -->
+<!--   # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) + -->
+<!--   # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) + -->
+<!--   # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) + -->
+<!--   # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) + -->
+<!--   # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) + -->
+<!--   # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) + -->
+<!--   # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) + -->
+<!--   ggtitle("Temp (mean) vs Bathy - coloured by SplitRaw") -->
 
-TB_split <- ggplot(data = env,
-                      aes(x = temp_mean.tif,
-                          y = bathy.tif)) +
-  theme_classic() +
-  geom_point(aes(colour = Split),
-             size = 2) +
-  scale_colour_brewer(palette = "Paired") +
-  # geom_vline(xintercept = 0) +
-  # geom_segment(aes(x = 2, y = 0,
-  #                  xend = 2, yend = -675)) +
-  # geom_segment(aes(x = 0, y = -700,
-  #                  xend = 5, yend = -575)) +
-  # geom_segment(aes(x = 0, y = -700,
-  #                  xend = -1.5, yend = -700)) +
-  # geom_segment(aes(x = 0, y = -425,
-  #                  xend = 2, yend = -325)) +
-  # geom_segment(aes(x = 2, y = -500,
-  #                  xend = 5, yend = -400)) +
-  # geom_segment(aes(x = 5, y = -400,
-  #                  xend = 8, yend = 0)) +
-  # geom_segment(aes(x = 0, y = -425,
-  #                  xend = -1.5, yend = -425)) +
-  # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) +
-  # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) +
-  # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) +
-  # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) +
-  # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) +
-  # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) +
-  # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) +
-  # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) +
-  ggtitle("Temp (mean) vs Bathy - coloured by Split")
+<!-- TB_split <- ggplot(data = env, -->
+<!--                       aes(x = temp_mean.tif, -->
+<!--                           y = bathy.tif)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = Split), -->
+<!--              size = 2) + -->
+<!--   scale_colour_brewer(palette = "Paired") + -->
+<!--   # geom_vline(xintercept = 0) + -->
+<!--   # geom_segment(aes(x = 2, y = 0, -->
+<!--   #                  xend = 2, yend = -675)) + -->
+<!--   # geom_segment(aes(x = 0, y = -700, -->
+<!--   #                  xend = 5, yend = -575)) + -->
+<!--   # geom_segment(aes(x = 0, y = -700, -->
+<!--   #                  xend = -1.5, yend = -700)) + -->
+<!--   # geom_segment(aes(x = 0, y = -425, -->
+<!--   #                  xend = 2, yend = -325)) + -->
+<!--   # geom_segment(aes(x = 2, y = -500, -->
+<!--   #                  xend = 5, yend = -400)) + -->
+<!--   # geom_segment(aes(x = 5, y = -400, -->
+<!--   #                  xend = 8, yend = 0)) + -->
+<!--   # geom_segment(aes(x = 0, y = -425, -->
+<!--   #                  xend = -1.5, yend = -425)) + -->
+<!--   # annotate(geom = "text", x = -1, y = -1500, label = "1", size = 7) + -->
+<!--   # annotate(geom = "text", x = -1, y = -75, label = "2", size = 7) + -->
+<!--   # annotate(geom = "text", x = 2.5, y = -1000, label = "3", size = 7) + -->
+<!--   # annotate(geom = "text", x = 1, y = -550, label = "4", size = 7) + -->
+<!--   # annotate(geom = "text", x = 0.5, y = -250, label = "5", size = 7) + -->
+<!--   # annotate(geom = "text", x = 6, y = -500, label = "6", size = 7) + -->
+<!--   # annotate(geom = "text", x = 4.5, y = -250, label = "7", size = 7) + -->
+<!--   # annotate(geom = "text", x = 1.1, y = 50, label = "8", size = 7) + -->
+<!--   ggtitle("Temp (mean) vs Bathy - coloured by Split") -->
 
-EN_split <- ggplot(data = env,
-              aes(x = coords.x1,
-                  y = coords.x2)) +
-  theme_classic() +
-  geom_point(aes(colour = Split),
-             size = 2) +
-  scale_colour_brewer(palette = "Paired") +
-  ggtitle("Easting vs Northing - coloured by Split")
+<!-- EN_split <- ggplot(data = env, -->
+<!--               aes(x = coords.x1, -->
+<!--                   y = coords.x2)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = Split), -->
+<!--              size = 2) + -->
+<!--   scale_colour_brewer(palette = "Paired") + -->
+<!--   ggtitle("Easting vs Northing - coloured by Split") -->
 
-EN_split + TB_split
-
-
-
-```
-
-### Coordinates coloured by GNMDS1 & 2
-```{r}
-EN1 <- ggplot(data = env,
-              aes(x = coords.x1,
-                  y = coords.x2)) +
-  theme_classic() +
-  geom_point(aes(colour = gnmds1),
-             size = 2) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
-  ggtitle("Easting vs Northing - coloured by GNMDS1")
-
-EN2 <- ggplot(data = env,
-              aes(x = coords.x1,
-                  y = coords.x2)) +
-  theme_classic() +
-  geom_point(aes(colour = gnmds2),
-             size = 2) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
-  ggtitle("Easting vs Northing - coloured by GNMDS2")
-
-EN_temp <- ggplot(data = env,
-              aes(x = coords.x1,
-                  y = coords.x2)) +
-  theme_classic() +
-  geom_point(aes(colour = temp_mean.tif),
-             size = 2) +
-  scale_colour_gradient2(low = "Blue",
-                         mid = "yellow",
-                         high = "red",
-                         midpoint = 4) +
-  ggtitle("Easting vs Northing - coloured by temp")
-
-EN1 + EN2
-```
+<!-- EN_split + TB_split -->
 
 
-## Convert to r script
-```{r}
-library(knitr)
-knitr::purl(input = "first-run.Rmd",
-            output = "first-run.r")
-```
+
+<!-- ``` -->
+
+<!-- ### Coordinates coloured by GNMDS1 & 2 -->
+<!-- ```{r} -->
+<!-- EN1 <- ggplot(data = env, -->
+<!--               aes(x = coords.x1, -->
+<!--                   y = coords.x2)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = gnmds1), -->
+<!--              size = 2) + -->
+<!--   scale_colour_gradient2(low = "red", -->
+<!--                          mid = "yellow", -->
+<!--                          high = "green") + -->
+<!--   ggtitle("Easting vs Northing - coloured by GNMDS1") -->
+
+<!-- EN2 <- ggplot(data = env, -->
+<!--               aes(x = coords.x1, -->
+<!--                   y = coords.x2)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = gnmds2), -->
+<!--              size = 2) + -->
+<!--   scale_colour_gradient2(low = "red", -->
+<!--                          mid = "yellow", -->
+<!--                          high = "green") + -->
+<!--   ggtitle("Easting vs Northing - coloured by GNMDS2") -->
+
+<!-- EN_temp <- ggplot(data = env, -->
+<!--               aes(x = coords.x1, -->
+<!--                   y = coords.x2)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = temp_mean.tif), -->
+<!--              size = 2) + -->
+<!--   scale_colour_gradient2(low = "Blue", -->
+<!--                          mid = "yellow", -->
+<!--                          high = "red", -->
+<!--                          midpoint = 4) + -->
+<!--   ggtitle("Easting vs Northing - coloured by temp") -->
+
+<!-- EN1 + EN2 -->
+<!-- ``` -->
+
+
+<!-- ## Convert to r script -->
+<!-- ```{r} -->
+<!-- library(knitr) -->
+<!-- knitr::purl(input = "first-run.Rmd", -->
+<!--             output = "first-run.r") -->
+<!-- ``` -->
 
