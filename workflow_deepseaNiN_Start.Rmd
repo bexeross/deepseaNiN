@@ -697,7 +697,7 @@ env$MLDmax_bathy<-cut(env$MLDmax_bathy,
 ### Correlation ordination axes and environmental variables
 #### Removing non-env vars
 ```{r}
-env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy #categorical
+env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy, #categorical
                            optional, #not a var
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
                            MLDsd_Robinson #not meaningful
@@ -753,10 +753,11 @@ write.csv(x = cor_tab,
 
 ```{r}
 cor_a1_sort<-cor_tab%>%
-  mutate(abs_ord_ax1=abs(ord_ax1)) %>%
+  mutate(abs_ord_ax1=abs(ord_ax1),
+         abs_ord_ax2=abs(ord_ax2)) %>%
   arrange(desc(abs_ord_ax1))
 
-dotchart(cor_a1_sort$abs_ord_ax1)
+dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
 cor_cut<-0.33 #decide
 
