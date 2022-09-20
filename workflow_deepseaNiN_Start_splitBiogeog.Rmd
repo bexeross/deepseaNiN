@@ -1,0 +1,149 @@
+---
+title: "MAREANO - NiN:splitting biogeographic regions"
+output: html_notebook
+---
+
+Asssumes you have aready run:
+- config
+- workflow_deepseaNiN_Start
+
+You now have the objects needed to explore the dataset and find the best way to apply biogeographic splits. This is a pre-step before running the workflow again on the split dataset to explore possible LKMs.
+
+# Finding Regional (biogeographic) Splits
+
+This requires exploring the dataset to theorise the best ways to split the data with:
+- environmental biplots/colourings
+
+
+then applying the splits. 
+
+
+## Exploring biplots
+#### add axis vals, sampNo to env_os_m
+
+```{r}
+env_sub_meta<-env_os_m
+
+env_sub_meta$gnmds1 <- otu_6$gnmds1
+env_sub_meta$gnmds2 <- otu_6$gnmds2
+env_sub_meta$SampID <- otu_6$SampID
+env_sub_meta$X <- env$X.y
+```
+### Plots with continuous colour scales (variables)
+
+#### Plot var vs var with gnmds ax1 colours
+##### Bathy v Temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 1000 rep axis 1")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
+##### Salinity v Temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Smax_Robinson,
+                          y = Tmean_Robinson)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Temp (mean Robinson) vs Salinity (max Robinson) - coloured by gnmds r6 1000 rep axis 1")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/tempRmean_v_salinityRmax_nmds1.png"),
+       device = "png",
+       dpi=300 )
+```
+
+
+##### X v Y - temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),
+             size = 2) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Geography (X v Y) - coloured by mean temp")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/X_v_Y_tmeanR.png"),
+       device = "png",
+       dpi=300 )
+```
+
+##### X v Y - density
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = swDensRob_avs),
+             size = 1) +
+  #scale_colour_gradient2(low = "red",
+  #                       mid = "yellow",
+  #                       high = "green") +
+  ggtitle("Geography (X v Y) - coloured by mean temp")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/X_v_Y_swDenRobavs.png"),
+       device = "png",
+       dpi=800 )
+```
+
+##### Temp v disoxltmin
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = BO22_dissoxltmin_bdmean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),
+             size = 1) +
+  scale_colour_gradient2(low = "red",
+                         mid = "yellow",
+                         high = "green") +
+  ggtitle("Temp (mean Robinson) v disox lt min - coloured by gnmds axis 1")
+
+tb_ax1
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_gnmds1.png"),
+       device = "png",
+       dpi=300 )
+Sys.time()
