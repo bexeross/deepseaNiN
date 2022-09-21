@@ -964,4 +964,204 @@ ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel_cln.png"),
        device = "png",
        dpi=300 )
 ```
+### Categorical envVar visualised on the mdsplots
 
+#### use dataset with categorical var included
+
+```{r}
+env_vis<-env
+env_vis$gnmds1 <- otu_6$gnmds1
+env_vis$gnmds2 <- otu_6$gnmds2
+```
+
+#### gnmds w mld mean - bathy
+```{r}
+p_mld <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by proximity to mixed layer depth",
+          subtitle = "First run") +
+  geom_point(aes(colour = MLDmean_bathy)) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_mld
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/gnmds_MLDmeanBathy.png"),
+       device = "png",
+       dpi=300 )
+```
+#### gnmds w sedclass
+##### deal with sedclass codes
+```{r}
+env_vis<- env_vis %>% 
+  mutate(
+    sedclassName = case_when(
+            sedclass == "1" ~ "SedCoverR",
+            sedclass == "5" ~ "Rock",
+            sedclass == "20" ~ "Mud",
+            sedclass == "21" ~ "MwBlock",
+            sedclass == "40" ~ "sMud",
+            sedclass == "80" ~ "mSand",
+            sedclass == "100" ~ "Sand",
+            sedclass == "110" ~ "gMud",
+            sedclass == "115" ~ "gsMud",
+            sedclass == "120" ~ "gmSand",
+            sedclass == "130" ~ "gSand",
+            sedclass == "150" ~ "MSG",
+            sedclass == "160" ~ "sGravel",
+            sedclass == "170" ~ "Gravel",
+            sedclass == "175" ~ "GravBlock",
+            sedclass == "185" ~ "SGBmix",
+            sedclass == "205" ~ "S/MwB",
+            sedclass == "206" ~ "S/MwG/B",
+            sedclass == "215" ~ "SGBalt",
+            sedclass == "300" ~ "HardSed",
+            sedclass == "500" ~ "Biogenic"
+                        
+    )
+  )
+```
+
+###### colour palette to cope with up to 25 categorical colours
+```{r}
+c25 <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+```
+
+
+
+
+```{r}
+
+p_sed <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sediment class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedclassName))) +
+   scale_colour_manual(values=c25)+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_sed
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/gnmds_sedclass.png"),
+       device = "png",
+       dpi=300 )
+```
+#### gnmds w lanscape
+##### deal with sedclass codes
+```{r}
+env_vis<- env_vis %>% 
+  mutate(
+    landscapeName = case_when(
+            landscape == "1" ~ "Strandflat",
+            landscape == "21" ~ "ContSlope",
+            landscape == "22" ~ "Canyon",
+            landscape == "31" ~ "Valley",
+            landscape == "32" ~ "Fjord",
+            landscape == "41" ~ "DeepPlain",
+            landscape == "42" ~ "SlopePlain",
+            landscape == "43" ~ "ShelfPlain",
+            landscape == "431" ~ "shallowValley"
+    )
+  )
+```
+
+
+```{r}
+
+p_land <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(landscapeName))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_land
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/gnmds_landscape.png"),
+       device = "png",
+       dpi=300 )
+```
+
+#### Gnmds w gmorph
+```{r}
+
+p_gmo <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(gmorph))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_gmo
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/gnmds_gmorph.png"),
+       device = "png",
+       dpi=300 )
+```
+
+```{r}
+cat_var_plots<-p_mld+p_sed+p_land+p_gmo
+```
+##### Save the plot
+```{r}
+ggexport(cat_var_plots,
+          filename = file.path(dataPath,"outputs/gnmds_catvar.png"),
+          width = 1000,
+          height = 800)
+```
