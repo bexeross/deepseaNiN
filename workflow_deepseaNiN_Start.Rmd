@@ -782,6 +782,11 @@ cor_a1_sort<-cor_tab%>%
          abs_ord_ax2=abs(ord_ax2)) %>%
   arrange(desc(abs_ord_ax1))
 
+cor_a2_sort<-cor_tab%>%
+  mutate(abs_ord_ax1=abs(ord_ax1),
+         abs_ord_ax2=abs(ord_ax2)) %>%
+  arrange(desc(abs_ord_ax2))
+
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
 cor_cut<-0.35 #decide
