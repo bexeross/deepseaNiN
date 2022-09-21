@@ -32,9 +32,7 @@ env_sub_meta$X <- env$X.y
 ### Plots with continuous colour scales (variables)
 
 
-
-#### Plot var vs var with gnmds ax1 colours
-##### Bathy v Temp
+##### Bathy v Temp w gnmds ax 1
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
@@ -55,6 +53,71 @@ ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
+##### Bathy v Temp w salinity
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = Smax_Robinson),
+             size = 1) +
+  scale_colour_gradientn(limits = c(34.4, 35.45),
+                        colors=c('green','yellow','blue'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by salinity")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_salinityMax.png"),
+       device = "png",
+       dpi=300 )
+```
+
+##### Bathy v Temp w latitude
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = Y),
+             size = 1) +
+  scale_colour_gradientn(limits = c(6944134, 8949734),
+                        colors=c('red','yellow','blue'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by latitude")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_latitude.png"),
+       device = "png",
+       dpi=300 )
+```
+##### Bathy v Temp w longitude
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = X.y),
+             size = 1) +
+  scale_colour_gradientn(limits = c(-107938, 1162261),
+                        colors=c('red','yellow','blue'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by longitude")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_longitude.png"),
+       device = "png",
+       dpi=300 )
+```
+
 ##### Bathy v Salinity coloured by temp
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
@@ -164,7 +227,7 @@ ggsave(filename = file.path(dataPath,"outputs/X_v_Y_swDenRobavs.png"),
        dpi=800 )
 ```
 
-##### Temp v disoxltmin
+##### Temp v disoxltmin gnmds
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
@@ -183,6 +246,29 @@ tb_ax1
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_gnmds1.png"),
+       device = "png",
+       dpi=300 )
+
+```
+##### Temp v disoxltmin gnmds
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson,
+                          y = BO22_dissoxmean_bdmean)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),
+             size = 1) +
+  scale_colour_gradientn(limits = c(-2750, 0),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) v disox mean - coloured by bathymetry")
+
+tb_ax1
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_bathy.png"),
        device = "png",
        dpi=300 )
 
