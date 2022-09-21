@@ -308,14 +308,20 @@ ggsave(filename = file.path(dataPath,"outputs/XvY_MLDmeanBathy.png"),
        dpi=300 )
 
 ```
-#### X v Y with gnmds ax 1 as HC categories
+
+### categorise gnmds
+
 ```{r}
 env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
-      breaks=c(-3.2, -3,-2,-1,0,1,2,3,3.46))
+      breaks=c(-3.2,-3,-2,-1,0,1,2,3,3.46))
 
-env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
-      breaks=c(-3.2, -3,-2,-1,0,1,2,3,3.46))
+env_sub_meta$ax2cat<-cut(env_sub_meta$gnmds2, 
+      breaks=c(-1.9,-1,0,1,2,3,4,4.9))
+```
 
+
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
 dis_split <- ggplot(data = env_sub_meta,
               aes(x = X.y,
                   y = Y)) +
@@ -324,7 +330,7 @@ dis_split <- ggplot(data = env_sub_meta,
              size = 1) +
  # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
   scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by Mixed layer depth proximity")
+  ggtitle("Easting vs Northing - coloured by gnmds axis 1 HC units")
 
 dis_split
 
@@ -333,6 +339,30 @@ dis_split
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/XvY_ax1cat.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+#### X v Y with gnmds ax 2 as HC categories
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = ax2cat),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by gnmds axis 2 HC units")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/XvY_ax2cat.png"),
        device = "png",
        dpi=300 )
 
