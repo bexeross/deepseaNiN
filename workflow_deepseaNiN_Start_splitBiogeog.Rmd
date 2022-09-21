@@ -31,6 +31,8 @@ env_sub_meta$X <- env$X.y
 ```
 ### Plots with continuous colour scales (variables)
 
+
+
 #### Plot var vs var with gnmds ax1 colours
 ##### Bathy v Temp
 ```{r}
@@ -39,11 +41,10 @@ tb_ax1<- ggplot(data = env_sub_meta,
                           y = bathy)) +
   theme_classic() +
   geom_point(aes(colour = gnmds1),
-             size = 2) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 1000 rep axis 1")
+             size = 1) +
+  scale_colour_gradientn(limits = c(-3, 3),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 200 rep axis 1")
 
 tb_ax1
 
@@ -54,18 +55,39 @@ ggsave(filename = file.path(dataPath,"outputs/bathy_v_temp_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
-##### Salinity v Temp
+##### Bathy v Salinity coloured by temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Smax_Robinson,
+                          y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),
+             size = 1) +
+  scale_colour_gradientn(limits = c(-2, 10),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Salinity (max Robinson) vs Bathy - coloured by av Temp (R)")
+
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/bathy_v_salMax_temp.png"),
+       device = "png",
+       dpi=300 )
+```
+
+##### Salinity v Temp gnmds1
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Smax_Robinson,
                           y = Tmean_Robinson)) +
   theme_classic() +
   geom_point(aes(colour = gnmds1),
-             size = 2) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
-  ggtitle("Temp (mean Robinson) vs Salinity (max Robinson) - coloured by gnmds r6 1000 rep axis 1")
+             size = 1) +
+scale_colour_gradientn(limits = c(-3, 3),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by gnmds r6 200 rep axis 1")
 
 tb_ax1
 
@@ -76,7 +98,27 @@ ggsave(filename = file.path(dataPath,"outputs/tempRmean_v_salinityRmax_nmds1.png
        device = "png",
        dpi=300 )
 ```
+##### Salinity v Temp dissoxmean
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Smax_Robinson,
+                          y = Tmean_Robinson)) +
+  theme_classic() +
+  geom_point(aes(colour = BO22_dissoxmean_bdmean),
+             size = 1) +
+scale_colour_gradientn(limits = c(285, 375),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by dissolved oxygen")
 
+tb_ax1
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/tempRmean_v_salinityRmax_disooxmean.png"),
+       device = "png",
+       dpi=300 )
+```
 
 ##### X v Y - temp
 ```{r}
@@ -85,10 +127,9 @@ tb_ax1<- ggplot(data = env_sub_meta,
                           y = Y)) +
   theme_classic() +
   geom_point(aes(colour = Tmean_Robinson),
-             size = 2) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
+             size = 1) +
+  scale_colour_gradientn(limits = c(-2, 10),
+                        colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by mean temp")
 
 tb_ax1
@@ -109,10 +150,9 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = swDensRob_avs),
              size = 1) +
-  #scale_colour_gradient2(low = "red",
-  #                       mid = "yellow",
-  #                       high = "green") +
-  ggtitle("Geography (X v Y) - coloured by mean temp")
+  scale_colour_gradientn(limits = c(1027, 1041),
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by water density")
 
 tb_ax1
 
@@ -128,14 +168,13 @@ ggsave(filename = file.path(dataPath,"outputs/X_v_Y_swDenRobavs.png"),
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
-                          y = BO22_dissoxltmin_bdmean)) +
+                          y = BO22_dissoxmean_bdmean)) +
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradient2(low = "red",
-                         mid = "yellow",
-                         high = "green") +
-  ggtitle("Temp (mean Robinson) v disox lt min - coloured by gnmds axis 1")
+  scale_colour_gradientn(limits = c(-3, 3),
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) v disox mean - coloured by gnmds axis 1")
 
 tb_ax1
 
@@ -146,4 +185,5 @@ tb_ax1
 ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_gnmds1.png"),
        device = "png",
        dpi=300 )
-Sys.time()
+
+```
