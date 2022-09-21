@@ -29,7 +29,14 @@ env_sub_meta$gnmds2 <- otu_6$gnmds2
 env_sub_meta$SampID <- otu_6$SampID
 env_sub_meta$X <- env$X.y
 ```
-### Plots with continuous colour scales (variables)
+### a colour palette for discrete plots (see later in script)
+
+```{r}
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+
+### Plots with CONTINUOUS colour scales (variables)
 
 
 ##### Bathy v Temp w gnmds ax 1
@@ -269,6 +276,63 @@ tb_ax1
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/TmeanR_v_dissoxltmin_bathy.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+
+
+### Plots with DISCRETE colour scales (variables)
+
+#### X v Y with mld-bathy categories
+```{r}
+dis_split <- ggplot(data = env,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = MLDmean_bathy),
+             size = 1) +
+  scale_colour_manual(values=cbPalette)+
+ # scale_colour_brewer(palette = "Set3") +
+  ggtitle("Easting vs Northing - coloured by Mixed layer depth proximity")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/XvY_MLDmeanBathy.png"),
+       device = "png",
+       dpi=300 )
+
+```
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
+      breaks=c(-3.2, -3,-2,-1,0,1,2,3,3.46))
+
+env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
+      breaks=c(-3.2, -3,-2,-1,0,1,2,3,3.46))
+
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = ax1cat),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by Mixed layer depth proximity")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/XvY_ax1cat.png"),
        device = "png",
        dpi=300 )
 
