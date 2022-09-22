@@ -429,7 +429,17 @@ plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
 MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
 MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
 ```
+###Save datasets
+```{r}
+write.csv(NSotu_sort, file=file.path(dataPath,(paste0("inputs/NSotu_sort_", Sys.Date(),".csv"))))
+write.csv(NSenv_sort, file=file.path(dataPath,(paste0("inputs/NSenv_sort_", Sys.Date(),".csv"))))
 
+write.csv(FCotu_sort, file=file.path(dataPath,(paste0("inputs/FCotu_sort_", Sys.Date(),".csv"))))
+write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
+write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
+```
 
 
 
