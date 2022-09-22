@@ -17,6 +17,12 @@ This requires exploring the dataset to theorise the best ways to split the data 
 
 then applying the splits. 
 
+### Libraries
+```{r}
+library(plotly)
+```
+
+
 
 ## Exploring biplots
 #### add axis vals, sampNo to env_os_m
@@ -202,7 +208,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by mean temp")
 
-tb_ax1
+ggplotly(tb_ax1)
 
 ```
 ##### Save the plot
@@ -360,6 +366,9 @@ dis_split
 
 ```
 
+
+
+
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/XvY_ax2cat.png"),
@@ -367,3 +376,64 @@ ggsave(filename = file.path(dataPath,"outputs/XvY_ax2cat.png"),
        dpi=300 )
 
 ```
+
+
+# Selecting geographic subsets
+This is to explore thresholds/relationships locally. E.g. To look for threshold values/ local relationships before deciding on splits. You need to already have a theory that you want to test in order to select the geographic regions to look at.
+
+In this instance, for example, we are interested in at least making one split (into 2 groups) by temperature. We expect this to separate the shelf data from the combined deep/arctic data. We therefore should have a look at at least 3 areas: 
+- the slope off lofoten (Norland VI/Norland VII) to see the temperature gradient with depth
+- the finmark coast from Tromsøflaket to the southern end of Mareano Øst to follow the temperature gradient east into the Barents sea
+- the MAREANO Øst region where we can follow a temperature gradient from the coast North into arctic water
+
+### Choose area:
+Choosing the exact areas can be done using the interactive "ggplotly" XY map of temperature to zoom in on the area concerned and note the bounding box values to use.
+
+That is reproduced here:
+##### X v Y - temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),
+             size = 1) +
+  scale_colour_gradientn(limits = c(-2, 10),
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by mean temp")
+
+ggplotly(tb_ax1)
+```
+
+This gives us the following bounding box selections
+
+NorlandSlope: X:205261 - 364461, Y: 743294 - 7621734
+FinnmarkCoast: X: 599461 - 1138061, Y: 7794534 - 8013534
+MareanoØst: X: 1009861 - 1162261, Y: 7834134 - 8505934
+
+## Make data subsets to explore:
+
+```{r}
+NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
+plot(NorlandSlopeJoinedDat$X.y, NorlandSlopeJoinedDat$Y)
+NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:351))
+NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,352:491))
+
+FinnmarkCoastJoinedDat<-subset(joinedDat, X.y>599461 & X.y<1138061 & Y>7794534 & Y<8013534)
+plot(FinnmarkCoastJoinedDat$X.y, FinnmarkCoastJoinedDat$Y)
+FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:351))
+FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,352:491))
+
+MareanoØstJoinedDat<-subset(joinedDat, X.y>1009861 & X.y<1162261 & Y>7834134 & Y<8505934)
+plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
+MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
+MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
+```
+
+
+
+
+
+
+
+
