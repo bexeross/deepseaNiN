@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN: Finnmark Coast Run"
+title: "MAREANO - NiN: Norland Slope Run"
 authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
