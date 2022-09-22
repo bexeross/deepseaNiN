@@ -1165,3 +1165,26 @@ ggexport(cat_var_plots,
           width = 1000,
           height = 800)
 ```
+
+#### Sample identification in the mdsplot
+
+```{r}
+p_gmo <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(SampID))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=FALSE, size=FALSE)
+
+ggplotly(p_gmo)
+```
+
