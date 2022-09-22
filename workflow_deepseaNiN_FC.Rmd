@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN: First run"
+title: "MAREANO - NiN: Finnmark Coast Run"
 authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -37,41 +37,14 @@ library(oce)
 source("gg_ordisurf_viridis.R")
 ```
 
-## Load R objects from previous runs if needed
-
-Only do this if you have already run this script and would like to avoid rerunning the longer steps
-```{r}
-geodist_pa<-readRDS(file.path(dataPath,"inputs/geodist_pa.rds"))
-geodist_r6<-readRDS(file.path(dataPath,"inputs/geodist_r6.rds"))
-
-mds_pa<-readRDS(file.path(dataPath,"inputs/mds_pa.rds"))
-mds_r6<-readRDS(file.path(dataPath,"inputs/mds_r6.rds"))
-mds_r6_1000<-readRDS(file.path(dataPath,"inputs/mds_r6_1000rep.rds"))
-
-ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
-```
-
 
 ## Data
 ```{r}
 
-env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
-
-#left join and split to ensure ordered identically
-
-#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
-joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
-
-otu_sort<-joinedDat %>% select(c(2:351))
-env_sort<-joinedDat %>% select(c(2,352:491))
-
-# Sorting and ordering by SampID
-# env_orig <- env_orig[order(env_orig$SampID), ]
-# otu_orig <- otu_orig[order(otu_orig$SampID), ]
+env_sort <- read.csv(file.path(dataPath,"inputs/FCenv_sort_2022-09-22.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/FCotu_sort_2022-09-22.csv")) %>% as.data.frame
 
 table(env_sort$SampID2 == otu_sort$SampID)
-
 
 #must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
 
@@ -191,7 +164,7 @@ env.invSel_locations
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1)]
-env<-envSel[, -c(2:22)]
+env<-envSel[, -c(1,3:23)]
 
 table(is.na(otu))
 
@@ -296,12 +269,13 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/FCgeodist_pa.rds")))
 ```
 
 #### Ordination
 
 #### monoMDS - don't run if loading saved object
+takes a couple of minutes
 ```{r}
 
 Sys.time()
@@ -324,7 +298,7 @@ for (i in 1:100) {
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/mds_pa.rds"))
+        file = file.path(dataPath,"inputs/FCmds_pa.rds"))
 ```
 
 
@@ -375,7 +349,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"outputs/procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/FCprocrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -405,7 +379,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCcorrelationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -435,14 +409,14 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/FCgeodist_r6.rds")))
 ```
 
 
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-took 20mins
+took 30 secs
 ```{r}
 # monoMDS
 d <- 2
@@ -465,7 +439,7 @@ Sys.time()
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/FCmds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -511,7 +485,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/FCprocrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -619,7 +593,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCcorrelationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -672,7 +646,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/FCgnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -771,7 +745,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/FCcor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -823,17 +797,17 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 5,
-                         ncol = 3)
+                         nrow = 4,
+                         ncol = 4)
 
 ordsrfs_plt
 ```
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/FCordisurfs_top_corr.png"),
           width = 2000,
-          height = 3000)
+          height = 2000)
 
 ```
 
@@ -844,8 +818,8 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
+                  #"BO22_icecoverltmax_ss",#top corr ax2
+                 # "BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "BO22_ppltmin_ss", #top corr
@@ -891,7 +865,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/ordisurfs_man_sel.png"),
+          filename = file.path(dataPath,"outputs/FCordisurfs_man_sel.png"),
           width = 2000,
           height = 2000)
 
@@ -907,7 +881,7 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
+                #  "BO22_icecoverltmax_ss",#top corr ax2
                #   "BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
@@ -928,7 +902,7 @@ colnames(env_os_m_envfit)<-c("TmeanR", #top corr
                   "salt_max", #top corr
                   "SmaxR", #comparison to top corr
                   "swDensR", #top corr
-                  "icecovmax",#top corr ax2
+               #   "icecovmax",#top corr ax2
                #   "icecovav",#top corr
                   "dissoxav",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
@@ -960,7 +934,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/EnvFit_man_sel_cln.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCEnvFit_man_sel_cln.png"),
        device = "png",
        dpi=300 )
 ```
@@ -995,7 +969,7 @@ p_mld
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/gnmds_MLDmeanBathy.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCgnmds_MLDmeanBathy.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1076,7 +1050,7 @@ p_sed
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/gnmds_sedclass.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCgnmds_sedclass.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1122,7 +1096,7 @@ p_land
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/gnmds_landscape.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCgnmds_landscape.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1150,7 +1124,7 @@ p_gmo
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/gnmds_gmorph.png"),
+ggsave(filename = file.path(dataPath,"outputs/FCgnmds_gmorph.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1161,7 +1135,7 @@ cat_var_plots<-p_mld+p_sed+p_land+p_gmo
 ##### Save the plot
 ```{r}
 ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/gnmds_catvar.png"),
+          filename = file.path(dataPath,"outputs/FCgnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
