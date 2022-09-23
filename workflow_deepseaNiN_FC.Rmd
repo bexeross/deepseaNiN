@@ -31,7 +31,8 @@ library(ggrepel)
 library(ggordiplots)
 library(readr)
 library(RColorBrewer)
-library(oce) 
+library(oce)
+library(plotly)
 
 
 source("gg_ordisurf_viridis.R")
