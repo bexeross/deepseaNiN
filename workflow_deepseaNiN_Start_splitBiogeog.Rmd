@@ -416,6 +416,8 @@ Additional selections made after investigating these three areas were made to ch
 SvalbardSlope: X: 361061 - 561862, Y: 7915734 - 8782734
 MøreSlope: X: -47738 - 93861, Y: 6976734 - 7234534
 
+After these explorations it was decided to generate a subset by density. A threshold of 1031.8 was used to split the dataset.
+
 ## Make data subsets to explore:
 
 ```{r}
@@ -446,6 +448,25 @@ plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
 MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
 MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
 
+#density split 1031.8 threshold:
+
+joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
+                         temperature=joinedDat$Tmean_Robinson,
+                         pressure=(joinedDat$bathy*-1),
+                         eos="unesco")
+
+loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1031.8)
+plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
+LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:351))
+LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,352:491))                                
+
+
+hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.8)
+plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
+HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:351))
+HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,352:491))  
+
+
 ```
 ###Save datasets
 ```{r}
@@ -465,6 +486,15 @@ write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.
 
 write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
 write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
+
+### density splits
+
+write.csv(HDensDeep_otu_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_otu_sort_", Sys.Date(),".csv"))))
+write.csv(HDensDeep_env_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_env_sort_", Sys.Date(),".csv"))))
+
+write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_otu_sort_", Sys.Date(),".csv"))))
+write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_env_sort_", Sys.Date(),".csv"))))
+
 ```
 
 
