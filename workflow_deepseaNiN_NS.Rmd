@@ -31,7 +31,8 @@ library(ggrepel)
 library(ggordiplots)
 library(readr)
 library(RColorBrewer)
-library(oce) 
+library(oce)
+library(plotly)
 
 
 source("gg_ordisurf_viridis.R")
@@ -275,7 +276,7 @@ saveRDS(geodist_pa,
 #### Ordination
 
 #### monoMDS - don't run if loading saved object
-takes a couple of minutes
+takes 10 secs
 ```{r}
 
 Sys.time()
@@ -416,7 +417,7 @@ saveRDS(geodist_r6,
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-took 30 secs
+took 20 secs
 ```{r}
 # monoMDS
 d <- 2
@@ -763,7 +764,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.35 #decide
+cor_cut<-0.4 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -798,7 +799,7 @@ for (i in seq(ncol(env_os))) {
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
                          nrow = 4,
-                         ncol = 4)
+                         ncol = 3)
 
 ordsrfs_plt
 ```
@@ -806,7 +807,7 @@ ordsrfs_plt
 ```{r}
 ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/NSordisurfs_top_corr.png"),
-          width = 2000,
+          width = 1500,
           height = 2000)
 
 ```
@@ -885,35 +886,35 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                #   "BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
+                #  "BO22_ppltmin_ss", #top corr
                   "X.y", #comparison to Y
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                 # "spd_std", #top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
+                 # "BO22_silicateltmax_bdmean", #just under top corr ax1
                   "bathy" #intuitive for comparisons
                 
   
 )]
 
-colnames(env_os_m_envfit)<-c("TmeanR", #top corr
-                  "salt_max", #top corr
+colnames(env_os_m_envfit)<-c("T", #top corr
+                  "Smx", #top corr
                   "SmaxR", #comparison to top corr
                   "swDensR", #top corr
                #   "icecovmax",#top corr ax2
                #   "icecovav",#top corr
                   "dissoxav",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "ppltmin", #top corr
+                #  "ppltmin", #top corr
                   "X", #comparison to Y
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                  #"spd_std", #top corr ax2 (blended model)
                   "CSpdsdR", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "SiLtmax", #just under top corr ax1
+                 # "SiLtmax", #just under top corr ax1
                   "bathy" #intuitive for comparisons
                  )
 
