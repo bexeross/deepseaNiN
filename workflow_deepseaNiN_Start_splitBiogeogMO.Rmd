@@ -41,6 +41,12 @@ env_sub_meta$X <- env$X.y
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 ```
 
+### Find min max of vars for scales
+```{r}
+summary(env_sub_meta)
+```
+
+
 
 ### Plots with CONTINUOUS colour scales (variables)
 
@@ -53,7 +59,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradientn(limits = c(-2.1, 2.2),
+  scale_colour_gradientn(limits = c(-1.42, 1.42),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 200 rep axis 1")
 
@@ -74,7 +80,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Smax_Robinson),
              size = 1) +
-  scale_colour_gradientn(limits = c(34.6, 35.3),
+  scale_colour_gradientn(limits = c(34.14, 35.85),
                         colors=c('green','yellow','blue'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by salinity")
 
@@ -90,24 +96,24 @@ ggsave(filename = file.path(dataPath,"outputs/MObathy_v_temp_salinityMax.png"),
 
 
 
-##### Bathy v Temp w longitude
+##### Bathy v Temp w latitude
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
                       aes(x = Tmean_Robinson,
                           y = bathy)) +
   theme_classic() +
-  geom_point(aes(colour = X.y),
+  geom_point(aes(colour = Y),
              size = 1) +
-  scale_colour_gradientn(limits = c(599461, 1138061),
+  scale_colour_gradientn(limits = c(7834134, 8505934),
                         colors=c('red','yellow','blue'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by longitude")
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by latitude")
 
 tb_ax1
 
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/MObathy_v_temp_longitude.png"),
+ggsave(filename = file.path(dataPath,"outputs/MObathy_v_temp_latitude.png"),
        device = "png",
        dpi=300 )
 ```
@@ -120,7 +126,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Tmean_Robinson),
              size = 1) +
-  scale_colour_gradientn(limits = c(3.9, 7.1),
+  scale_colour_gradientn(limits = c(0.5, 5.6),
                         colors=c('red','yellow','green'))+
   ggtitle("Salinity (max Robinson) vs Bathy - coloured by av Temp (R)")
 
@@ -142,7 +148,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-scale_colour_gradientn(limits = c(-2.1, 2.2),
+scale_colour_gradientn(limits = c(-1.41, 1.42),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by gnmds r6 200 rep axis 1")
 
@@ -163,7 +169,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_dissoxmean_bdmean),
              size = 1) +
-scale_colour_gradientn(limits = c(294, 308),
+scale_colour_gradientn(limits = c(303, 342),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by dissolved oxygen")
 
@@ -185,7 +191,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Tmean_Robinson),
              size = 1) +
-  scale_colour_gradientn(limits = c(4, 7),
+  scale_colour_gradientn(limits = c(0.5, 5.6),
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by mean temp")
 
@@ -207,7 +213,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = swDensRob_avs),
              size = 1) +
-  scale_colour_gradientn(limits = c(1027.3, 1029.7),
+  scale_colour_gradientn(limits = c(1028, 1030),
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by water density")
 
@@ -229,7 +235,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradientn(limits = c(-2.1, 2.2),
+  scale_colour_gradientn(limits = c(-1.41, 1.42),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) v disox mean - coloured by gnmds axis 1")
 
@@ -252,7 +258,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = bathy),
              size = 1) +
-  scale_colour_gradientn(limits = c(-450, -35),
+  scale_colour_gradientn(limits = c(-450, -80),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) v disox mean - coloured by bathymetry")
 
