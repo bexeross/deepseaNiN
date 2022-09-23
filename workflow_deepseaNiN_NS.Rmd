@@ -1171,11 +1171,11 @@ T.mds<- ggplot(data = env_vis,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
-  geom_point(aes(colour = Tmean_Robinson),
+  geom_point(aes(colour = swDensRob_avs),
              size = 1) +
-  scale_colour_gradientn(limits = c(-0.6, 8.2),
+  scale_colour_gradientn(limits = c(1027.5, 1040.7),
                         colors=c('red','yellow','green'))+
-  ggtitle("Gnmds coloured by temp (NS)")
+  ggtitle("Gnmds coloured by dens (NS)")
 
 
 ggplotly(T.mds)
@@ -1184,10 +1184,10 @@ ggplotly(T.mds)
 ### Dotplot temperature
 
 ```{r}
-dotchart(env_vis$Tmean_Robinson, main="Dotchart of TmeanR at Norland Slope")
+dotchart(sort(env_vis$swDensRob_avs), main="Dotchart of dens at Norland Slope")
 ```
 
 ### Dotplot zoomed on 2-4*C
 ```{r}
-dotchart(env_vis$Tmean_Robinson, xlim=c(2,4),main="Dotchart of TmeanR between 2 and 4*C at Norland Slope")
+dotchart(sort(env_vis$swDensRob_avs), xlim=c(1031,1032),main="Dotchart of dens between 1031 and 1032 at Norland Slope")
 ```
