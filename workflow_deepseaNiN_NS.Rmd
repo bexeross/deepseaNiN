@@ -1180,5 +1180,14 @@ T.mds<- ggplot(data = env_vis,
 
 ggplotly(T.mds)
 ```
+
+### Dotplot temperature
+
+```{r}
+dotchart(env_vis$Tmean_Robinson, main="Dotchart of TmeanR at Norland Slope")
 ```
 
+### Dotplot zoomed on 2-4*C
+```{r}
+dotchart(env_vis$Tmean_Robinson, xlim=c(2,4),main="Dotchart of TmeanR between 2 and 4*C at Norland Slope")
+```
