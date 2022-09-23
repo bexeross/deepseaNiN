@@ -1,0 +1,64 @@
+---
+title: "Testing Multivariate Regression Trees"
+authors: Genoveva Gonzales-Mirelis, Thijs van Son, Rune Halvorsen, Rebecca Ross, Margaret Dolan
+date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_notebook: 
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    fig_width: 7
+    fig_height: 7
+always_allow_html: true 
+---
+
+## Packages
+Package ‘mvpart’ was removed from the CRAN repository.
+Formerly available versions can be obtained from
+https://cran.r-project.org/src/contrib/Archive/mvpart/
+you will need to download to your computer and then "install from file" before loading the library
+```{r}
+library(mvpart)
+library(dplyr)
+```
+
+## Load data
+copied entirely from "workflow_deepseaNiN_Start" blocks Data through Data cleaning
+```{r}
+env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
+
+#left join and split to ensure ordered identically
+
+#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
+
+otu_sort<-joinedDat %>% select(c(2:351))
+env_sort<-joinedDat %>% select(c(2,352:491))
+
+env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
+                               "BO22_lightbotltmax_bdmean",
+                               "BO22_lightbotltmin_bdmean",
+                               "BO22_lightbotrange_bdmean"))
+## Removing NAs
+otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:20)]), ]
+envCompl <- env_sort[complete.cases(env_sort[, -c(1:20)]), ]
+
+## Removing observations with less than 4 OTUs
+sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
+otuSel <- otuCompl[sel, ]
+envSel <- envCompl[sel, ]
+
+## Removing phosphate
+#envSel <- envSel %>% select(-phosphate_mean.tif)
+
+dim(otuSel); dim(envSel)
+```
+
+## Analysis
+```{r}
+Y=otuSel[,2:350]
+X=envSel[,which(colnames(envSel)=="bathy"):137] %>% select(-c("coords.x1", "coords.x2", "BO22_dissoxmean_bdmean", "BO22_dissoxrange_bdmean"))
+mvtree <- mvpart(data.matrix(Y) ~ ., data=cbind(X,Y), xv="1se", xvmult=100)
+mvtree
+```
