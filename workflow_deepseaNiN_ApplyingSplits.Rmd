@@ -52,7 +52,9 @@ MøreSlope: X: -47738 - 93861, Y: 6976734 - 7234534
 
 After these explorations it was decided to generate a subset by density. A threshold of 1031.8 was used to split the dataset.
 
-## Make data subsets to explore:
+## Make data subsets to explore
+
+### Geographic subsets to explore temp gradients
 
 ```{r}
 NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
@@ -70,8 +72,27 @@ plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
 MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
 MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
 
-### Second selections
 
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(NSotu_sort, file=file.path(dataPath,(paste0("inputs/NSotu_sort_", Sys.Date(),".csv"))))
+write.csv(NSenv_sort, file=file.path(dataPath,(paste0("inputs/NSenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(FCotu_sort, file=file.path(dataPath,(paste0("inputs/FCotu_sort_", Sys.Date(),".csv"))))
+write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
+write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
+
+```
+
+
+
+
+### Selections to explore deep temp splits
+```{r}
 SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
 plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
 SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
@@ -81,9 +102,24 @@ MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<72
 plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
 MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
 MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
+```
 
-#density split 1031.8 threshold:
+##### SAVE DATASETS
+```{r}
+write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
+write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
 
+write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
+write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
+```
+
+
+
+### Density threshold splits
+
+density split 1031.8 threshold
+
+```{r}
 joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
                          temperature=joinedDat$Tmean_Robinson,
                          pressure=(joinedDat$bathy*-1),
@@ -99,34 +135,46 @@ hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.8)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
 HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:351))
 HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,352:491))  
-
-
 ```
-###Save datasets
+
+
+##### SAVE DATASETS
 ```{r}
-write.csv(NSotu_sort, file=file.path(dataPath,(paste0("inputs/NSotu_sort_", Sys.Date(),".csv"))))
-write.csv(NSenv_sort, file=file.path(dataPath,(paste0("inputs/NSenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(FCotu_sort, file=file.path(dataPath,(paste0("inputs/FCotu_sort_", Sys.Date(),".csv"))))
-write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
-write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
-
-### second set
-
-write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
-write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
-write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
-
-### density splits
-
 write.csv(HDensDeep_otu_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_otu_sort_", Sys.Date(),".csv"))))
 write.csv(HDensDeep_env_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_env_sort_", Sys.Date(),".csv"))))
 
 write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_env_sort_", Sys.Date(),".csv"))))
+```
+
+### REMOVE SPITSBERGENBANKEN OUTLIERS FROM LowDens Dataset
+
+c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
+
+```{r}
+#SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
+
+plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
+
+loDensNoSBJoinedDat <-loDensShallowJoinedDat %>% filter(!(SampID %in% c("1805_01",
+                                                                        "1801_00",
+                                                                        "1802_02", 
+                                                                        "1799_01", 
+                                                                        "1803_00", 
+                                                                        "1798_02",
+                                                                        "1800_00",
+                                                                        "1995_00")))
+
+plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
+
+
+LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:351))
+LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,352:491))  
 
 ```
+##### SAVE DATASETS
+```{r}
+write.csv(LDensNoSB_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_otu_sort_", Sys.Date(),".csv"))))
+write.csv(LDensNoSB_env_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_env_sort_", Sys.Date(),".csv"))))
+```
+
