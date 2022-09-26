@@ -775,7 +775,7 @@ as.data.frame(cor_sel$env)
 ```
 
 
-### Sel env var (top corr)
+### Sel env var (top corr) ax1
 ```{r}
 env_os <- env[, cor_sel$env]
 env_os
@@ -784,7 +784,7 @@ str(env_os)
 ```
 
 
-### Ordisurfs top corr
+### Ordisurfs top corr ax 1
 ```{r}
 ordsrfs <- list(length = ncol(env_os))
 
@@ -813,6 +813,62 @@ ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/HiDens_ordisurfs_top_corr.png"),
           width = 1000,
           height = 1500)
+
+```
+
+
+### Dot chart to check for gaps in correlation - AXIS 2
+
+```{r}
+
+dotchart(cor_a2_sort$abs_ord_ax2, main="Absolute (+/-) correlations between envVars and gnmds axis 2")
+
+cor_cut_a2<-0.26 #decide
+
+cor_sel_a2<-subset(cor_a2_sort,abs_ord_ax2>cor_cut_a2)
+cor_sel_a2
+as.data.frame(cor_sel_a2$env)
+```
+
+
+### Sel env var (top corr) ax1
+```{r}
+env_os_a2 <- env[, cor_sel_a2$env]
+env_os_a2
+str(env_os_a2)
+
+```
+
+
+### Ordisurfs top corr ax 1
+```{r}
+ordsrfs_a2 <- list(length = ncol(env_os_a2))
+
+for (i in seq(ncol(env_os_a2))) {
+  os.i_a2 <- gg_ordisurf(ord = ord,
+                      env.var = env_os_a2[, i],
+                      pt.size = 1,
+                      # binwidth = 0.05,
+                      var.label = names(env_os_a2)[i],
+                      gen.text.size = 10,
+                      title.text.size = 15,
+                      leg.text.size = 10)
+  
+  ordsrfs_a2[[i]] <- os.i_a2$plot
+}
+
+ordsrfs_plt_a2 <- ggarrange(plotlist = ordsrfs_a2,
+                         nrow = 4,
+                         ncol = 3)
+
+ordsrfs_plt_a2
+```
+##### Save some outputs
+```{r}
+ggexport(ordsrfs_plt_a2,
+          filename = file.path(dataPath,"outputs/HiDens_ordisurfs_top_corr_a2.png"),
+          width = 1000,
+          height = 1000)
 
 ```
 
