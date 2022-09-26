@@ -363,7 +363,7 @@ ggsave(filename = file.path(dataPath,"outputs/FC_XvY_ax2cat.png"),
 EDIT AREA FIRST!
 
 ```{r}
-save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_FC.RData") # edit area first
+save.image(file.path(dataPath,"inputs/Renv_deepseaNiN_FC.RData")) # edit area first
 
 ```
 
