@@ -44,8 +44,8 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotrange_bdmean"))
 
 ## ALternatively, do only within a prespecified group of samples
-env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
+# env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
+# otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
 
 
 ## Complete cases and real columns
@@ -102,18 +102,12 @@ mvtree
 ```{r}
 library(oce)
 
-envSel$swDensRob_avs<-swRho(salinity=env$Smean_Robinson,
-                         temperature=env$Tmean_Robinson,
-                         pressure=(env$bathy*-1),
+envSel$swDensRob_avs<-swRho(salinity=envSel$Smean_Robinson,
+                         temperature=envSel$Tmean_Robinson,
+                         pressure=(envSel$bathy*-1),
                          eos="unesco")
 
-abundance <- data.matrix(otuSel)
-
-envSel$swDensRob_avs<-swRho(salinity=envSel$Smean_Robinson,
-                            temperature=envSel$Tmean_Robinson,
-                            pressure=(envSel$bathy*-1),
-                            eos="unesco")
-
+abundance <- data.matrix(otuSel_6)
 environmental_variables <- envSel
 
 
@@ -123,14 +117,14 @@ formula <- as.formula(paste("abundance ~", paste0(colnames(environmental_variabl
 set.seed(1221)
 
 # See `?mvpart()` for argument details
-mvpart_run1 <- mvpart(
-  #form = formula,
-  form = abundance ~ swDensRob_avs,
+mvpart_run <- mvpart(
+  form = formula,
+  #form = abundance ~ swDensRob_avs,
   data = environmental_variables,
   all.leaves = TRUE,  # annotate all nodes
   #rsq = TRUE,  # give "rsq" plot
   #pca = TRUE,  # plot PCA of group means and add species and site information
   #wgt.ave.pca = TRUE  # plot weighted averages acorss sites for species
 )
-mvpart_run1
+mvpart_run
 ```
