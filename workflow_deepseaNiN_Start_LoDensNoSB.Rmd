@@ -33,11 +33,24 @@ library(readr)
 library(RColorBrewer)
 library(oce) 
 library(plotly)
+library(purrr)
+library(furrr)
 
 
 source("gg_ordisurf_viridis.R")
 ```
 
+LOAD OBJECTS IF HAVE RUN ALREADY
+```{r}
+geodist_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_geodist_pa.rds"))
+geodist_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_geodist_r6.rds"))
+
+mds_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_pa.rds"))
+mds_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_r6.rds"))
+#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_r6_1000rep.rds"))
+
+ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
+```
 
 
 ## Data
@@ -298,6 +311,11 @@ for (i in 1:100) {
 }
 Sys.time()
 
+
+
+
+
+
 ```
 
 ##### Save the result - don't run if loading saved object
@@ -421,24 +439,50 @@ saveRDS(geodist_r6,
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-took 20mins
-```{r}
-# monoMDS
-d <- 2
-mds_r6 <- list()
+took 10mins
 
-Sys.time()
-for (i in 1:200) {
-  mds_r6[[i]]<-monoMDS(geodist_r6,
-                    matrix(c(runif(dim(otu_6)[1]*d)),
-                           nrow = dim(otu_6)[1]),
-                    k = d,
-                    model = "global",
-                    maxit = 2000,
-                    smin = 1e-7,
-                    sfgrmin = 1e-7)
-}
-Sys.time()
+
+```{r}
+## monoMDS
+# d <- 2
+# mds_r6 <- list()
+# 
+# Sys.time()
+# for (i in 1:200) {
+#   mds_r6[[i]]<-monoMDS(geodist_r6,
+#                     matrix(c(runif(dim(otu_6)[1]*d)),
+#                            nrow = dim(otu_6)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
+
+#Jonatan's upgrade for speed - parallel processing of mds reptitions
+library(furrr) # Package to run non sequential functions in parallel
+#library(purrr)
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_r6<-furrr::future_map(List_geodist_r6, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
+
 ```
 
 ##### Save the result - don't run if loading saved object
@@ -768,7 +812,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.37 #decide
+cor_cut<-0.4 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -802,8 +846,8 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 4,
-                         ncol = 3)
+                         nrow = 5,
+                         ncol = 4)
 
 ordsrfs_plt
 ```
