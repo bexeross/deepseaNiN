@@ -397,6 +397,27 @@ summary(env_sub_meta$gnmdsInt)
 
 ```
 
+
+
+#### X v Y densthresh
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmdsInt),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
+  ggtitle("map coloured by categorical gnmds thresholds")
+
+dis_split
+
+summary(env_sub_meta$gnmdsInt)
+
+
+```
+
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
@@ -407,9 +428,9 @@ ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
 ### categorise density Intermediate Values
 
 ```{r}
-env_sub_meta$densCat<-cut(env_sub_meta$swDensRob_avs, 
-      breaks=c(1028,1031.29, 1031.81,1041),
-      labels=c("LoDens", "Int 1031.3-1031.8", "HiDens"))
+env_sub_meta$densThresh<-cut(env_sub_meta$swDensRob_avs, 
+      breaks=c(1028,1031.3,1041),
+      labels=c("LoDens", "HiDens"))
 
 
 ```
@@ -421,11 +442,11 @@ dis_split <- ggplot(data = env_sub_meta,
               aes(x = X.y,
                   y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = densCat),
+  geom_point(aes(colour = densThresh),
              size = 1) +
  # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
   scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
-  ggtitle("map coloured by categorical density thresholds")
+  ggtitle("map coloured by density threshold 1031.3")
 
 dis_split
 
@@ -436,7 +457,7 @@ summary(env_sub_meta$densCat)
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
+ggsave(filename = file.path(dataPath,"outputs/NS_XvY_dens1031_3.png"),
        device = "png",
        dpi=300 )
 
