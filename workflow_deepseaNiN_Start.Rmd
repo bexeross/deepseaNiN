@@ -1188,3 +1188,30 @@ p_gmo <- ggplot(data = env_vis,
 ggplotly(p_gmo)
 ```
 
+#### Density threshold identification in the mdsplot
+
+```{r}
+env_vis$densThresh<-cut(env_vis$swDensRob_avs, 
+      breaks=c(1028,1031.3,1041),
+      labels=c("LoDens","HiDens"))
+
+
+
+p_gmo <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by density threshold 1031.3",
+          subtitle = "First run") +
+  geom_point(aes(colour = densThresh)) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=FALSE, size=FALSE)
+
+ggplotly(p_gmo)
+```
