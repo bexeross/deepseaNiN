@@ -404,7 +404,43 @@ ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
        dpi=300 )
 
 ```
+### categorise density Intermediate Values
 
+```{r}
+env_sub_meta$densCat<-cut(env_sub_meta$swDensRob_avs, 
+      breaks=c(1028,1031.29, 1031.81,1041),
+      labels=c("LoDens", "Int 1031.3-1031.8", "HiDens"))
+
+
+```
+
+
+#### X v Y density cetegories highlighted
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = densCat),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
+  ggtitle("map coloured by categorical density thresholds")
+
+dis_split
+
+summary(env_sub_meta$densCat)
+
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
+       device = "png",
+       dpi=300 )
+
+```
 
 # Save environment
 
