@@ -364,6 +364,48 @@ ggsave(filename = file.path(dataPath,"outputs/NS_XvY_ax2cat.png"),
 
 ```
 
+
+
+
+### categorise gnmds Intermediate Values
+
+```{r}
+env_sub_meta$gnmdsInt<-cut(env_sub_meta$gnmds1, 
+      breaks=c(-3.2,0.1, 1.6,3.46),
+      labels=c("LoDens", "Intermediate", "HiDens"))
+
+
+```
+
+
+#### X v Y intermediate gnmds highlighted
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmdsInt),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
+  ggtitle("map coloured by categorical gnmds thresholds")
+
+dis_split
+
+summary(env_sub_meta$gnmdsInt)
+
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+
 # Save environment
 
 EDIT AREA FIRST!
