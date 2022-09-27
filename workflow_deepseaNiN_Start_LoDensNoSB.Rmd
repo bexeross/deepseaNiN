@@ -296,6 +296,7 @@ for (i in 1:100) {
                     smin = 1e-7,
                     sfgrmin = 1e-7)
 }
+Sys.time()
 
 ```
 
@@ -886,7 +887,7 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
                   "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
+                 # "BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "BO22_ppltmin_ss", #top corr
@@ -903,11 +904,11 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
 )]
 
 colnames(env_os_m_envfit)<-c("T", #top corr
-                  "sMx____", #top corr
+                  "sMx", #top corr
                   "SmaxR", #comparison to top corr
-                  "swDensR", #top corr
+                  "___swDensR", #top corr
                   "icecovmax",#top corr ax2
-                  "icecovav",#top corr
+                  #"icecovav",#top corr
                   "dissoxav",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "ppltmin", #top corr
