@@ -23,10 +23,12 @@ library(dplyr)
 ```
 
 ## Load data
-copied entirely from "workflow_deepseaNiN_Start" blocks Data through Data cleaning
 ```{r}
-env_orig <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
+
+## To use the entire dataset use code below, which has been copied from "workflow_deepseaNiN_Start", blocks Data through Data cleaning
+
+env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
 
 #left join and split to ensure ordered identically
 
@@ -40,10 +42,21 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotltmax_bdmean",
                                "BO22_lightbotltmin_bdmean",
                                "BO22_lightbotrange_bdmean"))
-## Removing NAs
-otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:20)]), ]
-envCompl <- env_sort[complete.cases(env_sort[, -c(1:20)]), ]
 
+## ALternatively, do only within a prespecified group of samples
+env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
+
+
+## Complete cases and real columns
+otuCompl <- otu_sort %>%
+  select(-c(1:which(colnames(otu_sort)=="Acesta_excavata")-1)) 
+  #filter(complete.cases(.))
+  
+envCompl <- env_sort %>%
+  select(-c(1:which(colnames(env_sort)=="bathy")-1)) 
+  #filter(complete.cases(.))
+ 
 ## Removing observations with less than 4 OTUs
 sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
 otuSel <- otuCompl[sel, ]
@@ -57,10 +70,22 @@ dim(otuSel); dim(envSel)
 
 ## Analysis
 ```{r}
-Y=otuSel[,2:350]
-X=envSel[,which(colnames(envSel)=="bathy"):137] %>%
+Y=otuSel
+X=envSel %>%
   select(-c("coords.x1", "coords.x2","optional",
             "X.y","Y"))
+
+x_mn <- min(Y[Y > 0])
+x_mx <- max(Y)
+rng <- 6           # abundance range
+w <- log(rng) / (log(x_mx) - log(x_mn))
+a <- x_mn^(-w)
+# otu_6 <- a * dt[, -c(1:3)]^w
+otuSel_6 <- a * Y^w
+range(otuSel_6)
+Y<-otuSel_6
+  
+
 
 # df2 = cor(X)
 # hc = findCorrelation(df2, cutoff=0.7) # putt any value as a "cutoff" 
@@ -68,7 +93,44 @@ X=envSel[,which(colnames(envSel)=="bathy"):137] %>%
 # new_X = X[,-c(hc)]
 
 
-mvtree <- mvpart(data.matrix(Y) ~ ., data=cbind(X), xv="1se", xvmult=100)
+mvtree <- mvpart(data.matrix(Y) ~ ., data=X, xv="1se", xvmult=100)
                                                 #new_X), xv="1se", xvmult=10)
 mvtree
+```
+
+### Another way of doing the same thing...
+```{r}
+library(oce)
+
+envSel$swDensRob_avs<-swRho(salinity=env$Smean_Robinson,
+                         temperature=env$Tmean_Robinson,
+                         pressure=(env$bathy*-1),
+                         eos="unesco")
+
+abundance <- data.matrix(otuSel)
+
+envSel$swDensRob_avs<-swRho(salinity=envSel$Smean_Robinson,
+                            temperature=envSel$Tmean_Robinson,
+                            pressure=(envSel$bathy*-1),
+                            eos="unesco")
+
+environmental_variables <- envSel
+
+
+formula <- as.formula(paste("abundance ~", paste0(colnames(environmental_variables), collapse="+")))
+
+# Set a new seed for random numbers to ensure results are reproducible
+set.seed(1221)
+
+# See `?mvpart()` for argument details
+mvpart_run1 <- mvpart(
+  #form = formula,
+  form = abundance ~ swDensRob_avs,
+  data = environmental_variables,
+  all.leaves = TRUE,  # annotate all nodes
+  #rsq = TRUE,  # give "rsq" plot
+  #pca = TRUE,  # plot PCA of group means and add species and site information
+  #wgt.ave.pca = TRUE  # plot weighted averages acorss sites for species
+)
+mvpart_run1
 ```
