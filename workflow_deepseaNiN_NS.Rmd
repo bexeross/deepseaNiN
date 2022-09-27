@@ -1163,7 +1163,7 @@ p_gmo <- ggplot(data = env_vis,
 ggplotly(p_gmo)
 ```
 
-## Interactive Temp ordisurf
+## Interactive Dens ordisurf
 
 
 ```{r}
