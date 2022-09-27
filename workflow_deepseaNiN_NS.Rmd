@@ -1167,6 +1167,8 @@ ggplotly(p_gmo)
 
 
 ```{r}
+
+
 T.mds<- ggplot(data = env_vis,
                      aes(x = gnmds1,
                          y = gnmds2)) +
@@ -1180,6 +1182,36 @@ T.mds<- ggplot(data = env_vis,
 
 ggplotly(T.mds)
 ```
+
+
+### Vis proposed Threshold
+```{r}
+
+env_vis$densThresh<-cut(env_sub_meta$swDensRob_avs, 
+      breaks=c(1028,1031.3,1041),
+      labels=c("LoDens","HiDens"))
+
+Th.mds<- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  geom_point(aes(colour = densThresh),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
+  ggtitle("gnmds coloured by categorical dens thresholds")
+
+
+plot(Th.mds)
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/NSgnmds_densThresh1031_3.png"),
+       device = "png",
+       dpi=300 )
+```
+
+
 
 ### Dotplot temperature
 
