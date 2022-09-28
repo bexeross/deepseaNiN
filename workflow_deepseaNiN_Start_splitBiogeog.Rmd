@@ -42,6 +42,11 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 ```
 
 
+```{r}
+summary(env_sub_meta)
+```
+
+
 ### Plots with CONTINUOUS colour scales (variables)
 
 
@@ -376,6 +381,87 @@ ggsave(filename = file.path(dataPath,"outputs/XvY_ax2cat.png"),
        dpi=300 )
 
 ```
+
+
+### threshold density Values and map
+
+```{r}
+env_sub_meta$densThresh<-cut(env_sub_meta$swDensRob_avs, 
+      breaks=c(1028,1031.1,1041),
+      labels=c("LoDens", "HiDens"))
+
+
+```
+
+
+#### X v Y density cetegories highlighted
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = densThresh),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
+  ggtitle("map coloured by density threshold 1031.1")
+
+dis_split
+
+summary(env_sub_meta$densCat)
+
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/XvY_dens1031_1.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+
+### threshold temperature Values and map
+
+```{r}
+env_sub_meta$tempThresh<-cut(env_sub_meta$Tmean_Robinson, 
+      breaks=c(-1.1,5.1,8.5),
+      labels=c("LoTemp", "HiTemp"))
+
+
+```
+
+
+#### X v Y density cetegories highlighted
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = tempThresh),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Paired") + # ordered colourblind pallette
+  ggtitle("map coloured by temp threshold 5.1*C")
+
+dis_split
+
+
+
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/XvY_temp5_1.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+
+
 
 
 # Save environment
