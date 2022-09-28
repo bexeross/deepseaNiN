@@ -445,6 +445,41 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_ax1cat.png"),
 
 ```
 
+### categorise temp 5.5
+
+```{r}
+env_sub_meta$temp5_5<-cut(env_sub_meta$Tmean_Robinson, 
+      breaks=c(-1.1, 5.5, 8.5))
+#
+```
+
+
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = temp5_5),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by temp thresholded at 5.5*C")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_temp5_5.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+
+
 #### X v Y with gnmds ax 2 as HC categories
 ```{r}
 dis_split <- ggplot(data = env_sub_meta,
@@ -471,6 +506,37 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_ax2cat.png"),
        dpi=300 )
 
 ```
+
+#### Gnmds w gmorph
+```{r}
+
+p_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(temp5_5))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_gmo
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_gmorph.png"),
+       device = "png",
+       dpi=300 )
+```
+
+
+
 
 # Save environment
 
