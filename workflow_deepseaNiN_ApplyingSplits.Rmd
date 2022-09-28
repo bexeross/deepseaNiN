@@ -178,3 +178,32 @@ write.csv(LDensNoSB_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_
 write.csv(LDensNoSB_env_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_env_sort_", Sys.Date(),".csv"))))
 ```
 
+
+### Split LoDensNoSB by dissox
+
+```{r}
+#SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
+
+plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
+
+
+loDensNoSBhiO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean>305)
+plot(loDensNoSBhiO2JoinedDat$X.y, loDensNoSBhiO2JoinedDat$Y)
+LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:351))
+LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,352:491))  
+
+
+loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<305)
+plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
+LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:351))
+LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,352:491))    
+
+```
+##### SAVE DATASETS
+```{r}
+write.csv(LDnoSBlo02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo02_otu_sort_", Sys.Date(),".csv"))))
+write.csv(LDnoSBlo02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo02_env_sort_", Sys.Date(),".csv"))))
+
+write.csv(LDnoSBhi02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_otu_sort_", Sys.Date(),".csv"))))
+write.csv(LDnoSBhi02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_env_sort_", Sys.Date(),".csv"))))
+```
