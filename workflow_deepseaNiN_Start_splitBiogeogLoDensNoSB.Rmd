@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions_LoDensNoSB"
+title: "MAREANO - NiN:splitting biogeographic regions_LoDensNoSB1031p1"
 output: html_notebook
 ---
 
@@ -59,7 +59,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradientn(limits = c(-2.4, 1.9),
+  scale_colour_gradientn(limits = c(-2.3, 1.9),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1")
 
@@ -68,7 +68,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_temp_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
@@ -89,7 +89,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_temp_salinityMax.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_salinityMax.png"),
        device = "png",
        dpi=300 )
 ```
@@ -113,7 +113,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_temp_longitude.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_longitude.png"),
        device = "png",
        dpi=300 )
 ```
@@ -134,7 +134,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_temp_latitude.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_latitude.png"),
        device = "png",
        dpi=300 )
 ```
@@ -155,7 +155,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_temp_iceCovLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_iceCovLTmax.png"),
        device = "png",
        dpi=300 )
 ```
@@ -178,7 +178,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBbathy_v_salMax_temp.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_salMax_temp.png"),
        device = "png",
        dpi=300 )
 ```
@@ -200,7 +200,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBtempRmean_v_salinityRmax_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1tempRmean_v_salinityRmax_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
@@ -221,7 +221,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBtempRmean_v_salinityRmax_disooxmean.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1tempRmean_v_salinityRmax_disooxmean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -242,7 +242,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBtempRmean_v_salinityRmax_iceCoveLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1tempRmean_v_salinityRmax_iceCoveLTmax.png"),
        device = "png",
        dpi=800 )
 ```
@@ -265,7 +265,7 @@ ggplotly(tb_ax1)
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_X_v_Y_tmeanR.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"),
        device = "png",
        dpi=300 )
 ```
@@ -278,7 +278,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = swDensRob_avs),
              size = 1) +
-  scale_colour_gradientn(limits = c(1027, 1032),
+  scale_colour_gradientn(limits = c(1027, 1031),
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by water density")
 
@@ -287,7 +287,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_X_v_Y_swDenRobavs.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_swDenRobavs.png"),
        device = "png",
        dpi=800 )
 ```
@@ -308,7 +308,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_X_v_Y_dissox.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_dissox.png"),
        device = "png",
        dpi=800 )
 ```
@@ -320,16 +320,16 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_icecoverltmax_ss),
              size = 1) +
-  scale_colour_gradientn(limits = c(0,0.93),
+  scale_colour_gradientn(limits = c(0.00001,0.93),
                         colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by ice cover LT max")
+  ggtitle("Geography (X v Y) - coloured by ice cover LT max - grey <0.00001")
 
 tb_ax1
 
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_X_v_Y_iceCoveLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_iceCoveLTmax.png"),
        device = "png",
        dpi=800 )
 ```
@@ -343,9 +343,9 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradientn(limits = c(-2, 2.5),
+  scale_colour_gradientn(limits = c(-2.3, 2),
                         colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) v disox mean - coloured by gnmds ax 1 - grey 2.5-5")
+  ggtitle("Temp (mean Robinson) v disox mean - coloured by gnmds ax 1")
 
 tb_ax1
 
@@ -353,7 +353,7 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_TmeanR_v_dissoxltmin_gnmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_TmeanR_v_dissoxltmin_gnmds1.png"),
        device = "png",
        dpi=300 )
 
@@ -366,7 +366,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = bathy),
              size = 1) +
-  scale_colour_gradientn(limits = c(-860, -30),
+  scale_colour_gradientn(limits = c(-702, -38),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) v disox mean - coloured by bathymetry")
 
@@ -376,7 +376,7 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSBTmeanR_v_dissoxltmin_bathy.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1TmeanR_v_dissoxltmin_bathy.png"),
        device = "png",
        dpi=300 )
 
@@ -404,7 +404,7 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_MLDmeanBathy.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_MLDmeanBathy.png"),
        device = "png",
        dpi=300 )
 
@@ -439,32 +439,32 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_ax1cat.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax1cat.png"),
        device = "png",
        dpi=300 )
 
 ```
 
-### categorise temp 5.5
+### categorise temp 5.1
 
 ```{r}
-env_sub_meta$temp5_5<-cut(env_sub_meta$Tmean_Robinson, 
-      breaks=c(-1.1, 5.5, 8.5))
+env_sub_meta$temp5_1<-cut(env_sub_meta$Tmean_Robinson, 
+      breaks=c(-1.1, 5.1, 8.5))
 #
 ```
 
 
-#### X v Y with gnmds ax 1 as HC categories
+#### X v Y with temp 5.1
 ```{r}
 dis_split <- ggplot(data = env_sub_meta,
               aes(x = X.y,
                   y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = temp5_5),
+  geom_point(aes(colour = temp5_1),
              size = 1) +
  # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
   scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by temp thresholded at 5.5*C")
+  ggtitle("Easting vs Northing - coloured by temp thresholded at 5.1*C")
 
 dis_split
 
@@ -472,11 +472,79 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_temp5_5.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_temp5_1.png"),
        device = "png",
        dpi=300 )
 
 ```
+### categorise dissox
+
+```{r}
+env_sub_meta$dissoxav305<-cut(env_sub_meta$BO22_dissoxmean_bdmean, 
+     # breaks=c(256, 282, 360)) #ltmin
+     breaks=c(282.5,305,372.2),
+     labels=c("lowO2","hiO2")) #mean
+#
+```
+
+
+#### X v Y with dissox
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = dissoxav305),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by dissox av thresholded at 305")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_dissoxav305.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
+### categorise iceCovLTMax
+
+```{r}
+env_sub_meta$iceMx_gt0<-cut(env_sub_meta$BO22_icecoverltmax_ss, 
+      breaks=c(0, 0.00001, 0.92838))
+#
+```
+
+
+#### X v Y with temp 5.1
+```{r}
+dis_split <- ggplot(data = env_sub_meta,
+              aes(x = X.y,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = iceMx_gt0),
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by ice LT Max thresholded at >0")
+
+dis_split
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_iceLTmx_gt0.png"),
+       device = "png",
+       dpi=300 )
+
+```
+
 
 
 
@@ -501,21 +569,21 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_XvY_ax2cat.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax2cat.png"),
        device = "png",
        dpi=300 )
 
 ```
 
-#### Gnmds w gmorph
+#### Gnmds w temp 5.1
 ```{r}
 
-p_gmo <- ggplot(data = env_sub_meta,
+t_gmo <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by landscape class",
+  ggtitle("GNMDS coloured by temp 5.1 threshold",
           subtitle = "First run") +
   geom_point(aes(colour = factor(temp5_5))) +
   geom_vline(xintercept = 0,
@@ -526,15 +594,85 @@ p_gmo <- ggplot(data = env_sub_meta,
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=2))
 
-p_gmo
+t_gmo
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_gmorph.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_temp5_1.png"),
+       device = "png",
+       dpi=300 )
+```
+#### Gnmds w dissox 305
+```{r}
+
+o_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by dissox 305 threshold",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(dissox305))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+o_gmo
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_dissox305.png"),
        device = "png",
        dpi=300 )
 ```
 
+#### Gnmds w iceLT max >0
+```{r}
+
+i_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by ice max >0 threshold",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(iceMx_gt0))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+i_gmo
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_iceMxgt0.png"),
+       device = "png",
+       dpi=300 )
+```
+
+```{r}
+comp<-i_gmo+o_gmo+t_gmo
+```
+##### Save the plot
+```{r}
+
+
+##### Save some outputs
+
+ggexport(comp,
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_compare.png"),
+          width = 1500,
+          height = 500)
+
+```
 
 
 
@@ -543,7 +681,7 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_gmorph.png"),
 EDIT AREA FIRST!
 
 ```{r}
-save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB.RData") # edit area first
+save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
 
 ```
 
