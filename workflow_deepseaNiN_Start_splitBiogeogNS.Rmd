@@ -425,7 +425,7 @@ ggsave(filename = file.path(dataPath,"outputs/NS_XvY_intermediate.png"),
        dpi=300 )
 
 ```
-### categorise density Intermediate Values
+### threshold density Values and map
 
 ```{r}
 env_sub_meta$densThresh<-cut(env_sub_meta$swDensRob_avs, 
