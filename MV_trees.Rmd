@@ -128,3 +128,9 @@ mvpart_run <- mvpart(
 )
 mvpart_run
 ```
+
+
+## testing github
+```{r}
+plot(cars)
+```
