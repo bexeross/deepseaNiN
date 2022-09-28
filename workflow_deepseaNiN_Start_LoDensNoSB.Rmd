@@ -42,12 +42,12 @@ source("gg_ordisurf_viridis.R")
 
 LOAD OBJECTS IF HAVE RUN ALREADY
 ```{r}
-geodist_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_geodist_pa.rds"))
-geodist_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_geodist_r6.rds"))
+geodist_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_pa.rds"))
+geodist_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_r6.rds"))
 
-mds_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_pa.rds"))
-mds_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_r6.rds"))
-#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/LoDensNoSB_mds_r6_1000rep.rds"))
+mds_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_pa.rds"))
+mds_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_r6.rds"))
+#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_r6_1000rep.rds"))
 
 ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
 ```
@@ -56,8 +56,8 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-28.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-28.csv")) %>% as.data.frame
 
 
 table(env_sort$SampID2 == otu_sort$SampID)
@@ -287,41 +287,81 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/LoDensNoSB_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_pa.rds")))
 ```
 
 #### Ordination
 
 #### monoMDS - don't run if loading saved object
+took 6.4mins with jonatan's paralell solution (usually ~10mins)
 ```{r}
+# 
+# Sys.time()
+# d <- 2
+# mds_pa <- list()
+# 
+# for (i in 1:100) {
+#   mds_pa[[i]]<-monoMDS(geodist_pa,
+#                     matrix(c(runif(dim(otu_pa)[1]*d)),
+#                            nrow = dim(otu_pa)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
 
-Sys.time()
+
+## monoMDS
+# d <- 2
+# mds_r6 <- list()
+# 
+# Sys.time()
+# for (i in 1:200) {
+#   mds_r6[[i]]<-monoMDS(geodist_r6,
+#                     matrix(c(runif(dim(otu_6)[1]*d)),
+#                            nrow = dim(otu_6)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
+
+#Jonatan's upgrade for speed - parallel processing of mds reptitions
+library(furrr) # Package to run non sequential functions in parallel
+#library(purrr)
+plan(multisession)
+
 d <- 2
-mds_pa <- list()
 
-for (i in 1:100) {
-  mds_pa[[i]]<-monoMDS(geodist_pa,
-                    matrix(c(runif(dim(otu_pa)[1]*d)),
-                           nrow = dim(otu_pa)[1]),
-                    k = d,
-                    model = "global",
-                    maxit = 2000,
-                    smin = 1e-7,
-                    sfgrmin = 1e-7)
-}
-Sys.time()
+i <-200 # number of reps
 
-
-
+List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_pa<-furrr::future_map(List_geodist_pa, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
 
 
 
 ```
 
 ##### Save the result - don't run if loading saved object
+can take a few mins
 ```{r}
-saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/LoDensNoSB_mds_pa.rds"))
+saveRDS(Xmds_pa,
+        file = file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_pa.rds"))
 ```
 
 
@@ -338,7 +378,7 @@ Make function?
 # mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_pa<-unlist(lapply(mds_pa, function(v){v[[22]]})) 
+mds_stress_pa<-unlist(lapply(Xmds_pa, function(v){v[[22]]})) 
 
 ordered_pa <-order(mds_stress_pa)
 
@@ -348,14 +388,14 @@ mds_stress_pa[ordered_pa[2]]
 mds_stress_pa[ordered_pa[10]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_pa<-postMDS(mds_pa[[ordered_pa[1]]],
+mds_best_pa<-postMDS(Xmds_pa[[ordered_pa[1]]],
                   geodist_pa, 
                   pc = TRUE, 
                   halfchange = TRUE, 
                   threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_pa
 
-mds_secbest_pa <- postMDS(mds_pa[[ordered_pa[2]]],
+mds_secbest_pa <- postMDS(Xmds_pa[[ordered_pa[2]]],
                           geodist_pa, 
                           pc = TRUE, 
                           halfchange = TRUE, 
@@ -372,7 +412,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"outputs/LoDensNoSB_procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/LoDensNoSB1031p1_procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -402,7 +442,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -432,14 +472,14 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/LoDensNoSB_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_r6.rds")))
 ```
 
 
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-took 10mins
+Jonatan's parallel solution took 5.4mins, before it took 10mins
 
 
 ```{r}
@@ -461,7 +501,7 @@ took 10mins
 # Sys.time()
 
 #Jonatan's upgrade for speed - parallel processing of mds reptitions
-library(furrr) # Package to run non sequential functions in parallel
+#library(furrr) # Package to run non sequential functions in parallel
 #library(purrr)
 plan(multisession)
 
@@ -487,8 +527,8 @@ Sys.time() - start_t
 
 ##### Save the result - don't run if loading saved object
 ```{r}
-saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/LoDensNoSB_mds_r6.rds")) 
+saveRDS(Xmds_r6,
+        file = file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -500,7 +540,7 @@ saveRDS(mds_r6,
 # mds <- readRDS(file = "../SplitRev2_mds.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_r6<-unlist(lapply(mds_r6, function(v){v[[22]]})) 
+mds_stress_r6<-unlist(lapply(Xmds_r6, function(v){v[[22]]})) 
 
 ordered_r6 <-order(mds_stress_r6)
 
@@ -510,14 +550,14 @@ mds_stress_r6[ordered_r6[2]]
 mds_stress_r6[ordered_r6[100]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_r6<-postMDS(mds_r6[[ordered_r6[1]]],
+mds_best_r6<-postMDS(Xmds_r6[[ordered_r6[1]]],
                      geodist_r6, 
                      pc = TRUE, 
                      halfchange = TRUE, 
                      threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_r6
 
-mds_secbest_r6<-postMDS(mds_r6[[ordered_r6[2]]],
+mds_secbest_r6<-postMDS(Xmds_r6[[ordered_r6[2]]],
                         geodist_r6, 
                         pc = TRUE, 
                         halfchange = TRUE, 
@@ -534,7 +574,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/LoDensNoSB_procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/LoDensNoSB1031p1_procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -642,7 +682,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -695,10 +735,11 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/LoDensNoSB_gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
+
 
 ## Species-environment relationships
 ### Selecting ordination
@@ -794,7 +835,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/LoDensNoSB_cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/LoDensNoSB1031p1_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -816,6 +857,8 @@ cor_cut<-0.4 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
+
+as.data.frame(cor_sel$env)
 ```
 
 
@@ -824,6 +867,7 @@ cor_sel
 env_os <- env[, cor_sel$env]
 env_os
 str(env_os)
+
 
 ```
 
@@ -854,7 +898,7 @@ ordsrfs_plt
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/LoDensNoSB_ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_ordisurfs_top_corr.png"),
           width = 2000,
           height = 2500)
 
@@ -887,7 +931,7 @@ str(env_os_m)
 ```
 
 
-### Ordisurfs top corr
+### Ordisurfs manually selected
 ```{r}
 ordsrfs_m <- list(length = ncol(env_os_m))
 
@@ -914,7 +958,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/LoDensNoSB_ordisurfs_man_sel.png"),
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_ordisurfs_man_sel_domean.png"),
           width = 2000,
           height = 2000)
 
@@ -931,14 +975,15 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
                   "BO22_icecoverltmax_ss",#top corr ax2
-                 # "BO22_icecovermean_ss",#top corr
+                  #"BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
+                  #"BO22_dissoxltmin_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "BO22_ppltmin_ss", #top corr
                   "X.y", #comparison to Y
                   "Y", #top corr
-                 # "spd_std", #top corr ax2 (blended model)
-                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  "spd_std", #top corr ax2 (blended model)
+                 # "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
@@ -950,16 +995,17 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
 colnames(env_os_m_envfit)<-c("T", #top corr
                   "sMx", #top corr
                   "SmaxR", #comparison to top corr
-                  "___swDensR", #top corr
+                  "swDensR", #top corr
                   "icecovmax",#top corr ax2
                   #"icecovav",#top corr
                   "dissoxav",#top corr
+                  #"dissoxmin",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "ppltmin", #top corr
                   "X", #comparison to Y
                   "Y", #top corr
-                 # "spd_std", #top corr ax2 (blended model)
-                  "CSsd", #comparison to top corr ax2 (blended model)
+                  "spd_std", #top corr ax2 (blended model)
+                 # "CSsd", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "SiLtmax", #just under top corr ax1
@@ -983,7 +1029,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_EnvFit_man_sel_cln.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_EnvFit_man_sel_cln_domean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -995,7 +1041,34 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_EnvFit_man_sel_cln.png"
 env_vis<-env
 env_vis$gnmds1 <- otu_6$gnmds1
 env_vis$gnmds2 <- otu_6$gnmds2
+
+env_vis$dca1 <- otu_6$dca1
+env_vis$dca2 <- otu_6$dca2
 ```
+
+#### gnmds w mld mean - bathy
+```{r}
+dca_int <- ggplot(data = env_vis,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive DCA sample ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(SampID))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+ggplotly(dca_int)
+```
+
+
+
+
 
 #### gnmds w mld mean - bathy
 ```{r}
@@ -1016,12 +1089,7 @@ p_mld <- ggplot(data = env_vis,
 
 p_mld
 ```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_MLDmeanBathy.png"),
-       device = "png",
-       dpi=300 )
-```
+
 #### gnmds w sedclass
 ##### deal with sedclass codes
 ```{r}
@@ -1097,12 +1165,7 @@ p_sed <- ggplot(data = env_vis,
 
 p_sed
 ```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_sedclass.png"),
-       device = "png",
-       dpi=300 )
-```
+
 #### gnmds w lanscape
 ##### deal with sedclass codes
 ```{r}
@@ -1143,12 +1206,7 @@ p_land <- ggplot(data = env_vis,
 
 p_land
 ```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_landscape.png"),
-       device = "png",
-       dpi=300 )
-```
+
 
 #### Gnmds w gmorph
 ```{r}
@@ -1171,12 +1229,7 @@ p_gmo <- ggplot(data = env_vis,
 
 p_gmo
 ```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_gmorph.png"),
-       device = "png",
-       dpi=300 )
-```
+
 
 ```{r}
 cat_var_plots<-p_mld+p_sed+p_land+p_gmo
@@ -1184,7 +1237,7 @@ cat_var_plots<-p_mld+p_sed+p_land+p_gmo
 ##### Save the plot
 ```{r}
 ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/LoDensNoSB_gnmds_catvar.png"),
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
@@ -1197,7 +1250,7 @@ p_gmo <- ggplot(data = env_vis,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by landscape class",
+  ggtitle("GNMDS coloured by sample",
           subtitle = "First run") +
   geom_point(aes(colour = factor(SampID))) +
   geom_vline(xintercept = 0,
