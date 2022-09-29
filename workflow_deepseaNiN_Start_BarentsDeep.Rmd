@@ -60,9 +60,36 @@ otu_sort1 <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_s
 env_sort2 <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_env_sort_2022-09-29.csv")) %>% as.data.frame
 otu_sort2 <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_otu_sort_2022-09-29.csv")) %>% as.data.frame
 
-env_sort <- rbind(env_sort1,env_sort2)
-otu_sort <- rbind(otu_sort1, otu_sort2)
+env_orig <- rbind(env_sort1,env_sort2)
+otu_orig <- rbind(otu_sort1, otu_sort2)
 ```
+
+
+
+```{r}
+#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID"))
+
+otu_sort<-joinedDat %>% select(c(2:391))
+env_sort<-joinedDat %>% select(c(2,393:528))
+
+# Sorting and ordering by SampID
+# env_orig <- env_orig[order(env_orig$SampID), ]
+# otu_orig <- otu_orig[order(otu_orig$SampID), ]
+
+table(env_sort$SampID == otu_sort$SampID)
+
+
+#must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
+
+dim(env_sort)
+dim(otu_sort)
+```
+
+
+
+
+
 
 ## Data
 ```{r}
@@ -82,6 +109,8 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotltmax_bdmean",
                                "BO22_lightbotltmin_bdmean",
                                "BO22_lightbotrange_bdmean"))
+
+env_sort$X.y<-env_sort$X.y.y
 ```
 
 
@@ -105,11 +134,11 @@ env_sort_locations
 ### Data cleaning
 ```{r}
 ## Removing NAs
-otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(otu_sort)=="Acesta_excavata")-1)]), ]
+otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
-sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
+sel <- rowSums(otuCompl[, -c(1)]) >= 4
 otuSel <- otuCompl[sel, ]
 envSel <- envCompl[sel, ]
 
@@ -347,7 +376,7 @@ i <-200 # number of reps
 
 List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
 start_t<-Sys.time()
-Xmds_pa<-furrr::future_map(List_geodist_pa, 
+mds_pa<-furrr::future_map(List_geodist_pa, 
                   function(x) monoMDS(x,
                                       matrix(c(runif(dim(otu_6)[1]*d)),
                                              nrow = dim(otu_6)[1]),
@@ -366,7 +395,7 @@ Sys.time() - start_t
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
-saveRDS(Xmds_pa,
+saveRDS(mds_pa,
         file = file.path(dataPath,"inputs/BarentsDeep_mds_pa.rds"))
 ```
 
@@ -384,7 +413,7 @@ Make function?
 # mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_pa<-unlist(lapply(Xmds_pa, function(v){v[[22]]})) 
+mds_stress_pa<-unlist(lapply(mds_pa, function(v){v[[22]]})) 
 
 ordered_pa <-order(mds_stress_pa)
 
@@ -394,14 +423,14 @@ mds_stress_pa[ordered_pa[2]]
 mds_stress_pa[ordered_pa[10]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_pa<-postMDS(Xmds_pa[[ordered_pa[1]]],
+mds_best_pa<-postMDS(mds_pa[[ordered_pa[1]]],
                   geodist_pa, 
                   pc = TRUE, 
                   halfchange = TRUE, 
                   threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_pa
 
-mds_secbest_pa <- postMDS(Xmds_pa[[ordered_pa[2]]],
+mds_secbest_pa <- postMDS(mds_pa[[ordered_pa[2]]],
                           geodist_pa, 
                           pc = TRUE, 
                           halfchange = TRUE, 
@@ -509,7 +538,7 @@ Jonatan's parallel solution took 5.4mins, before it took 10mins
 #Jonatan's upgrade for speed - parallel processing of mds reptitions
 #library(furrr) # Package to run non sequential functions in parallel
 #library(purrr)
-plan(multisession)
+#plan(multisession)
 
 d <- 2
 
@@ -517,7 +546,7 @@ i <-200 # number of reps
 
 List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
 start_t<-Sys.time()
-Xmds_r6<-furrr::future_map(List_geodist_r6, 
+mds_r6<-furrr::future_map(List_geodist_r6, 
                   function(x) monoMDS(x,
                                       matrix(c(runif(dim(otu_6)[1]*d)),
                                              nrow = dim(otu_6)[1]),
@@ -533,7 +562,7 @@ Sys.time() - start_t
 
 ##### Save the result - don't run if loading saved object
 ```{r}
-saveRDS(Xmds_r6,
+saveRDS(mds_r6,
         file = file.path(dataPath,"inputs/BarentsDeep_mds_r6.rds")) 
 ```
 
@@ -546,7 +575,7 @@ saveRDS(Xmds_r6,
 # mds <- readRDS(file = "../SplitRev2_mds.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_r6<-unlist(lapply(Xmds_r6, function(v){v[[22]]})) 
+mds_stress_r6<-unlist(lapply(mds_r6, function(v){v[[22]]})) 
 
 ordered_r6 <-order(mds_stress_r6)
 
@@ -556,14 +585,14 @@ mds_stress_r6[ordered_r6[2]]
 mds_stress_r6[ordered_r6[100]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_r6<-postMDS(Xmds_r6[[ordered_r6[1]]],
+mds_best_r6<-postMDS(mds_r6[[ordered_r6[1]]],
                      geodist_r6, 
                      pc = TRUE, 
                      halfchange = TRUE, 
                      threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_r6
 
-mds_secbest_r6<-postMDS(Xmds_r6[[ordered_r6[2]]],
+mds_secbest_r6<-postMDS(mds_r6[[ordered_r6[2]]],
                         geodist_r6, 
                         pc = TRUE, 
                         halfchange = TRUE, 
@@ -720,7 +749,7 @@ p_gnmds_r6 <- ggplot(data = otu_6,
              colour = "lightgray")
 
 p_dca_r6 <- ggplot(data = otu_6,
-                   aes(x = dca1,
+                   aes(x = -dca1,
                        y = dca2)) +
   theme_classic() +
   coord_fixed() +
