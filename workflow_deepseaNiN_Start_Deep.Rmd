@@ -182,7 +182,7 @@ env.invSel_locations
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(1,which(colnames(env_sort)=="bathy")-1)]
+env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
 
 table(is.na(otu))
 
@@ -794,7 +794,7 @@ env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bath
                            MLDsd_Robinson #not meaningful
                            ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
-env_corr <- env_cont %>% select(-c(SampID))
+env_corr <- env_cont #%>% select(-c(SampID))
 
 # env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
 # env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
