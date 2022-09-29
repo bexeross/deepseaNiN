@@ -216,7 +216,7 @@ env.invSel_locations
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(1:which(colnames(envSel)=="bathy")-1)]
+env<-envSel[, -c(2:(which(colnames(envSel)=="bathy")-1))]
 
 table(is.na(otu))
 
@@ -538,7 +538,7 @@ Jonatan's parallel solution took 5.4mins, before it took 10mins
 #Jonatan's upgrade for speed - parallel processing of mds reptitions
 #library(furrr) # Package to run non sequential functions in parallel
 #library(purrr)
-#plan(multisession)
+plan(multisession)
 
 d <- 2
 
