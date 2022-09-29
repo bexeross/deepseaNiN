@@ -55,8 +55,8 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-09-29.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %>% as.data.frame
 
 #left join and split to ensure ordered identically
 
