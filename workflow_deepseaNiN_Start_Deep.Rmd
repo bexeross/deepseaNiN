@@ -362,7 +362,7 @@ Using old version without furrr
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
-saveRDS(Xmds_pa,
+saveRDS(mds_pa,
         file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_pa.rds"))
 ```
 
@@ -380,7 +380,7 @@ Make function?
 # mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_pa<-unlist(lapply(Xmds_pa, function(v){v[[22]]})) 
+mds_stress_pa<-unlist(lapply(mds_pa, function(v){v[[22]]})) 
 
 ordered_pa <-order(mds_stress_pa)
 
@@ -390,14 +390,14 @@ mds_stress_pa[ordered_pa[2]]
 mds_stress_pa[ordered_pa[10]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_pa<-postMDS(Xmds_pa[[ordered_pa[1]]],
+mds_best_pa<-postMDS(mds_pa[[ordered_pa[1]]],
                   geodist_pa, 
                   pc = TRUE, 
                   halfchange = TRUE, 
                   threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_pa
 
-mds_secbest_pa <- postMDS(Xmds_pa[[ordered_pa[2]]],
+mds_secbest_pa <- postMDS(mds_pa[[ordered_pa[2]]],
                           geodist_pa, 
                           pc = TRUE, 
                           halfchange = TRUE, 
@@ -529,7 +529,7 @@ Sys.time()
 
 ##### Save the result - don't run if loading saved object
 ```{r}
-saveRDS(Xmds_r6,
+saveRDS(mds_r6,
         file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_r6.rds")) 
 ```
 
@@ -542,7 +542,7 @@ saveRDS(Xmds_r6,
 # mds <- readRDS(file = "../SplitRev2_mds.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_r6<-unlist(lapply(Xmds_r6, function(v){v[[22]]})) 
+mds_stress_r6<-unlist(lapply(mds_r6, function(v){v[[22]]})) 
 
 ordered_r6 <-order(mds_stress_r6)
 
@@ -552,14 +552,14 @@ mds_stress_r6[ordered_r6[2]]
 mds_stress_r6[ordered_r6[100]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_r6<-postMDS(Xmds_r6[[ordered_r6[1]]],
+mds_best_r6<-postMDS(mds_r6[[ordered_r6[1]]],
                      geodist_r6, 
                      pc = TRUE, 
                      halfchange = TRUE, 
                      threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_r6
 
-mds_secbest_r6<-postMDS(Xmds_r6[[ordered_r6[2]]],
+mds_secbest_r6<-postMDS(mds_r6[[ordered_r6[2]]],
                         geodist_r6, 
                         pc = TRUE, 
                         halfchange = TRUE, 
@@ -886,7 +886,8 @@ for (i in seq(ncol(env_os))) {
                       var.label = names(env_os)[i],
                       gen.text.size = 10,
                       title.text.size = 15,
-                      leg.text.size = 10)
+                      leg.text.size = 10
+                      )
   
   ordsrfs[[i]] <- os.i$plot
 }
@@ -1179,7 +1180,7 @@ env_vis<- env_vis %>%
             landscape == "22" ~ "Canyon",
             landscape == "31" ~ "Valley",
             landscape == "32" ~ "Fjord",
-            landscape == "41" ~ "hiDensPlain",
+            landscape == "41" ~ "DeepSeaPlane",
             landscape == "42" ~ "SlopePlain",
             landscape == "43" ~ "ShelfPlain",
             landscape == "431" ~ "shallowValley"
