@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN - loDens <1031.8 without SpitsbergenBanken outliers"
+title: "MAREANO - NiN - hi Dens below 1500m depth"
 authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -43,12 +43,12 @@ source("gg_ordisurf_viridis.R")
 
 LOAD OBJECTS IF HAVE RUN ALREADY
 ```{r}
-geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_geodist_pa.rds"))
-geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_geodist_r6.rds"))
+geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_pa.rds"))
+geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_r6.rds"))
 
-mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_pa.rds"))
-mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_r6.rds"))
-#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_r6_1000rep.rds"))
+mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_pa.rds"))
+mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6.rds"))
+#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6_1000rep.rds"))
 
 ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
 ```
@@ -57,8 +57,8 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_env_sort_2022-09-29.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_otu_sort_2022-09-29.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_env_sort_2022-09-29.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_otu_sort_2022-09-29.csv")) %>% as.data.frame
 
 
 table(env_sort$SampID2 == otu_sort$SampID)
@@ -288,7 +288,7 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_b1500_geodist_pa.rds")))
 ```
 
 #### Ordination
@@ -363,7 +363,7 @@ Using old version without furrr
 can take a few mins
 ```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_pa.rds"))
+        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_pa.rds"))
 ```
 
 
@@ -414,7 +414,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"outputs/hiDens_procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/hiDens_b1500_procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -444,7 +444,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -474,7 +474,7 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_r6.rds")))
 ```
 
 
@@ -530,7 +530,7 @@ Sys.time()
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -576,7 +576,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/hiDens_procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/hiDens_b1500_procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -684,7 +684,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -737,7 +737,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/hiDens_gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/hiDens_b1500_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -837,7 +837,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -901,7 +901,7 @@ ordsrfs_plt
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/hiDens_ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/hiDens_b1500_ordisurfs_top_corr.png"),
           width = 2000,
           height = 2500)
 
@@ -961,7 +961,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/hiDens_ordisurfs_man_sel_domean.png"),
+          filename = file.path(dataPath,"outputs/hiDens_b1500_ordisurfs_man_sel_domean.png"),
           width = 2000,
           height = 2000)
 
@@ -1032,7 +1032,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_EnvFit_man_sel_cln_domean.png"),
+ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_EnvFit_man_sel_cln_domean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1138,7 +1138,7 @@ c25 <- c(
   "#CAB2D6", # lt purple
   "#FDBF6F", # lt orange
   "gray70", "khaki2",
-  "maroon", "orchid1", "hiDenspink1", "blue1", "steelblue4",
+  "maroon", "orchid1", "hiDens_b1500pink1", "blue1", "steelblue4",
   "darkturquoise", "green1", "yellow4", "yellow3",
   "darkorange4", "brown"
 )
@@ -1240,7 +1240,7 @@ cat_var_plots<-p_mld+p_sed+p_land+p_gmo
 ##### Save the plot
 ```{r}
 ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/hiDens_gnmds_catvar.png"),
+          filename = file.path(dataPath,"outputs/hiDens_b1500_gnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
