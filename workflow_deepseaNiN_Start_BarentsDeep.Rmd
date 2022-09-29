@@ -105,8 +105,8 @@ env_sort_locations
 ### Data cleaning
 ```{r}
 ## Removing NAs
-otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:23)]), ]
-envCompl <- env_sort[complete.cases(env_sort[, -c(1:23)]), ]
+otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(otu_sort)=="Acesta_excavata")-1)]), ]
+envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
 sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
@@ -186,7 +186,7 @@ env.invSel_locations
 
 ### Whole dataset for first run
 ```{r}
-otu<-otuSel[,-c(1:which(colnames(outSel)=="Acesta_excavata")-1)]
+otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
 env<-envSel[, -c(1:which(colnames(envSel)=="bathy")-1)]
 
 table(is.na(otu))
