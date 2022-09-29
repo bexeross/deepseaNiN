@@ -182,7 +182,7 @@ env.invSel_locations
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(1,which(colnames(env_sort)=="bathy")-1)]
+env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
 
 table(is.na(otu))
 
@@ -794,7 +794,7 @@ env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bath
                            MLDsd_Robinson #not meaningful
                            ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
-env_corr <- env_cont %>% select(-c(SampID))
+env_corr <- env_cont #%>% select(-c(SampID))
 
 # env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
 # env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
@@ -855,7 +855,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.4 #decide
+cor_cut<-0.52 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -926,7 +926,8 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+                  "bathy", #intuitive for comparisons
+                  "slope9"#intuitive for comparisons
                 )]
 env_os_m
 str(env_os_m)
