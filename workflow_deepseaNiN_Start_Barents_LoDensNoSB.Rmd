@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN - hi Dens below 1500m depth"
+title: "MAREANO - NiN - loDens <1031.8 without SpitsbergenBanken outliers"
 authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -14,7 +14,7 @@ always_allow_html: true
 
 ## Packages
 ```{r}
-library(magrittr)
+
 library(dplyr)
 library(ggcorrplot)
 library(ggpubr)
@@ -29,7 +29,6 @@ library(tidyverse)
 library(viridis)
 library(GGally)
 library(ggrepel)
-library(ggordiplots)
 library(readr)
 library(RColorBrewer)
 library(oce) 
@@ -37,18 +36,21 @@ library(plotly)
 library(purrr)
 library(furrr)
 
+#install_github("jfq3/ggordiplots")
+library(ggordiplots)
+
 
 source("gg_ordisurf_viridis.R")
 ```
 
 LOAD OBJECTS IF HAVE RUN ALREADY
 ```{r}
-geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_pa.rds"))
-geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_r6.rds"))
+geodist_pa<-readRDS(file.path(dataPath,"inputs/Barents_geodist_pa.rds"))
+geodist_r6<-readRDS(file.path(dataPath,"inputs/Barents_geodist_r6.rds"))
 
-mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_pa.rds"))
-mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6.rds"))
-#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6_1000rep.rds"))
+mds_pa<-readRDS(file.path(dataPath,"inputs/Barents_mds_pa.rds"))
+mds_r6<-readRDS(file.path(dataPath,"inputs/Barents_mds_r6.rds"))
+#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/Barents_mds_r6_1000rep.rds"))
 
 ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
 ```
@@ -57,15 +59,20 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_env_sort_2022-09-29.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_otu_sort_2022-09-29.csv")) %>% as.data.frame
-
-
-table(env_sort$SampID2 == otu_sort$SampID)
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_env_sort_2022-09-29.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_sort_2022-09-29.csv")) %>% as.data.frame
 
 
 #must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
 
+joinedDat<- left_join(env_sort,otu_sort, by=c("SampID"="SampID"))
+joinedDat1<-subset(joinedDat, bathy <= -99)
+summary(joinedDat1$bathy)
+
+env_sort<-joinedDat1 %>% select(c(2:351))
+otu_sort<-joinedDat1 %>% select(c(2,352:491))
+
+#table(env_sort$SampID2 == otu_sort$SampID)
 dim(env_sort)
 dim(otu_sort)
 ```
@@ -100,7 +107,7 @@ env_sort_locations
 ### Data cleaning
 ```{r}
 ## Removing NAs
-otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
+otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ] # make sure we have the columms 
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
@@ -181,8 +188,9 @@ env.invSel_locations
 
 ### Whole dataset for first run
 ```{r}
-otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
+
+otu<-otuSel[,-c(1: which(colnames(otuSel)=="Lithodidae")-1)]
+env<-envSel[,-c(1: which(colnames(env_sort)=="bathy")-1)]
 
 table(is.na(otu))
 
@@ -288,72 +296,71 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_b1500_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/Barents_geodist_pa.rds")))
 ```
 
 #### Ordination
 
 #### monoMDS - don't run if loading saved object
 took 6.4mins with jonatan's paralell solution (usually ~10mins)
-
-Using old version without furrr
 ```{r}
+# 
+# Sys.time()
+# d <- 2
+# mds_pa <- list()
+# 
+# for (i in 1:100) {
+#   mds_pa[[i]]<-monoMDS(geodist_pa,
+#                     matrix(c(runif(dim(otu_pa)[1]*d)),
+#                            nrow = dim(otu_pa)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
 
- Sys.time()
- d <- 2
- mds_pa <- list()
 
- for (i in 1:100) {
-   mds_pa[[i]]<-monoMDS(geodist_pa,
-                     matrix(c(runif(dim(otu_pa)[1]*d)),
-                            nrow = dim(otu_pa)[1]),
-                     k = d,
-                     model = "global",
-                     maxit = 2000,
-                     smin = 1e-7,
-                     sfgrmin = 1e-7)
- }
- Sys.time()
-
-
-# # monoMDS
-#  d <- 2
+## monoMDS
+# d <- 2
 # mds_r6 <- list()
 # 
-#  Sys.time()
-#  for (i in 1:200) {
-#    mds_r6[[i]]<-monoMDS(geodist_r6,
-#                      matrix(c(runif(dim(otu_6)[1]*d)),
-#                             nrow = dim(otu_6)[1]),
-#                      k = d,
-#                      model = "global",
-#                      maxit = 2000,
-#                      smin = 1e-7,
-#                      sfgrmin = 1e-7)# }
-#  Sys.time()
+# Sys.time()
+# for (i in 1:200) {
+#   mds_r6[[i]]<-monoMDS(geodist_r6,
+#                     matrix(c(runif(dim(otu_6)[1]*d)),
+#                            nrow = dim(otu_6)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
 
-# #Jonatan's upgrade for speed - parallel processing of mds reptitions
-# library(furrr) # Package to run non sequential functions in parallel
-# #library(purrr)
-# plan(multisession)
-# 
-# d <- 2
-# 
-# i <-200 # number of reps
-# 
-# List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
-# start_t<-Sys.time()
-# Xmds_pa<-furrr::future_map(List_geodist_pa, 
-#                   function(x) monoMDS(x,
-#                                       matrix(c(runif(dim(otu_6)[1]*d)),
-#                                              nrow = dim(otu_6)[1]),
-#                                       k = d,
-#                                       model = "global",
-#                                       maxit = 2000,
-#                                       smin = 1e-7,
-#                                       sfgrmin = 1e-7),
-#                   .progress = TRUE)
-# Sys.time() - start_t
+#Jonatan's upgrade for speed - parallel processing of mds reptitions
+library(furrr) # Package to run non sequential functions in parallel
+#library(purrr)
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_pa<-furrr::future_map(List_geodist_pa, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
 
 
 
@@ -362,8 +369,8 @@ Using old version without furrr
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
-saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_pa.rds"))
+saveRDS(Xmds_pa,
+        file = file.path(dataPath,"inputs/Barents_mds_barents_pa.rds"))
 ```
 
 
@@ -380,7 +387,7 @@ Make function?
 # mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_pa<-unlist(lapply(mds_pa, function(v){v[[22]]})) 
+mds_stress_pa<-unlist(lapply(Xmds_pa, function(v){v[[22]]})) 
 
 ordered_pa <-order(mds_stress_pa)
 
@@ -390,14 +397,14 @@ mds_stress_pa[ordered_pa[2]]
 mds_stress_pa[ordered_pa[10]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_pa<-postMDS(mds_pa[[ordered_pa[1]]],
+mds_best_pa<-postMDS(Xmds_pa[[ordered_pa[1]]],
                   geodist_pa, 
                   pc = TRUE, 
                   halfchange = TRUE, 
                   threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_pa
 
-mds_secbest_pa <- postMDS(mds_pa[[ordered_pa[2]]],
+mds_secbest_pa <- postMDS(Xmds_pa[[ordered_pa[2]]],
                           geodist_pa, 
                           pc = TRUE, 
                           halfchange = TRUE, 
@@ -414,7 +421,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"outputs/hiDens_b1500_procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/Barents_procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -444,7 +451,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -474,63 +481,63 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/Barents_below100_geodist_r6.rds")))
 ```
 
 
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-(Jonatan's parallel solution took 5.4mins, before it took 10mins)
+Jonatan's parallel solution took 5.4mins, before it took 10mins
 
-Using older version without furrr.
+
 ```{r}
 ## monoMDS
-d <- 2
-mds_r6 <- list()
-
-Sys.time()
-for (i in 1:200) {
-  mds_r6[[i]]<-monoMDS(geodist_r6,
-                    matrix(c(runif(dim(otu_6)[1]*d)),
-                           nrow = dim(otu_6)[1]),
-                    k = d,
-                    model = "global",
-                    maxit = 2000,
-                    smin = 1e-7,
-                    sfgrmin = 1e-7)
-}
-Sys.time()
-
-# #Jonatan's upgrade for speed - parallel processing of mds reptitions
-# #library(furrr) # Package to run non sequential functions in parallel
-# #library(purrr)
-# plan(multisession)
-# 
 # d <- 2
+# mds_r6 <- list()
 # 
-# i <-200 # number of reps
-# 
-# List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
-# start_t<-Sys.time()
-# Xmds_r6<-furrr::future_map(List_geodist_r6, 
-#                   function(x) monoMDS(x,
-#                                       matrix(c(runif(dim(otu_6)[1]*d)),
-#                                              nrow = dim(otu_6)[1]),
-#                                       k = d,
-#                                       model = "global",
-#                                       maxit = 2000,
-#                                       smin = 1e-7,
-#                                       sfgrmin = 1e-7),
-#                   .progress = TRUE)
-# Sys.time() - start_t
+# Sys.time()
+# for (i in 1:200) {
+#   mds_r6[[i]]<-monoMDS(geodist_r6,
+#                     matrix(c(runif(dim(otu_6)[1]*d)),
+#                            nrow = dim(otu_6)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
+
+#Jonatan's upgrade for speed - parallel processing of mds reptitions
+#library(furrr) # Package to run non sequential functions in parallel
+#library(purrr)
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_r6<-furrr::future_map(List_geodist_r6, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
 
 ```
 
 ##### Save the result - don't run if loading saved object
 ```{r}
-saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_mds_r6.rds")) 
+saveRDS(Xmds_r6,
+        file = file.path(dataPath,"inputs/Barents_below100_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -542,7 +549,7 @@ saveRDS(mds_r6,
 # mds <- readRDS(file = "../SplitRev2_mds.rds")
 
 ## Extracting the stress of each nmds iteration
-mds_stress_r6<-unlist(lapply(mds_r6, function(v){v[[22]]})) 
+mds_stress_r6<-unlist(lapply(Xmds_r6, function(v){v[[22]]})) 
 
 ordered_r6 <-order(mds_stress_r6)
 
@@ -552,14 +559,14 @@ mds_stress_r6[ordered_r6[2]]
 mds_stress_r6[ordered_r6[100]]
 
 ## Scaling of axes to half change units and varimax rotation by postMDS
-mds_best_r6<-postMDS(mds_r6[[ordered_r6[1]]],
+mds_best_r6<-postMDS(Xmds_r6[[ordered_r6[1]]],
                      geodist_r6, 
                      pc = TRUE, 
                      halfchange = TRUE, 
                      threshold = ep)     # Is this threshold related to the epsilon above?
 mds_best_r6
 
-mds_secbest_r6<-postMDS(mds_r6[[ordered_r6[2]]],
+mds_secbest_r6<-postMDS(Xmds_r6[[ordered_r6[2]]],
                         geodist_r6, 
                         pc = TRUE, 
                         halfchange = TRUE, 
@@ -576,7 +583,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/hiDens_b1500_procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/Barents_below100_procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -606,7 +613,7 @@ dev.off()
 <!-- ##### Save the result - don't run if loading saved object -->
 <!-- ```{r} -->
 <!-- saveRDS(mds_r6_1000, #obj added_1000 -->
-<!--         file = file.path(dataPath,"inputs/SPLITS/DEEP/mds_r6_1000rep.rds")) #change from 200 -->
+<!--         file = file.path(dataPath,"inputs/mds_r6_1000rep.rds")) #change from 200 -->
 <!-- ``` -->
 
 <!-- ##### Best nmds solution r6 1000 rep -->
@@ -684,7 +691,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -737,7 +744,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/hiDens_b1500_gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/Barents_below100_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -794,7 +801,8 @@ env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bath
                            MLDsd_Robinson #not meaningful
                            ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
-env_corr <- env_cont #%>% select(-c(SampID))
+
+env_corr <- env_cont # %>% select(-c(SampID))
 
 # env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
 # env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
@@ -837,7 +845,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/Barents_below100_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -855,7 +863,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.52 #decide
+cor_cut<-0.38 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -886,22 +894,21 @@ for (i in seq(ncol(env_os))) {
                       var.label = names(env_os)[i],
                       gen.text.size = 10,
                       title.text.size = 15,
-                      leg.text.size = 10
-                      )
+                      leg.text.size = 10)
   
   ordsrfs[[i]] <- os.i$plot
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 5,
-                         ncol = 4)
+                         nrow = 4,
+                         ncol = 5)
 
 ordsrfs_plt
 ```
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/hiDens_b1500_ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/Barents_below100_ordisurfs_top_corr.png"),
           width = 2000,
           height = 2500)
 
@@ -926,8 +933,7 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy", #intuitive for comparisons
-                  "slope9"#intuitive for comparisons
+                  "bathy" #intuitive for comparisons
                 )]
 env_os_m
 str(env_os_m)
@@ -962,7 +968,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/hiDens_b1500_ordisurfs_man_sel_domean.png"),
+          filename = file.path(dataPath,"outputs/Barents_below100_ordisurfs_man_sel_domean.png"),
           width = 2000,
           height = 2000)
 
@@ -1033,7 +1039,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_EnvFit_man_sel_cln_domean.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_EnvFit_man_sel_cln_domean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1042,6 +1048,8 @@ ggsave(filename = file.path(dataPath,"outputs/hiDens_b1500_EnvFit_man_sel_cln_do
 #### use dataset with categorical var included
 
 ```{r}
+#SampID <- env_sort$SampID
+
 env_vis<-env
 env_vis$gnmds1 <- otu_6$gnmds1
 env_vis$gnmds2 <- otu_6$gnmds2
@@ -1139,7 +1147,7 @@ c25 <- c(
   "#CAB2D6", # lt purple
   "#FDBF6F", # lt orange
   "gray70", "khaki2",
-  "maroon", "orchid1", "hiDens_b1500pink1", "blue1", "steelblue4",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
   "darkturquoise", "green1", "yellow4", "yellow3",
   "darkorange4", "brown"
 )
@@ -1181,7 +1189,7 @@ env_vis<- env_vis %>%
             landscape == "22" ~ "Canyon",
             landscape == "31" ~ "Valley",
             landscape == "32" ~ "Fjord",
-            landscape == "41" ~ "DeepSeaPlane",
+            landscape == "41" ~ "DeepPlain",
             landscape == "42" ~ "SlopePlain",
             landscape == "43" ~ "ShelfPlain",
             landscape == "431" ~ "shallowValley"
@@ -1241,7 +1249,7 @@ cat_var_plots<-p_mld+p_sed+p_land+p_gmo
 ##### Save the plot
 ```{r}
 ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/hiDens_b1500_gnmds_catvar.png"),
+          filename = file.path(dataPath,"outputs/Barents_gnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
