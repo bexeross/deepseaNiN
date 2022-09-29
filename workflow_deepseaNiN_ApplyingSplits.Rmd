@@ -25,8 +25,8 @@ In this instance, for example, we are interested in at least making one split (i
 
 
 ```{r}
-env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-09-29.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %>% as.data.frame
 
 #left join and split to ensure ordered identically
 
@@ -39,30 +39,6 @@ joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 
 
 ## MAIN SPLITS
-
-### Selections to explore deep temp splits
-```{r}
-SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
-plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
-SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
-SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,352:491))
-
-MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
-plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
-MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
-MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
-```
-
-##### SAVE DATASETS
-```{r}
-write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
-write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
-write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
-```
-
-
 
 ### Density threshold splits
 
@@ -229,5 +205,28 @@ write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.
 write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
 write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
 
+```
+
+
+### Selections to explore deep temp splits
+```{r}
+SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
+plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
+SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
+SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,352:491))
+
+MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
+plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
+MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
+MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
+write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
+write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
 ```
 
