@@ -115,7 +115,7 @@ plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
                                                                         # "1798_02",
                                                                         # "1800_00",
                                                                         # "1995_00")))
-loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathy<"-50")
+loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathy<"-99")
 
 
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
