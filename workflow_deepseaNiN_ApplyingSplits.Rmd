@@ -52,14 +52,14 @@ joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
 
 loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1031.1)
 plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
-LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:351))
-LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,352:491))                                
+LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:391))
+LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,397:532))                                
 
 
 hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.1)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
-HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:351))
-HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,352:491))  
+HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:391))
+HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,397:532))  
 ```
 
 
@@ -72,6 +72,32 @@ write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_
 write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_env_sort_", Sys.Date(),".csv"))))
 ```
 
+
+### Split HiDens at 1500m
+
+```{r}
+DeepBelow1500<-subset(hiDensDeepJoinedDat,bathy>"-1500")
+plot(DeepBelow1500$X.y, DeepBelow1500$Y)
+DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))
+DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  
+
+DeepAbove1500<-subset(hiDensDeepJoinedDat,bathy<"-1500")
+plot(DeepAbove1500$X.y, DeepAbove1500$Y)
+DeepAbove1500_otu_sort<-DeepAbove1500 %>% select(c(2:391))
+DeepAbove1500_env_sort<-DeepAbove1500 %>% select(c(2,397:532))  
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(DeepBelow1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_otu_sort_", Sys.Date(),".csv"))))
+write.csv(DeepBelow1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_env_sort_", Sys.Date(),".csv"))))
+
+write.csv(DeepAbove1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_otu_sort_", Sys.Date(),".csv"))))
+write.csv(DeepAbove1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_env_sort_", Sys.Date(),".csv"))))
+```
+
+
+
 ### REMOVE SPITSBERGENBANKEN OUTLIERS FROM LowDens Dataset
 
 c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
@@ -81,20 +107,22 @@ c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995
 
 plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
 
-loDensNoSBJoinedDat <-loDensShallowJoinedDat %>% filter(!(SampID %in% c("1805_01",
-                                                                        "1801_00",
-                                                                        "1802_02", 
-                                                                        "1799_01", 
-                                                                        "1803_00", 
-                                                                        "1798_02",
-                                                                        "1800_00",
-                                                                        "1995_00")))
+#loDensNoSBJoinedDat <-loDensShallowJoinedDat %>% filter(!(SampID %in% c("1805_01",
+                                                                        # "1801_00",
+                                                                        # "1802_02", 
+                                                                        # "1799_01", 
+                                                                        # "1803_00", 
+                                                                        # "1798_02",
+                                                                        # "1800_00",
+                                                                        # "1995_00")))
+loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathy<"-99")
+
 
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
 
 
-LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:351))
-LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,352:491))  
+LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:391))
+LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,397:532))  
 
 ```
 ##### SAVE DATASETS
@@ -114,14 +142,14 @@ plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
 
 loDensNoSBhiO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean>305)
 plot(loDensNoSBhiO2JoinedDat$X.y, loDensNoSBhiO2JoinedDat$Y)
-LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:351))
-LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,352:491))  
+LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))
+LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532))  
 
 
 loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<305)
 plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
-LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:351))
-LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,352:491))    
+LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))
+LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))    
 
 ```
 ##### SAVE DATASETS
@@ -178,18 +206,18 @@ After these explorations it was decided to generate a subset by density. A thres
 ```{r}
 NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
 plot(NorlandSlopeJoinedDat$X.y, NorlandSlopeJoinedDat$Y)
-NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:351))
-NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,352:491))
+NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:391))
+NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,397:532))
 
 FinnmarkCoastJoinedDat<-subset(joinedDat, X.y>599461 & X.y<1138061 & Y>7794534 & Y<8013534)
 plot(FinnmarkCoastJoinedDat$X.y, FinnmarkCoastJoinedDat$Y)
-FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:351))
-FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,352:491))
+FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:391))
+FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,397:532))
 
 MareanoØstJoinedDat<-subset(joinedDat, X.y>1009861 & X.y<1162261 & Y>7834134 & Y<8505934)
 plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
-MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
-MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
+MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:391))
+MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,397:532))
 
 
 ```
@@ -212,13 +240,13 @@ write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys
 ```{r}
 SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
 plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
-SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
-SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,352:491))
+SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:391))
+SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,397:532))
 
 MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
 plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
-MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
-MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
+MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:391))
+MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,397:532))
 ```
 
 ##### SAVE DATASETS
