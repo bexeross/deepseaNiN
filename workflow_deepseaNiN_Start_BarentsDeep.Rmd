@@ -52,12 +52,21 @@ mds_r6<-readRDS(file.path(dataPath,"inputs/BarentsDeep_mds_r6.rds"))
 ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
 ```
 
+## Combine Barents and Deep datasets
+```{r}
+env_sort1 <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_env_sort_2022-09-29.csv")) %>% as.data.frame
+otu_sort1 <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_sort_2022-09-29.csv")) %>% as.data.frame
+
+env_sort2 <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_env_sort_2022-09-29.csv")) %>% as.data.frame
+otu_sort2 <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/HDensDeep_otu_sort_2022-09-29.csv")) %>% as.data.frame
+
+env_sort <- rbind(env_sort1,env_sort2)
+otu_sort <- rbind(otu_sort1, otu_sort2)
+```
 
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/BarentsDeep_env_sort_2022-09-28.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/BarentsDeep_otu_sort_2022-09-28.csv")) %>% as.data.frame
 
 
 table(env_sort$SampID2 == otu_sort$SampID)
