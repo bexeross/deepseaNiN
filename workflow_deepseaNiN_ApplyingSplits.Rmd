@@ -20,100 +20,25 @@ In this instance, for example, we are interested in at least making one split (i
 - the finmark coast from Tromsøflaket to the southern end of Mareano Øst to follow the temperature gradient east into the Barents sea
 - the MAREANO Øst region where we can follow a temperature gradient from the coast North into arctic water
 
-### Choose area:
-Choosing the exact areas can be done using the interactive "ggplotly" XY map of temperature to zoom in on the area concerned and note the bounding box values to use.
 
-That is reproduced here:
-##### X v Y - temp
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = X,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = Tmean_Robinson),
-             size = 1) +
-  scale_colour_gradientn(limits = c(-2, 10),
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by mean temp")
+## OPTIONAL: load new dataset and apply splits SKIP IF ALREADY HAVE "joinedDat"
 
-ggplotly(tb_ax1)
-```
-
-This gives us the following bounding box selections
-
-NorlandSlope: X:205261 - 364461, Y: 743294 - 7621734
-FinnmarkCoast: X: 599461 - 1138061, Y: 7794534 - 8013534
-MareanoØst: X: 1009861 - 1162261, Y: 7834134 - 8505934
-
-Additional selections made after investigating these three areas were made to check the temperature thrshold on the slope in the north and south:
-
-SvalbardSlope: X: 361061 - 561862, Y: 7915734 - 8782734
-MøreSlope: X: -47738 - 93861, Y: 6976734 - 7234534
-
-After these explorations it was decided to generate a subset by density. A threshold of 1031.8 was used to split the dataset.
-
-## Make data subsets to explore
-
-### Geographic subsets to explore temp gradients
 
 ```{r}
-NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
-plot(NorlandSlopeJoinedDat$X.y, NorlandSlopeJoinedDat$Y)
-NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:351))
-NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,352:491))
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-09-29.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %>% as.data.frame
 
-FinnmarkCoastJoinedDat<-subset(joinedDat, X.y>599461 & X.y<1138061 & Y>7794534 & Y<8013534)
-plot(FinnmarkCoastJoinedDat$X.y, FinnmarkCoastJoinedDat$Y)
-FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:351))
-FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,352:491))
+#left join and split to ensure ordered identically
 
-MareanoØstJoinedDat<-subset(joinedDat, X.y>1009861 & X.y<1162261 & Y>7834134 & Y<8505934)
-plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
-MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
-MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
-
-
-```
-
-##### SAVE DATASETS
-```{r}
-write.csv(NSotu_sort, file=file.path(dataPath,(paste0("inputs/NSotu_sort_", Sys.Date(),".csv"))))
-write.csv(NSenv_sort, file=file.path(dataPath,(paste0("inputs/NSenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(FCotu_sort, file=file.path(dataPath,(paste0("inputs/FCotu_sort_", Sys.Date(),".csv"))))
-write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
-write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
+#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 
 ```
 
 
 
 
-### Selections to explore deep temp splits
-```{r}
-SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
-plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
-SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
-SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,352:491))
-
-MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
-plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
-MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
-MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
-```
-
-##### SAVE DATASETS
-```{r}
-write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
-write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
-
-write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
-write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
-```
-
-
+## MAIN SPLITS
 
 ### Density threshold splits
 
@@ -207,3 +132,101 @@ write.csv(LDnoSBlo02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo0
 write.csv(LDnoSBhi02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDnoSBhi02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_env_sort_", Sys.Date(),".csv"))))
 ```
+
+
+
+--------------
+
+## OPTIONAL: eplore an interactive plot to aid split choices
+
+### Choose geographic areas:
+Choosing the exact areas can be done using the interactive "ggplotly" XY map of temperature to zoom in on the area concerned and note the bounding box values to use.
+
+That is reproduced here:
+##### X v Y - temp
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),
+             size = 1) +
+  scale_colour_gradientn(limits = c(-2, 10),
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by mean temp")
+
+ggplotly(tb_ax1)
+```
+
+This gives us the following bounding box selections
+
+NorlandSlope: X:205261 - 364461, Y: 743294 - 7621734
+FinnmarkCoast: X: 599461 - 1138061, Y: 7794534 - 8013534
+MareanoØst: X: 1009861 - 1162261, Y: 7834134 - 8505934
+
+Additional selections made after investigating these three areas were made to check the temperature thrshold on the slope in the north and south:
+
+SvalbardSlope: X: 361061 - 561862, Y: 7915734 - 8782734
+MøreSlope: X: -47738 - 93861, Y: 6976734 - 7234534
+
+After these explorations it was decided to generate a subset by density. A threshold of 1031.8 was used to split the dataset.
+
+## Make data subsets to explore
+
+### Geographic subsets to explore temp gradients
+
+```{r}
+NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
+plot(NorlandSlopeJoinedDat$X.y, NorlandSlopeJoinedDat$Y)
+NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:351))
+NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,352:491))
+
+FinnmarkCoastJoinedDat<-subset(joinedDat, X.y>599461 & X.y<1138061 & Y>7794534 & Y<8013534)
+plot(FinnmarkCoastJoinedDat$X.y, FinnmarkCoastJoinedDat$Y)
+FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:351))
+FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,352:491))
+
+MareanoØstJoinedDat<-subset(joinedDat, X.y>1009861 & X.y<1162261 & Y>7834134 & Y<8505934)
+plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
+MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:351))
+MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,352:491))
+
+
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(NSotu_sort, file=file.path(dataPath,(paste0("inputs/NSotu_sort_", Sys.Date(),".csv"))))
+write.csv(NSenv_sort, file=file.path(dataPath,(paste0("inputs/NSenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(FCotu_sort, file=file.path(dataPath,(paste0("inputs/FCotu_sort_", Sys.Date(),".csv"))))
+write.csv(FCenv_sort, file=file.path(dataPath,(paste0("inputs/FCenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(MØotu_sort, file=file.path(dataPath,(paste0("inputs/MOotu_sort_", Sys.Date(),".csv"))))
+write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys.Date(),".csv"))))
+
+```
+
+
+### Selections to explore deep temp splits
+```{r}
+SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
+plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
+SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:351))
+SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,352:491))
+
+MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
+plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
+MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:351))
+MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,352:491))
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(SSotu_sort, file=file.path(dataPath,(paste0("inputs/SSotu_sort_", Sys.Date(),".csv"))))
+write.csv(SSenv_sort, file=file.path(dataPath,(paste0("inputs/SSenv_sort_", Sys.Date(),".csv"))))
+
+write.csv(MSotu_sort, file=file.path(dataPath,(paste0("inputs/MSotu_sort_", Sys.Date(),".csv"))))
+write.csv(MSenv_sort, file=file.path(dataPath,(paste0("inputs/MSenv_sort_", Sys.Date(),".csv"))))
+```
+
