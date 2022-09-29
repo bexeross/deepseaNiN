@@ -72,6 +72,32 @@ write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_
 write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_env_sort_", Sys.Date(),".csv"))))
 ```
 
+
+### Split HiDens at 1500m
+
+```{r}
+DeepAbove1500<-subset(hiDensDeepJoinedDat,bathy>"-1500")
+plot(DeepAbove1500$X.y, DeepAbove1500$Y)
+DeepAbove1500_otu_sort<-DeepAbove1500 %>% select(c(2:391))
+DeepAbove1500_env_sort<-DeepAbove1500 %>% select(c(2,397:532))  
+
+DeepBelow1500<-subset(hiDensDeepJoinedDat,bathy<"-1500")
+plot(DeepBelow1500$X.y, DeepBelow1500$Y)
+DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))
+DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  
+```
+
+##### SAVE DATASETS
+```{r}
+write.csv(DeepAbove1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_otu_sort_", Sys.Date(),".csv"))))
+write.csv(DeepAbove1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_env_sort_", Sys.Date(),".csv"))))
+
+write.csv(DeepBelow1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_otu_sort_", Sys.Date(),".csv"))))
+write.csv(DeepBelow1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_env_sort_", Sys.Date(),".csv"))))
+```
+
+
+
 ### REMOVE SPITSBERGENBANKEN OUTLIERS FROM LowDens Dataset
 
 c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
