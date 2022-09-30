@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions_LoDens"
+title: "MAREANO - NiN:splitting biogeographic regions_Barents_below100_"
 output: html_notebook
 ---
 
@@ -68,7 +68,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_temp_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_temp_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
@@ -89,7 +89,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_temp_salinityMax.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_temp_salinityMax.png"),
        device = "png",
        dpi=300 )
 ```
@@ -113,7 +113,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_temp_longitude.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_temp_longitude.png"),
        device = "png",
        dpi=300 )
 ```
@@ -134,7 +134,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_temp_latitude.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_temp_latitude.png"),
        device = "png",
        dpi=300 )
 ```
@@ -146,7 +146,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_icecoverltmax_ss),
              size = 1) +
-  scale_colour_gradientn(limits = c(0,0.93),
+  scale_colour_gradientn(limits = c(0.1,0.93),
                         colors=c('grey','turquoise','blue'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by ice cover LT max")
 
@@ -155,7 +155,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_temp_iceCovLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_temp_iceCovLTmax.png"),
        device = "png",
        dpi=300 )
 ```
@@ -178,7 +178,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensbathy_v_salMax_temp.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_bathy_v_salMax_temp.png"),
        device = "png",
        dpi=300 )
 ```
@@ -200,7 +200,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDenstempRmean_v_salinityRmax_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_tempRmean_v_salinityRmax_nmds1.png"),
        device = "png",
        dpi=300 )
 ```
@@ -221,7 +221,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDenstempRmean_v_salinityRmax_disooxmean.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_tempRmean_v_salinityRmax_disooxmean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -242,7 +242,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDenstempRmean_v_salinityRmax_iceCoveLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_tempRmean_v_salinityRmax_iceCoveLTmax.png"),
        device = "png",
        dpi=800 )
 ```
@@ -265,7 +265,7 @@ ggplotly(tb_ax1)
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_X_v_Y_tmeanR.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__X_v_Y_tmeanR.png"),
        device = "png",
        dpi=300 )
 ```
@@ -287,7 +287,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_X_v_Y_swDenRobavs.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__X_v_Y_swDenRobavs.png"),
        device = "png",
        dpi=800 )
 ```
@@ -308,7 +308,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_X_v_Y_dissox.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__X_v_Y_dissox.png"),
        device = "png",
        dpi=800 )
 ```
@@ -320,7 +320,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_icecoverltmax_ss),
              size = 1) +
-  scale_colour_gradientn(limits = c(0,0.93),
+  scale_colour_gradientn(limits = c(0.1,0.93),
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by ice cover LT max")
 
@@ -329,7 +329,7 @@ tb_ax1
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_X_v_Y_iceCoveLTmax.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__X_v_Y_iceCoveLTmax.png"),
        device = "png",
        dpi=800 )
 ```
@@ -353,7 +353,7 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_TmeanR_v_dissoxltmin_gnmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__TmeanR_v_dissoxltmin_gnmds1.png"),
        device = "png",
        dpi=300 )
 
@@ -376,7 +376,7 @@ tb_ax1
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensTmeanR_v_dissoxltmin_bathy.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_TmeanR_v_dissoxltmin_bathy.png"),
        device = "png",
        dpi=300 )
 
@@ -404,7 +404,7 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_XvY_MLDmeanBathy.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__XvY_MLDmeanBathy.png"),
        device = "png",
        dpi=300 )
 
@@ -439,7 +439,7 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_XvY_ax1cat.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__XvY_ax1cat.png"),
        device = "png",
        dpi=300 )
 
@@ -466,7 +466,7 @@ dis_split
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDens_XvY_ax2cat.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100__XvY_ax2cat.png"),
        device = "png",
        dpi=300 )
 
@@ -477,7 +477,7 @@ ggsave(filename = file.path(dataPath,"outputs/LoDens_XvY_ax2cat.png"),
 EDIT AREA FIRST!
 
 ```{r}
-save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDens.RData") # edit area first
+save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_Barents_below100_.RData") # edit area first
 
 ```
 
