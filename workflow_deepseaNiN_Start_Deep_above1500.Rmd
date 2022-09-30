@@ -191,7 +191,7 @@ table(is.na(env))
 #str(otuSel)
 #str(envSel)
 ```
-
+Here we should remove any samples that are excluded, instead of code that is later on.
 
 ### Splitting in subsets
 ```{r}
