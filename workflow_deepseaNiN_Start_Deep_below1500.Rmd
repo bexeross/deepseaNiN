@@ -57,8 +57,8 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_env_sort_2022-09-29.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_otu_sort_2022-09-29.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_env_sort_2022-09-30.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/DEEP/DeepBelow1500_otu_sort_2022-09-30.csv")) %>% as.data.frame
 
 
 table(env_sort$SampID2 == otu_sort$SampID)
@@ -77,6 +77,10 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotltmax_bdmean",
                                "BO22_lightbotltmin_bdmean",
                                "BO22_lightbotrange_bdmean"))
+
+env_sort <-env_sort %>% filter(!(SampID %in% c("2057_00","2181_00")))
+
+otu_sort <-otu_sort %>% filter(!(SampID %in% c("2057_00","2181_00")))
 ```
 
 
@@ -182,7 +186,7 @@ env.invSel_locations
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
+env<-envSel[, -c(2:(which(colnames(env_sort)=="bathy")-1))]
 
 table(is.na(otu))
 
@@ -855,7 +859,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.52 #decide
+cor_cut<-0.50 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -893,8 +897,8 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 5,
-                         ncol = 4)
+                         nrow = 4,
+                         ncol = 3)
 
 ordsrfs_plt
 ```
@@ -902,8 +906,8 @@ ordsrfs_plt
 ```{r}
 ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/hiDens_b1500_ordisurfs_top_corr.png"),
-          width = 2000,
-          height = 2500)
+          width = 1000,
+          height = 1000)
 
 ```
 
@@ -953,8 +957,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 6,
+                         ncol = 3)
 
 ordsrfs_plt_m
 ```
@@ -1048,6 +1052,8 @@ env_vis$gnmds2 <- otu_6$gnmds2
 
 env_vis$dca1 <- otu_6$dca1
 env_vis$dca2 <- otu_6$dca2
+
+env_vis$SampID <- envSel$SampID
 ```
 
 #### gnmds w mld mean - bathy
