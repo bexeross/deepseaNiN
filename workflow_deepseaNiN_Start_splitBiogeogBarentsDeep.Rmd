@@ -59,7 +59,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),
              size = 1) +
-  scale_colour_gradientn(limits = c(-2.3, 1.9),
+  scale_colour_gradientn(limits = c(-1.8, 1.9),
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1")
 
@@ -104,7 +104,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = X.y),
              size = 1) +
-  scale_colour_gradientn(limits = c(-107939, 1162261),
+  scale_colour_gradientn(limits = c(-59139, 1168661),
                         colors=c('red','yellow','blue'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by longitude")
 
@@ -125,7 +125,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Y),
              size = 1) +
-  scale_colour_gradientn(limits = c(6944134, 8949734),
+  scale_colour_gradientn(limits = c(7015934, 8949334),
                         colors=c('red','yellow','blue'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by latitude")
 
@@ -169,7 +169,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Tmean_Robinson),
              size = 1) +
-  scale_colour_gradientn(limits = c(-1.1, 8.5),
+  scale_colour_gradientn(limits = c(-1.31, 6.68),
                         colors=c('red','yellow','green'))+
   ggtitle("Salinity (max Robinson) vs Bathy - coloured by av Temp (R)")
 
@@ -681,7 +681,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_BarentsDeep.RData") # edit area first
+save.image(file.path(dataPath,"inputs/Renv_deepseaNiN_BarentsDeep.RData")) # edit area first
 
 ```
 
