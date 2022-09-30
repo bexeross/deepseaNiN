@@ -59,28 +59,44 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_env_sort_2022-09-29.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_sort_2022-09-29.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_env_sort_no_ice_2022-09-29.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_sort_no_ice_2022-09-29.csv")) %>% as.data.frame
 
 
 #must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
 
 joinedDat<- left_join(env_sort,otu_sort, by=c("SampID"="SampID"))
-joinedDat1<-subset(joinedDat, bathy <= -99)
+joinedDat1<-subset(joinedDat, bathy <= -99) # subsetting only stations below 100m depth
 summary(joinedDat1$bathy)
+
+joinedDat_with_ice<-subset(joinedDat1, BO22_icecoverltmax_ss >= 0.1) # subsetting only stations below 100m depth with ice
+joinedDat_no_ice<-subset(joinedDat1, BO22_icecoverltmax_ss <= 0) # subsetting only stations below 100m depth with no ice
+summary(joinedDat_no_ice$BO22_icecoverltmax_ss)
+summary(joinedDat_with_ice$BO22_icecoverltmax_ss)
 
 env_sort<-joinedDat1 %>% select(c(2:351))
 otu_sort<-joinedDat1 %>% select(c(2,352:491))
 
-#table(env_sort$SampID2 == otu_sort$SampID)
-dim(env_sort)
-dim(otu_sort)
+env_sort_no_ice_no_ice<-joinedDat_no_ice %>% select(c(2:351)) # no ice
+otu_sort_no_ice_no_ice<-joinedDat_no_ice %>% select(c(2,352:491))
+
+env_sort_with_ice<-joinedDat_no_ice %>% select(c(2:351)) # with ice
+otu_sort_with_ice<-joinedDat_no_ice %>% select(c(2,352:491))
+
+
+#table(env_sort_no_ice$SampID2 == otu_sort_no_ice$SampID)
+dim(env_sort_no_ice)
+dim(otu_sort_no_ice)
+
+
+
+
 ```
 
 #### remove any variables with not enough coverage
 ```{r}
 
-env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
+env_sort_no_ice <- env_sort_no_ice %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotltmax_bdmean",
                                "BO22_lightbotltmin_bdmean",
                                "BO22_lightbotrange_bdmean"))
@@ -89,7 +105,7 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
 
 #### Plot map to check location of samples
 ```{r}
-env_sort_locations<- ggplot(data = env_sort,
+env_sort_no_ice_locations<- ggplot(data = env_sort_no_ice,
                       aes(x = X.y,
                           y = Y)) +
   theme_classic() +
@@ -100,15 +116,15 @@ env_sort_locations<- ggplot(data = env_sort,
                          high = "green") +
   ggtitle("Location of samples in sorted env file")
 
-env_sort_locations
+env_sort_no_ice_locations
 ```
 
 
 ### Data cleaning
 ```{r}
 ## Removing NAs
-otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ] # make sure we have the columms 
-envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
+otuCompl <- otu_sort_no_ice[complete.cases(env_sort_no_ice[, -c(1:which(colnames(env_sort_no_ice)=="bathy")-1)]), ] # make sure we have the columms 
+envCompl <- env_sort_no_ice[complete.cases(env_sort_no_ice[, -c(1:which(colnames(env_sort_no_ice)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
 sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
@@ -140,7 +156,7 @@ env_sel_locations
 
 #### Show what got removed in complete cases filter
 ```{r}
-envCompl_ccrem<-env_sort%>%filter(!SampID%in%envCompl$SampID)
+envCompl_ccrem<-env_sort_no_ice%>%filter(!SampID%in%envCompl$SampID)
 
 envCompl_ccrem_locations<- ggplot(data = envCompl_ccrem,
                       aes(x = X.y,
@@ -190,7 +206,7 @@ env.invSel_locations
 ```{r}
 
 otu<-otuSel[,-c(1: which(colnames(otuSel)=="Lithodidae")-1)]
-env<-envSel[,-c(1: which(colnames(env_sort)=="bathy")-1)]
+env<-envSel[,-c(1: which(colnames(envSel)=="bathy")-1)]
 
 table(is.na(otu))
 
@@ -481,7 +497,7 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/Barents_below100_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/Barents_below100_no_ice_geodist_r6.rds")))
 ```
 
 
@@ -537,7 +553,7 @@ Sys.time() - start_t
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(Xmds_r6,
-        file = file.path(dataPath,"inputs/Barents_below100_mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/Barents_below100_no_ice_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -583,7 +599,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/Barents_below100_procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/Barents_below100_no_ice_procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -691,7 +707,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/Barents_below100_correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_no_ice_correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -744,7 +760,7 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/Barents_below100_gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/Barents_below100_no_ice_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
@@ -768,6 +784,7 @@ axis <- ord$points %>% as.data.frame
 ### Create additional variables
 decided to make MLD-bathy vars
 ```{r}
+summary(env$bathy)
 env<-env %>% 
   mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
           "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
@@ -845,7 +862,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/Barents_below100_cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/Barents_below100_no_ice_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -863,7 +880,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.38 #decide
+cor_cut<-0.3 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -900,17 +917,17 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 4,
-                         ncol = 5)
+                         nrow = 2,
+                         ncol = 2)
 
 ordsrfs_plt
 ```
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/Barents_below100_ordisurfs_top_corr.png"),
-          width = 2000,
-          height = 2500)
+          filename = file.path(dataPath,"outputs/Barents_below100_no_ice_ordisurfs_top_corr.png"),
+          width = 1000,
+          height = 550)
 
 ```
 
@@ -921,8 +938,8 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
+                  #"BO22_icecoverltmax_ss",#top corr ax2
+                  #"BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
                   "BO22_ppltmin_ss", #top corr
@@ -933,7 +950,9 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+                  "bathy",
+                  "slope3",
+                  "msr5_mag"
                 )]
 env_os_m
 str(env_os_m)
@@ -959,8 +978,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 2,
+                         ncol = 7)
 
 ordsrfs_plt_m
 ```
@@ -968,9 +987,9 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/Barents_below100_ordisurfs_man_sel_domean.png"),
-          width = 2000,
-          height = 2000)
+          filename = file.path(dataPath,"outputs/Barents_below100_no_ice_ordisurfs_man_sel_domean.png"),
+          width = 1000,
+          height = 1000)
 
 ```
 
@@ -984,7 +1003,7 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
+                  #"BO22_icecoverltmax_ss",#top corr ax2
                   #"BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_dissoxltmin_bdmean",#top corr
@@ -997,8 +1016,9 @@ env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
-                
+                  "bathy", #intuitive for comparisons
+                  "slope3",
+                  "msr5_mag"
   
 )]
 
@@ -1006,7 +1026,7 @@ colnames(env_os_m_envfit)<-c("T", #top corr
                   "sMx", #top corr
                   "SmaxR", #comparison to top corr
                   "swDensR", #top corr
-                  "icecovmax",#top corr ax2
+                  #"icecovmax",#top corr ax2
                   #"icecovav",#top corr
                   "dissoxav",#top corr
                   #"dissoxmin",#top corr
@@ -1019,7 +1039,9 @@ colnames(env_os_m_envfit)<-c("T", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "SiLtmax", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+                  "bathy",#intuitive for comparisons
+                  "slope3",
+                  "msr5_mag"
                  )
 
 ## Envfot plot
@@ -1039,7 +1061,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/Barents_below100_EnvFit_man_sel_cln_domean.png"),
+ggsave(filename = file.path(dataPath,"outputs/Barents_below100_no_ice_EnvFit_man_sel_cln_domean.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1048,7 +1070,7 @@ ggsave(filename = file.path(dataPath,"outputs/Barents_below100_EnvFit_man_sel_cl
 #### use dataset with categorical var included
 
 ```{r}
-#SampID <- env_sort$SampID
+#SampID <- env_sort_no_ice$SampID
 
 env_vis<-env
 env_vis$gnmds1 <- otu_6$gnmds1
@@ -1067,7 +1089,7 @@ dca_int <- ggplot(data = env_vis,
   coord_fixed() +
   ggtitle("Interactive DCA sample ID plot",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
+  geom_point(aes(colour = factor(mud))) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -1091,7 +1113,7 @@ p_mld <- ggplot(data = env_vis,
   coord_fixed() +
   ggtitle("GNMDS coloured by proximity to mixed layer depth",
           subtitle = "First run") +
-  geom_point(aes(colour = MLDmean_bathy)) +
+  geom_point(aes(colour = mud)) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -1249,7 +1271,7 @@ cat_var_plots<-p_mld+p_sed+p_land+p_gmo
 ##### Save the plot
 ```{r}
 ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/Barents_gnmds_catvar.png"),
+          filename = file.path(dataPath,"outputs/Barents_below100_no_ice_gnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
@@ -1264,7 +1286,7 @@ p_gmo <- ggplot(data = env_vis,
   coord_fixed() +
   ggtitle("GNMDS coloured by sample",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
+  geom_point(aes(colour = factor(mud))) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +

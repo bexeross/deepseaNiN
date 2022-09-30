@@ -76,12 +76,19 @@ write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_
 ### Split HiDens at 1500m
 
 ```{r}
-DeepBelow1500<-subset(hiDensDeepJoinedDat,bathy>"-1500")
+
+hiDensDeepJoinedDat$bathyPositive<-(hiDensDeepJoinedDat$bathy*-1)
+
+DeepBelow1500<-subset(hiDensDeepJoinedDat,bathyPositive>1500)
+DeepAbove1500<-subset(hiDensDeepJoinedDat,bathyPositive<1500)
+DeepBelow1500<-DeepBelow1500%>%select(-c("bathyPositive"))
+DeepAbove1500<-DeepAbove1500%>%select(-c("bathyPositive"))
+
 plot(DeepBelow1500$X.y, DeepBelow1500$Y)
 DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))
 DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  
 
-DeepAbove1500<-subset(hiDensDeepJoinedDat,bathy<"-1500")
+
 plot(DeepAbove1500$X.y, DeepAbove1500$Y)
 DeepAbove1500_otu_sort<-DeepAbove1500 %>% select(c(2:391))
 DeepAbove1500_env_sort<-DeepAbove1500 %>% select(c(2,397:532))  
@@ -115,7 +122,10 @@ plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
                                                                         # "1798_02",
                                                                         # "1800_00",
                                                                         # "1995_00")))
-loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathy<"-99")
+loDensShallowJoinedDat$bathyPositive<-(loDensShallowJoinedDat$bathy*-1)
+loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathyPositive>100)
+loDensNoSBJoinedDat<-loDensNoSBJoinedDat%>%select(-c("bathyPositive"))
+
 
 
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)

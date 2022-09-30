@@ -20,6 +20,7 @@ you will need to download to your computer and then "install from file" before l
 ```{r}
 library(mvpart)
 library(dplyr)
+library(oce)
 ```
 
 ## Load data
@@ -27,25 +28,25 @@ library(dplyr)
 
 ## To use the entire dataset use code below, which has been copied from "workflow_deepseaNiN_Start", blocks Data through Data cleaning
 
-env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
-
-#left join and split to ensure ordered identically
-
-#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
-joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
-
-otu_sort<-joinedDat %>% select(c(2:351))
-env_sort<-joinedDat %>% select(c(2,352:491))
-
-env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
-                               "BO22_lightbotltmax_bdmean",
-                               "BO22_lightbotltmin_bdmean",
-                               "BO22_lightbotrange_bdmean"))
-
+# env_orig <- read.csv(file.path(dataPath,"inputs/envData_2022-09-13.csv")) %>% as.data.frame
+# otu_orig <- read.csv(file.path(dataPath,"inputs/widedata_2022-09-13.csv")) %>% as.data.frame
+# 
+# #left join and split to ensure ordered identically
+# 
+# #joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+# joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
+# 
+# otu_sort<-joinedDat %>% select(c(2:351))
+# env_sort<-joinedDat %>% select(c(2,352:491))
+# 
+# env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
+#                                "BO22_lightbotltmax_bdmean",
+#                                "BO22_lightbotltmin_bdmean",
+#                                "BO22_lightbotrange_bdmean"))
+# 
 ## ALternatively, do only within a prespecified group of samples
-# env_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_env_sort_2022-09-26.csv")) %>% as.data.frame
-# otu_sort <- read.csv(file.path(dataPath,"inputs/LDensNoSB_otu_sort_2022-09-26.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_env_sort_2022-09-29.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/BARENTS/LDnoSBhi02_otu_sort_2022-09-29.csv")) %>% as.data.frame
 
 
 ## Complete cases and real columns
@@ -69,12 +70,9 @@ dim(otuSel); dim(envSel)
 ```
 
 ## Analysis
+Transform to range 6
 ```{r}
 Y=otuSel
-X=envSel %>%
-  select(-c("coords.x1", "coords.x2","optional",
-            "X.y","Y"))
-
 x_mn <- min(Y[Y > 0])
 x_mx <- max(Y)
 rng <- 6           # abundance range
@@ -83,25 +81,11 @@ a <- x_mn^(-w)
 # otu_6 <- a * dt[, -c(1:3)]^w
 otuSel_6 <- a * Y^w
 range(otuSel_6)
-Y<-otuSel_6
-  
-
-
-# df2 = cor(X)
-# hc = findCorrelation(df2, cutoff=0.7) # putt any value as a "cutoff" 
-# hc = sort(hc)
-# new_X = X[,-c(hc)]
-
-
-mvtree <- mvpart(data.matrix(Y) ~ ., data=X, xv="1se", xvmult=100)
-                                                #new_X), xv="1se", xvmult=10)
-mvtree
+#Y<-otuSel_6
 ```
 
-### Another way of doing the same thing...
+### Fit tree
 ```{r}
-library(oce)
-
 envSel$swDensRob_avs<-swRho(salinity=envSel$Smean_Robinson,
                          temperature=envSel$Tmean_Robinson,
                          pressure=(envSel$bathy*-1),
