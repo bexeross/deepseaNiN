@@ -454,6 +454,8 @@ ggsave(filename = file.path(dataPath,"outputs/hiDens_a1500_correlationPCAvsNMDS_
 
 ### DCA R6
 ```{r}
+#remove extra columns from previous run
+#otu_6 <- otu_6[,-c(388:391)]
 dca_r6 <- decorana(veg = otu_6)
 
 print(dca_r6, head=T)
@@ -462,6 +464,24 @@ print(dca_r6, head=T)
 
 ### GNMDS R6
 #### Distances - don't run if loading saved object
+
+##get sample id for outliers
+```{r}
+#otu_6_sampID <- cbind(otu_6,otuSel$SampID)
+
+```
+
+30.9.22 remove dca >1 and <-1 from otu_6 before rerun
+```{r}
+
+# otu_6 <- otu_6_sampID[!abs(-otu_6_sampID$dca1)>1,]
+# 
+# #remove sampleID
+# otu_6 <- otu_6[ , !(names(otu_6) %in% "otuSel$SampID")]
+```
+running again without the outliers
+
+
 ```{r}
 ## Bray-Curtis
 dist_r6 <- vegdist(x = otu_6, method = "bray")
@@ -741,7 +761,7 @@ ggsave(file.path(dataPath,"outputs/hiDens_a1500_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
-
+want to remove outliers >1 and <-1 in DCA to make patterns clearer in the core.
 
 ## Species-environment relationships
 ### Selecting ordination
@@ -802,6 +822,35 @@ env_corr <- env_cont #%>% select(-c(SampID))
 env_corr[(!is.numeric(env_corr)),]
 ```
 
+
+need to remove the outliers from env as well
+
+<!-- ```{r} -->
+<!-- env_corr_sampID <- cbind(env_corr,otuSel$SampID) -->
+<!-- otu_6_rm <- otu_6_sampID[abs(-otu_6_sampID$dca1)>1,] -->
+<!-- rm <- otu_6_rm$`otuSel$SampID` -->
+<!-- rm -->
+
+<!-- #remove the rows with values from the list of removed samples -->
+<!-- env_corr <- env_corr_sampID[ ! env_corr_sampID$`otuSel$SampID` %in% rm, ] -->
+
+<!-- #remove sampleID -->
+<!-- env_corr <- env_corr[ , !(names(env_corr) %in% "otuSel$SampID")] -->
+<!-- ``` -->
+
+remove the removed samples from env. so we can make env_os with correct dimensions
+```{r}
+env_sampID <- cbind(env,otuSel$SampID)
+otu_6_rm <- otu_6_sampID[abs(-otu_6_sampID$dca1)>1,]
+rm <- otu_6_rm$`otuSel$SampID`
+rm
+
+#remove the rows with values from the list of removed samples
+env <- env_sampID[ ! env_sampID$`otuSel$SampID` %in% rm, ]
+
+#remove sampleID
+env <- env[ , !(names(env) %in% "otuSel$SampID")]
+```
 #### Correlations
 ```{r}
 # Vector to hold correlations
@@ -855,7 +904,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.33 #decide
+cor_cut<-0.2 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -1267,4 +1316,8 @@ p_gmo <- ggplot(data = env_vis,
 
 ggplotly(p_gmo)
 ```
+
+
+
+
 
