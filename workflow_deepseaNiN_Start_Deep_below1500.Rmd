@@ -292,7 +292,7 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_b1500_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_b1500_geodist_pa.rds")))
 ```
 
 #### Ordination
