@@ -17,24 +17,45 @@ This requires exploring the dataset to theorise the best ways to split the data 
 
 then applying the splits. 
 
+
 ### Libraries
 ```{r}
 library(plotly)
+library(readxl)
 ```
+
 
 
 
 ## Exploring biplots
-#### add axis vals, sampNo to env_os_m
+#### make full dataset to explore 
+should include all env Vars and otus to explore, and make species richness variable
 
 ```{r}
-env_sub_meta<-env_os_m
+#add species data and sp richness variable
+env_sub_meta1<-cbind(env,otu_6)
+env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
-env_sub_meta$gnmds1 <- otu_6$gnmds1
-env_sub_meta$gnmds2 <- otu_6$gnmds2
-env_sub_meta$SampID <- otu_6$SampID
-env_sub_meta$X <- env$X.y
+#rename X
+env_sub_meta1$X <- env$X.y
+env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
+
+#add samplID
+env_sub_meta1$SampID<-envSel$SampID
+
 ```
+
+
+### Add provisional biotope data to env file
+Note that biotopes were last assigned in march 2022 and therefore there are some addional samples that have not yet got a biotope assigned. These should just be NAs
+```{r}
+biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
+  select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
+
+env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
+```
+
+
 ### a colour palette for discrete plots (see later in script)
 
 ```{r}
