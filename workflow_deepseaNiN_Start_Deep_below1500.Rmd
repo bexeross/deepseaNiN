@@ -38,6 +38,7 @@ library(purrr)
 library(furrr)
 
 
+
 source("gg_ordisurf_viridis.R")
 ```
 
@@ -69,6 +70,7 @@ table(env_sort$SampID2 == otu_sort$SampID)
 dim(env_sort)
 dim(otu_sort)
 ```
+
 
 #### remove any variables with not enough coverage
 ```{r}
