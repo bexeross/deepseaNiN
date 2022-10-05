@@ -29,13 +29,17 @@ library(plotly)
 should include all env Vars and otus to explore, and make species richness variable
 
 ```{r}
-
-
-
+#add species data and sp richness variable
 env_sub_meta<-cbind(env,otu_6)
 env_sub_meta$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
+#rename X
 env_sub_meta$X <- env$X.y
+env_sub_meta <-env_sub_meta %>% select (-c(X.y))
+
+#add samplID
+env_sub_meta$SamplID<-envSel$SampID
+
 ```
 ### a colour palette for discrete plots (see later in script)
 
