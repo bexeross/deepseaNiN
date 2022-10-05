@@ -20,7 +20,9 @@ then applying the splits.
 ### Libraries
 ```{r}
 library(plotly)
+library(readxl)
 ```
+
 
 
 
@@ -30,17 +32,32 @@ should include all env Vars and otus to explore, and make species richness varia
 
 ```{r}
 #add species data and sp richness variable
-env_sub_meta<-cbind(env,otu_6)
-env_sub_meta$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+env_sub_meta1<-cbind(env,otu_6)
+env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
 #rename X
-env_sub_meta$X <- env$X.y
-env_sub_meta <-env_sub_meta %>% select (-c(X.y))
+env_sub_meta1$X <- env$X.y
+env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
 
 #add samplID
-env_sub_meta$SamplID<-envSel$SampID
+env_sub_meta1$SampID<-envSel$SampID
 
 ```
+
+
+### Add provisional biotope data to env file
+Note that biotopes were last assigned in march 2022 and therefore there are some addional samples that have not yet got a biotope assigned. These should just be NAs
+```{r}
+biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
+  select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
+
+env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
+```
+
+
+
+
+
 ### a colour palette for discrete plots (see later in script)
 
 ```{r}
