@@ -96,6 +96,20 @@ env_sort_locations<- ggplot(data = env_sort,
 env_sort_locations
 ```
 
+#### Plot map to check SampleIDs
+```{r}
+env_sort_SampID<- ggplot(data = env_sort,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = factor(SampID)), size=1) +
+  ggtitle("Location of samplesIDs in sorted env file")
+
+ggplotly(env_sort_SampID)
+
+```
+
+
 
 ### Data cleaning
 ```{r}
@@ -104,7 +118,15 @@ otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="b
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
-sel <- rowSums(otuCompl[, -c(1:2)]) >= 4
+
+otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Zoanthidae")))]!=0)
+
+sel <- otuCompl$SpR>4
+inv.sel<-otuCompl$SpR<4
+
+
+otuCompl<-otuCompl %>% select(-c("SpR"))
+
 otuSel <- otuCompl[sel, ]
 envSel <- envCompl[sel, ]
 
@@ -152,7 +174,7 @@ envCompl_ccrem_locations
 
 
 ```{r}
-inv.sel <- rowSums(otuCompl[, -c(1:2)]) < 4
+
 env.invSel <- envCompl[inv.sel, ]
 
 env.invSel_locations<- ggplot(data = env.invSel,
@@ -170,14 +192,7 @@ env.invSel_locations
 
 ```
 
-### [Optional] Data thinning
-```{r, eval=FALSE}
-# otu_red <- otu1[1:500, ]
-# otu <- otu_red
-# 
-# env_red <- env[1:500, ]
-# env <- env_red
-```
+
 
 ### Whole dataset for first run
 ```{r}
@@ -190,54 +205,6 @@ table(is.na(env))
 
 #str(otuSel)
 #str(envSel)
-```
-
-
-### Splitting in subsets
-```{r}
-# ## Class 1
-# otu1 <- subset(otuSel, envSel$SplitRev == 1)
-# env1 <- envSel %>% filter(SplitRev == 1)
-# 
-# ## Class 2
-# otu2 <- subset(otuSel, envSel$SplitRev == 2)
-# env2 <- envSel %>% filter(SplitRev == 2)
-# 
-# ## Class 4
-# otu3 <- subset(otuSel, envSel$SplitRev == 3)
-# env3 <- envSel %>% filter(SplitRev == 3)
-# 
-# ## Class 4
-# otu4 <- subset(otuSel, envSel$SplitRev == 4)
-# env4 <- envSel %>% filter(SplitRev == 4)
-# 
-# ## Class 6
-# otu6 <- subset(otuSel, envSel$SplitRev == 6)
-# env6 <- envSel %>% filter(SplitRev == 6)
-# 
-# ## Class 7
-# otu7 <- subset(otuSel, envSel$SplitRev == 7)
-# env7 <- envSel %>% filter(SplitRev == 7)
-# 
-# ## Class 8
-# otu8 <- subset(otuSel, envSel$SplitRev == 8)
-# env8 <- envSel %>% filter(SplitRev == 8)
-```
-
-## Selecting subset
-```{r}
-# ## Selecting 
-# otu <- otu2
-# env <- env2
-
-```
-
-## format data correctly
-```{r}
-#env$coords.x1<-as.numeric(env$coords.x1)
-#env$coords.x2<-as.numeric(env$coords.x2)
-
-
 ```
 
 
@@ -298,81 +265,58 @@ took 6.4mins with jonatan's paralell solution (usually ~10mins)
 
 Using old version without furrr
 ```{r}
-
- Sys.time()
- d <- 2
- mds_pa <- list()
-
- for (i in 1:100) {
-   mds_pa[[i]]<-monoMDS(geodist_pa,
-                     matrix(c(runif(dim(otu_pa)[1]*d)),
-                            nrow = dim(otu_pa)[1]),
-                     k = d,
-                     model = "global",
-                     maxit = 2000,
-                     smin = 1e-7,
-                     sfgrmin = 1e-7)
- }
- Sys.time()
-
-
-# # monoMDS
-#  d <- 2
-# mds_r6 <- list()
-# 
-#  Sys.time()
-#  for (i in 1:200) {
-#    mds_r6[[i]]<-monoMDS(geodist_r6,
-#                      matrix(c(runif(dim(otu_6)[1]*d)),
-#                             nrow = dim(otu_6)[1]),
-#                      k = d,
-#                      model = "global",
-#                      maxit = 2000,
-#                      smin = 1e-7,
-#                      sfgrmin = 1e-7)# }
-#  Sys.time()
-
-# #Jonatan's upgrade for speed - parallel processing of mds reptitions
-# library(furrr) # Package to run non sequential functions in parallel
-# #library(purrr)
-# plan(multisession)
-# 
+# UNCOMMENT IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+#
+# Sys.time()
 # d <- 2
+# mds_pa <- list()
 # 
-# i <-200 # number of reps
-# 
-# List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
-# start_t<-Sys.time()
-# Xmds_pa<-furrr::future_map(List_geodist_pa, 
-#                   function(x) monoMDS(x,
-#                                       matrix(c(runif(dim(otu_6)[1]*d)),
-#                                              nrow = dim(otu_6)[1]),
-#                                       k = d,
-#                                       model = "global",
-#                                       maxit = 2000,
-#                                       smin = 1e-7,
-#                                       sfgrmin = 1e-7),
-#                   .progress = TRUE)
-# Sys.time() - start_t
+# for (i in 1:100) {
+#   mds_pa[[i]]<-monoMDS(geodist_pa,
+#                     matrix(c(runif(dim(otu_pa)[1]*d)),
+#                            nrow = dim(otu_pa)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
 
 
+
+## COMMENT OUT FROM HERE IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+mds_pa<-furrr::future_map(List_geodist_pa, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
 
 ```
 
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
-saveRDS(mds_pa,
+saveRDS(Xmds_pa,
         file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_pa.rds"))
 ```
 
 
 ##### Best nmds solution - PA
-Make function?
-```{r, eval=TRUE}
-# Loading geodist object
-# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_pa_full.rds")
-```
 
 
 ```{r}
@@ -485,45 +429,48 @@ saveRDS(geodist_r6,
 
 Using older version without furrr.
 ```{r}
-## monoMDS
-d <- 2
-mds_r6 <- list()
 
-Sys.time()
-for (i in 1:200) {
-  mds_r6[[i]]<-monoMDS(geodist_r6,
-                    matrix(c(runif(dim(otu_6)[1]*d)),
-                           nrow = dim(otu_6)[1]),
-                    k = d,
-                    model = "global",
-                    maxit = 2000,
-                    smin = 1e-7,
-                    sfgrmin = 1e-7)
-}
-Sys.time()
+## UNCOMMENT IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
 
-# #Jonatan's upgrade for speed - parallel processing of mds reptitions
-# #library(furrr) # Package to run non sequential functions in parallel
-# #library(purrr)
-# plan(multisession)
-# 
+# monoMDS
 # d <- 2
+# mds_r6 <- list()
 # 
-# i <-200 # number of reps
-# 
-# List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
-# start_t<-Sys.time()
-# Xmds_r6<-furrr::future_map(List_geodist_r6, 
-#                   function(x) monoMDS(x,
-#                                       matrix(c(runif(dim(otu_6)[1]*d)),
-#                                              nrow = dim(otu_6)[1]),
-#                                       k = d,
-#                                       model = "global",
-#                                       maxit = 2000,
-#                                       smin = 1e-7,
-#                                       sfgrmin = 1e-7),
-#                   .progress = TRUE)
-# Sys.time() - start_t
+# Sys.time()
+# for (i in 1:200) {
+#   mds_r6[[i]]<-monoMDS(geodist_r6,
+#                     matrix(c(runif(dim(otu_6)[1]*d)),
+#                            nrow = dim(otu_6)[1]),
+#                     k = d,
+#                     model = "global",
+#                     maxit = 2000,
+#                     smin = 1e-7,
+#                     sfgrmin = 1e-7)
+# }
+# Sys.time()
+
+## COMMENT OUT FROM HERE IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+
+## monoMDS
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+mds_r6<-furrr::future_map(List_geodist_r6, 
+                  function(x) monoMDS(x,
+                                      matrix(c(runif(dim(otu_6)[1]*d)),
+                                             nrow = dim(otu_6)[1]),
+                                      k = d,
+                                      model = "global",
+                                      maxit = 2000,
+                                      smin = 1e-7,
+                                      sfgrmin = 1e-7),
+                  .progress = TRUE)
+Sys.time() - start_t
 
 ```
 
@@ -580,82 +527,6 @@ png(file.path(dataPath,"outputs/hiDens_procrustes_r6.png"), width=1000, height=7
 plot(procr_r6)
 dev.off()
 ```
-
- #### 1000 reps - don't run if loading saved object 
- Currently commented out as it gained nothing but took extra time. Can be removed in due course.
-<!-- took 1hr -->
-<!-- ```{r} -->
-<!-- # monoMDS -->
-<!-- d <- 2 -->
-<!-- mds_r6_1000 <- list()#obj added_1000 -->
-
-<!-- Sys.time() -->
-<!-- for (i in 1:1000) {#change from 200 (200 ra in 20min, 1000 ran in 1hr) -->
-<!--   mds_r6_1000[[i]]<-monoMDS(geodist_r6,#obj added _1000 -->
-<!--                     matrix(c(runif(dim(otu_6)[1]*d)), -->
-<!--                            nrow = dim(otu_6)[1]), -->
-<!--                     k = d, -->
-<!--                     model = "global", -->
-<!--                     maxit = 2000, -->
-<!--                     smin = 1e-7, -->
-<!--                     sfgrmin = 1e-7) -->
-<!-- } -->
-<!-- Sys.time() -->
-<!-- ``` -->
-
-<!-- ##### Save the result - don't run if loading saved object -->
-<!-- ```{r} -->
-<!-- saveRDS(mds_r6_1000, #obj added_1000 -->
-<!--         file = file.path(dataPath,"inputs/SPLITS/DEEP/mds_r6_1000rep.rds")) #change from 200 -->
-<!-- ``` -->
-
-<!-- ##### Best nmds solution r6 1000 rep -->
-<!-- ```{r, eval=TRUE} -->
-<!-- # Loading geodist object -->
-<!-- # geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds") -->
-
-<!-- # Loading mds results -->
-<!-- # mds <- readRDS(file = "../SplitRev2_mds.rds") -->
-
-<!-- ## Extracting the stress of each nmds iteration -->
-<!-- mds_stress_r6_1000<-unlist(lapply(mds_r6_1000, function(v){v[[22]]})) #adeed 1000 -->
-
-<!-- ordered_r6_1000 <-order(mds_stress_r6_1000) -->
-
-<!-- ## Best, second best, and worst solution -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[1]] -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[2]] -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[100]] -->
-
-<!-- ## Scaling of axes to half change units and varimax rotation by postMDS -->
-<!-- mds_best_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[1]]], -->
-<!--                      geodist_r6,  -->
-<!--                      pc = TRUE,  -->
-<!--                      halfchange = TRUE,  -->
-<!--                      threshold = ep)     # Is this threshold related to the epsilon above? -->
-<!-- mds_best_r6_1000 -->
-
-<!-- mds_secbest_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[2]]], -->
-<!--                         geodist_r6,  -->
-<!--                         pc = TRUE,  -->
-<!--                         halfchange = TRUE,  -->
-<!--                         threshold = ep) -->
-<!-- mds_secbest_r6_1000 -->
-
-<!-- ## Procrustes comparisons -->
-<!-- procr_r6_1000 <- procrustes(mds_best_r6_1000, -->
-<!--                        mds_secbest_r6_1000, -->
-<!--                        permutations=999) -->
-<!-- protest(mds_best_r6_1000, -->
-<!--         mds_secbest_r6_1000, -->
-<!--         permutations=999) -->
-
-<!-- plot(procr_r6_1000) -->
-
-<!-- png(file.path(dataPath,"outputs/procrustes_r6_1000.png"), width=1000, height=700,) #added 1000 -->
-<!-- plot(procr_r6_1000) -->
-<!-- dev.off() -->
-<!-- ``` -->
 
 
 
@@ -741,6 +612,74 @@ ggsave(file.path(dataPath,"outputs/hiDens_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
+
+## Check outlier species Richness
+```{r}
+otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+
+summary(otu_6$spRich)
+
+p_spR <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by species Richness",
+          subtitle = "First run") +
+  geom_point(aes(colour = spRich)) +
+  scale_colour_gradientn(limits = c(min(otu_6$spRich),max(otu_6$spRich)),
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+ggplotly(p_spR)
+```
+
+
+
+## Check outlier SampIDs
+```{r}
+
+otu_6$SampID<-envSel$SampID
+
+
+p_gmo <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sample",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(SampID))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+```
+
+
+
+
+
+------------------------
+
+# Environmental Correlates 
+
+If you are happy with proceeding (i.e. you have decent procrustes plots, and have identified and removed outliers with some understanding of why they are outliers) Then here you can continue with exploring environmental correlates from here.
+
+NB it can be useful to proceed anyway if you want to try and explain why some samples are outliers, but if it is possible to deal with minor sets of outliers already then this is a good idea.
+
+
 
 
 ## Species-environment relationships
