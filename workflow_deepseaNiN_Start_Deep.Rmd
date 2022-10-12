@@ -213,11 +213,11 @@ Make function
 You might have to drop variables that have been imported as character
 ```{r}
 
-otu_pa <- decostand(x = otu[, -c(1)],
+otu_pa <- decostand(x = otu,
                     method = "pa")
 
 # y = ax^w         # power transformation formula
-dt <- otu[, -c(1:2)]          # species data to transform
+dt <- otu       # species data to transform
 x_mn <- min(dt[dt > 0])
 x_mx <- max(dt)
 rng <- 6           # abundance range
@@ -311,7 +311,7 @@ Sys.time() - start_t
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
-saveRDS(Xmds_pa,
+saveRDS(mds_pa,
         file = file.path(dataPath,"inputs/SPLITS/DEEP/hiDens_mds_pa.rds"))
 ```
 
