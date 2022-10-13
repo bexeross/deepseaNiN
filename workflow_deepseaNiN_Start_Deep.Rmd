@@ -73,8 +73,8 @@ dim(otu_sort)
 ### Additional env data
 
 You can look up EUNIS column meanings here - p14 on: https://archimer.ifremer.fr/doc/00723/83528/88577.pdf
-Sediment miljø (erosion/depositon stuff) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_Sedimentasjonsmiljo.pdf
-Sediment dannelse (gensis) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_SedimentDannelse.pdf
+Sediment miljø (erosion/deposition stuff) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_Sedimentasjonsmiljo.pdf
+Sediment dannelse (genesis) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_SedimentDannelse.pdf
 ```{r}
 envExtra<-read.csv(file.path(dataPath,"inputs/samples_env_plus.csv")) %>% as.data.frame
 envExtra<-envExtra %>% select(c("SampID2", 
@@ -94,7 +94,7 @@ envExtra<-envExtra %>% select(c("SampID2",
                                 "seddan", #sed genesis #CATEGORICAL 
                                 "sw_spd_max", #sandwave model max current speed
                                 "sw_spd_mean", #sandwave model mean current speed
-                                "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing model 10/2022)
+                                "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing preliminary model 10/2022 top 10cm prediction)
 ))
 
 env_sort<-left_join(env_sort,envExtra, by=c("SampID"="SampID2"))
