@@ -41,7 +41,7 @@ env_sub_meta1$X <- env$X.y
 env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
 
 #add samplID
-env_sub_meta1$SampID<-envSel$SampID
+#env_sub_meta1$SampID<-envSel$SampID
 
 ```
 
