@@ -73,23 +73,25 @@ dim(otu_sort)
 ### Additional env data
 
 You can look up EUNIS column meanings here - p14 on: https://archimer.ifremer.fr/doc/00723/83528/88577.pdf
+Sediment miljø (erosion/depositon stuff) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_Sedimentasjonsmiljo.pdf
+Sediment dannelse (gensis) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_SedimentDannelse.pdf
 ```{r}
 envExtra<-read.csv(file.path(dataPath,"inputs/samples_env_plus.csv")) %>% as.data.frame
 envExtra<-envExtra %>% select(c("SampID2", 
-                                "Energy",#EUNIS
-                                "Biozone",#EUNIS
-                                "Substrate",#EUNIS
-                                "EUNIScomb",#EUNIS
-                                "EUNIScombD",#EUNIS
-                                "Allcomb",#EUNIS
-                                "AllcombD",#EUNIS
-                                "MSFD_BBHT",#EUNIS
-                                "EUNIS2019C",#EUNIS
-                                "EUNIS2019D",#EUNIS
-                                "All2019D",#EUNIS
-                                "All2019DL2",#EUNIS
-                                "sedmil", #erosion/deposition
-                                "seddan", #sed genesis
+                                "Energy",#EUNIS #TEXT
+                                "Biozone",#EUNIS #TEXT
+                                "Substrate",#EUNIS #TEXT
+                                "EUNIScomb",#EUNIS #TEXT
+                                "EUNIScombD",#EUNIS #TEXT
+                                "Allcomb",#EUNIS #TEXT
+                                "AllcombD",#EUNIS #TEXT
+                                "MSFD_BBHT",#EUNIS #TEXT
+                                "EUNIS2019C",#EUNIS #TEXT
+                                "EUNIS2019D",#EUNIS #TEXT
+                                "All2019D",#EUNIS #TEXT
+                                "All2019DL2",#EUNIS #TEXT
+                                "sedmil", #erosion/deposition #CATEGORICAL
+                                "seddan", #sed genesis #CATEGORICAL 
                                 "sw_spd_max", #sandwave model max current speed
                                 "sw_spd_mean", #sandwave model mean current speed
                                 "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing model 10/2022)
@@ -760,7 +762,9 @@ env$swDensRob_avs<-swRho(salinity=env$Smean_Robinson,
 env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy, #categorical
                            optional, #not a var
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
-                           MLDsd_Robinson #not meaningful
+                           MLDsd_Robinson, #not meaningful
+                           Energy, Biozone, Substrate, EUNIScomb,EUNIScombD,Allcomb,AllcombD,MSFD_BBHT,EUNIS2019C,EUNIS2019D,All2019D,All2019DL2, #EUNIS TEXT
+                           sedmil,seddan #sed erosion/genesis # NEW CATEGORICAL
                            ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont #%>% select(-c(SampID))
