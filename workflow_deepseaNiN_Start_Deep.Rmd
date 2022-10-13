@@ -97,7 +97,11 @@ envExtra<-envExtra %>% select(c("SampID2",
                                 "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing preliminary model 10/2022 top 10cm prediction)
 ))
 
-env_sort<-left_join(env_sort,envExtra, by=c("SampID"="SampID2"))
+
+#save envEtra for later, but add TOC now for use in correlations
+envTOC<-envExtra %>% select(c("SampID2", "TOC0.10cm_median"))
+
+env_sort<-left_join(env_sort,envTOC, by=c("SampID"="SampID2"))
 ```
 
 
@@ -732,6 +736,10 @@ axis <- ord$points %>% as.data.frame
 ### Create additional variables
 decided to make MLD-bathy vars
 ```{r}
+env$SampID<-envSel$SampID
+envExtra<-envExtra %>% select (-c("TOC0.10cm_median")) 
+env<-left_join(env,envExtra, by=c("SampID"="SampID2"))
+
 env<-env %>% 
   mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
           "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
@@ -764,8 +772,8 @@ env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bath
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
                            MLDsd_Robinson, #not meaningful
                            Energy, Biozone, Substrate, EUNIScomb,EUNIScombD,Allcomb,AllcombD,MSFD_BBHT,EUNIS2019C,EUNIS2019D,All2019D,All2019DL2, #EUNIS TEXT
-                           sedmil,seddan #sed erosion/genesis # NEW CATEGORICAL
-                           ))
+                           sedmil,seddan, #sed erosion/genesis # NEW CATEGORICAL
+                           SampID))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont #%>% select(-c(SampID))
 
