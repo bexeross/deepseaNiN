@@ -66,8 +66,12 @@ otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %
 #joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
 joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 
-otu_sort<-joinedDat %>% select(c(2:351))
-env_sort<-joinedDat %>% select(c(2,352:491))
+# otu_sort<-joinedDat %>% select(c(2:351))
+# env_sort<-joinedDat %>% select(c(2,352:491))
+
+#replaces hard coded column selection
+otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
+env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))
 
 # Sorting and ordering by SampID
 # env_orig <- env_orig[order(env_orig$SampID), ]
