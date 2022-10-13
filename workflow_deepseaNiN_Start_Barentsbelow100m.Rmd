@@ -69,6 +69,28 @@ table(env_sort$SampID2 == otu_sort$SampID)
 dim(env_sort)
 dim(otu_sort)
 ```
+#### subsetting stations based on average ice cover
+```{r}
+
+joinedDat<- left_join(env_sort,otu_sort, by=c("SampID"="SampID"))
+
+joinedDat_with_ice<-subset(joinedDat, BO22_icecovermean_ss >= 0.0001) # subsetting only stations below 100m depth with ice
+joinedDat_no_ice<-subset(joinedDat, BO22_icecovermean_ss <= 0) # subsetting only stations below 100m depth with no ice
+summary(joinedDat_no_ice$BO22_icecovermean_ss)
+summary(joinedDat_with_ice$BO22_icecovermean_ss)
+
+env_sort_no_ice<-joinedDat_no_ice %>% select(c(2:139)) # no ice
+otu_sort_no_ice<-joinedDat_no_ice %>% select(c(2,140:528))
+
+env_sort_with_ice<-joinedDat_with_ice %>% select(c(2:139)) # with ice
+otu_sort_with_ice<-joinedDat_with_ice %>% select(c(2,140:528))
+
+
+#table(env_sort_no_ice$SampID2 == otu_sort_no_ice$SampID)
+dim(env_sort_with_ice)
+dim(otu_sort_with_ice)
+
+```
 
 #### remove any variables with not enough coverage
 ```{r}
