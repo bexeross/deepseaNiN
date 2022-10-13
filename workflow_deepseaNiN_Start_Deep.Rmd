@@ -70,6 +70,36 @@ dim(env_sort)
 dim(otu_sort)
 ```
 
+### Additional env data
+
+You can look up EUNIS column meanings here - p14 on: https://archimer.ifremer.fr/doc/00723/83528/88577.pdf
+```{r}
+envExtra<-read.csv(file.path(dataPath,"inputs/samples_env_plus.csv")) %>% as.data.frame
+envExtra<-envExtra %>% select(c("SampID2", 
+                                "Energy",#EUNIS
+                                "Biozone",#EUNIS
+                                "Substrate",#EUNIS
+                                "EUNIScomb",#EUNIS
+                                "EUNIScombD",#EUNIS
+                                "Allcomb",#EUNIS
+                                "AllcombD",#EUNIS
+                                "MSFD_BBHT",#EUNIS
+                                "EUNIS2019C",#EUNIS
+                                "EUNIS2019D",#EUNIS
+                                "All2019D",#EUNIS
+                                "All2019DL2",#EUNIS
+                                "sedmil", #erosion/deposition
+                                "seddan", #sed genesis
+                                "sw_spd_max", #sandwave model max current speed
+                                "sw_spd_mean", #sandwave model mean current speed
+                                "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing model 10/2022)
+))
+
+env_sort<-left_join(env_sort,envExtra, by=c("SampID"="SampID2"))
+```
+
+
+
 #### remove any variables with not enough coverage
 ```{r}
 
