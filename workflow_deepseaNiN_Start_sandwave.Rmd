@@ -58,8 +58,6 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 
 for the sandwave case study we are not using a split - input the original full dataset and select the relevant area later
 
-1:which(colnames(env_sort)=="bathy")-1)
-(which(colnames(otuCompl)=="Zoanthidae")))]!=0
 
 
 ```{r}
