@@ -1291,4 +1291,4 @@ write.csv(HDensDeep_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/san
 write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_LDens_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_LDens_env_sort_", Sys.Date(),".csv"))))
 ```
-see subset scripts sandwave Ldens and sandwave Hdens for working further.
+see subset scripts sandwave Ldens and sandwave Hdens for working further...
