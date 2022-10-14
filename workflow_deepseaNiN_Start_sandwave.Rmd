@@ -73,6 +73,9 @@ joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 #remove data above 100m
 joinedDat <- subset(joinedDat, (bathy*-1)>100)
 
+#remove Tromsøflaket 2006612
+joinedDat<- subset(joinedDat, cruise_no!="2006612")
+
 
 otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
 env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))
@@ -850,7 +853,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.45 #decide
+cor_cut<-0.55 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -859,7 +862,7 @@ as.data.frame(cor_sel$env)
 ```
 
 
-this shows that we need to split the data further.
+this shows that we need to split the data further. Go to end of script apply density split.
 
 
 
