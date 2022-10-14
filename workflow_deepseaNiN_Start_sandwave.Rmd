@@ -41,17 +41,17 @@ library(furrr)
 source("gg_ordisurf_viridis.R")
 ```
 
-LOAD OBJECTS IF HAVE RUN ALREADY
-```{r}
-geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_pa.rds"))
-geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_r6.rds"))
+<!-- LOAD OBJECTS IF HAVE RUN ALREADY -->
+<!-- ```{r} -->
+<!-- geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_pa.rds")) -->
+<!-- geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_r6.rds")) -->
 
-mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_pa.rds"))
-mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6.rds"))
-#mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6_1000rep.rds"))
+<!-- mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_pa.rds")) -->
+<!-- mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6.rds")) -->
+<!-- #mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6_1000rep.rds")) -->
 
-ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
-```
+<!-- ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made) -->
+<!-- ``` -->
 
 
 ## Data
@@ -69,6 +69,10 @@ otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %
 
 #joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
 joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
+
+#remove data above 100m
+joinedDat <- subset(joinedDat, (bathy*-1)>100)
+
 
 otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
 env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))
@@ -145,18 +149,18 @@ env_sort_locations<- ggplot(data = env_sort,
 env_sort_locations
 ```
 
-#### Plot map to check SampleIDs
-```{r}
-env_sort_SampID<- ggplot(data = env_sort,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = factor(SampID)), size=1) +
-  ggtitle("Location of samplesIDs in sorted env file")
+<!-- #### Plot map to check SampleIDs -->
+<!-- ```{r} -->
+<!-- env_sort_SampID<- ggplot(data = env_sort, -->
+<!--                       aes(x = X.y, -->
+<!--                           y = Y)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = factor(SampID)), size=1) + -->
+<!--   ggtitle("Location of samplesIDs in sorted env file") -->
 
-ggplotly(env_sort_SampID)
+<!-- ggplotly(env_sort_SampID) -->
 
-```
+<!-- ``` -->
 
 
 
@@ -853,6 +857,10 @@ cor_sel
 
 as.data.frame(cor_sel$env)
 ```
+
+
+this shows that we need to split the data further.
+
 
 
 ### Sel env var (top corr)
