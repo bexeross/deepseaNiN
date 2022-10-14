@@ -1305,11 +1305,7 @@ see subset scripts sandwave Ldens and sandwave Hdens for working further...
 
 
 ### Landscape splits
-TO FINISH
 
-
-otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))
 ```{r}
 sandwave_shelf <-subset(joinedDat,landscape != 21)
 sandwave_slope <-subset(joinedDat,landscape == 21)
