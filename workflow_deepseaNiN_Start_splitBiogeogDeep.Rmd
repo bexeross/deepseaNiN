@@ -69,6 +69,22 @@ colnames(env_sub_meta)
 # EXPLORATORY PLOTS
 GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the varaibles you are plotting at will, and customise this notebook for the split you are exploring.
 
+
+**INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+# TEMPLATE CHUNKS TO COPY FROM
+
 ## Plots with CONTINUOUS colour scales (variables)
 
 ### VARIABLE BIPLOT
