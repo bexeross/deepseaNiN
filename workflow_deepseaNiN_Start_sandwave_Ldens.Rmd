@@ -61,8 +61,8 @@ for the sandwave case study we are not using a split - input the original full d
 
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_LDens_env_sort_2022-10-13.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_LDens_otu_sort_2022-10-13.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_LDens_env_sort_2022-10-14.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_LDens_otu_sort_2022-10-14.csv")) %>% as.data.frame
 
 table(env_sort$SampID2 == otu_sort$SampID)
 
@@ -132,18 +132,18 @@ env_sort_locations<- ggplot(data = env_sort,
 env_sort_locations
 ```
 
-#### Plot map to check SampleIDs
-```{r}
-env_sort_SampID<- ggplot(data = env_sort,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = factor(SampID)), size=1) +
-  ggtitle("Location of samplesIDs in sorted env file")
+<!-- #### Plot map to check SampleIDs -->
+<!-- ```{r} -->
+<!-- env_sort_SampID<- ggplot(data = env_sort, -->
+<!--                       aes(x = X.y, -->
+<!--                           y = Y)) + -->
+<!--   theme_classic() + -->
+<!--   geom_point(aes(colour = factor(SampID)), size=1) + -->
+<!--   ggtitle("Location of samplesIDs in sorted env file") -->
 
-ggplotly(env_sort_SampID)
+<!-- ggplotly(env_sort_SampID) -->
 
-```
+<!-- ``` -->
 
 
 
@@ -228,6 +228,22 @@ env.invSel_locations<- ggplot(data = env.invSel,
 env.invSel_locations
 
 ```
+
+
+
+#### Plot map to check SampleIDs
+```{r}
+env_sort_SampID<- ggplot(data = envSel,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = factor(SampID)), size=1) +
+  ggtitle("Location of samplesIDs in sorted env file")
+
+ggplotly(env_sort_SampID)
+
+```
+
 
 
 
