@@ -154,12 +154,12 @@ by using complete cases here since env_sort contains the sandwave current data, 
 otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
-## Removing observations with less than 4 OTUs
+## Removing observations with less than 13 OTUs
 
 otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Zoanthidae")))]!=0)
 
-sel <- otuCompl$SpR>4
-inv.sel<-otuCompl$SpR<4
+sel <- otuCompl$SpR>13
+inv.sel<-otuCompl$SpR<13
 
 
 otuCompl<-otuCompl %>% select(-c("SpR"))
@@ -174,7 +174,7 @@ envSel <- envCompl[sel, ]
 
 dim(otuSel); dim(envSel)
 ```
-#### Show what samples are left after complete cases and >4 OTUs filters
+#### Show what samples are left after complete cases and >10 OTUs filters
 ```{r}
 env_sel_locations<- ggplot(data = envSel,
                       aes(x = X.y,
@@ -244,7 +244,18 @@ ggplotly(env_sort_SampID)
 
 ```
 
+#### Plot map to check Landscape
+```{r}
+env_sort_SampID<- ggplot(data = envSel,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = factor(landscape)), size=1) +
+  ggtitle("Location of samplesIDs in sorted env file")
 
+ggplotly(env_sort_SampID)
+
+```
 
 
 ### Whole dataset for first run
@@ -693,7 +704,11 @@ p_spR <- ggplot(data = otu_6,
 
 ggplotly(p_spR)
 ```
-
+```{r}
+ggsave(file.path(dataPath,"outputs/sandwave_Ldens_gnmds_SpRichr6.png"),
+       device = "png", 
+       dpi=300)
+```
 
 
 ## Check outlier SampIDs
@@ -722,8 +737,26 @@ ggplotly(p_gmo)
 ```
 
 
+## Check outlier SampIDs
+```{r}
+d_gmo <- ggplot(data = otu_6,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sample",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(SampID))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
 
-
+ggplotly(d_gmo)
+```
 
 ------------------------
 
