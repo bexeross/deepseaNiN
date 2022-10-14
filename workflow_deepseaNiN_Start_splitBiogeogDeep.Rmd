@@ -51,6 +51,8 @@ Note that biotopes were last assigned in march 2022 and therefore there are some
 biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
   select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
 
+biotopeLookup<-biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=2)
+
 env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```
 
@@ -271,6 +273,11 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax1cat.png"),
        dpi=300 )
 
 ```
+
+
+
+
+
 
 
 # COMBINE SEVERAL PLOTS

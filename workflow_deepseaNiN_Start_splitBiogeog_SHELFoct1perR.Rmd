@@ -60,18 +60,123 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo, by="SampID")
 
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+
+n <- 61
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+pie(rep(1,n), col=sample(col_vector, n))
 ```
-
-
 
 ### List variables you can play with
 ```{r}
 colnames(env_sub_meta)
 ```
+# MAK MORE VARS
+
+```{r}
+
+```
 
 
 # EXPLORATORY PLOTS
 GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the varaibles you are plotting at will, and customise this notebook for the split you are exploring.
+
+
+**INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+
+## GNMDS with PoriferaBig
+```{r}
+gnmds_porBig<- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by Porifera Big",
+          subtitle = "First run") +
+  geom_point(aes(colour = env_sub_meta$Porifera_big)) +
+  scale_colour_gradientn(limits = c(0.001,max(env_sub_meta$Porifera_big)),
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+ggplotly(gnmds_porBig)
+```
+
+## GNMDS with Lophelia
+```{r}
+gnmds_Loph<- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by Lophelia pertusa",
+          subtitle = "First run") +
+  geom_point(aes(colour = env_sub_meta$Lophelia_pertusa)) +
+  scale_colour_gradientn(limits = c(0.001,max(env_sub_meta$Lophelia_pertusa)),
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+ggplotly(gnmds_Loph)
+```
+
+
+## GNMDS with biotope
+```{r}
+p_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by biotope")+
+  geom_point(aes(colour = factor(env_sub_meta$BiotopeDesc))) +
+  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+```
+
+## GNMDS with seddan
+```{r}
+p_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sediment origin")+
+  geom_point(aes(colour = factor(env_sub_meta$seddan))) +
+  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+```
+
+
+
+# TEMPLATE CHUNKS TO COPY FROM
 
 ## Plots with CONTINUOUS colour scales (variables)
 
@@ -94,7 +199,7 @@ ggplotly(tb_ax1) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_v_temp_nmds1.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -123,7 +228,7 @@ ggplotly(gnmds_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_gnmds_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_gnmds_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -152,7 +257,7 @@ ggplotly(dca_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_dca_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_dca_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -178,7 +283,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__X_v_Y_tmeanR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -229,7 +334,7 @@ ggploty(gnmds_gmo)
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__gnmds_gmo.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -254,7 +359,7 @@ ggplotly(cat_xy_ax1) #interactive plot
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax1cat.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__XvY_ax1cat.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -269,7 +374,7 @@ comp<-xy_t+cat_y_ax1+p_spR
 ```{r}
 ##### Save some outputs
 ggexport(comp,
-          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_compare.png"), #amend
+          filename = file.path(dataPath,"outputs/SHELFoct1perR__compare.png"), #amend
           width = 1500, #amend with/height for expected shape ratio
           height = 500)
 
@@ -282,7 +387,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_SHELFoct1perR_.RData") # edit area first
 
 ```
 
