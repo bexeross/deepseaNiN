@@ -33,7 +33,7 @@ should include all env Vars and otus to explore, and make species richness varia
 
 ```{r}
 #add species data and sp richness variable
-env_sub_meta1<-cbind(env,otu_6)
+env_sub_meta1<-left_join(env,otu_6, by="SampID")
 env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
 #rename X
