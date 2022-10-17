@@ -60,12 +60,29 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ### a colour palette for discrete plots (see later in script)
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# discrete colur pallete where you decide the number of colours - max is 74.
+n <- 61
+qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+pie(rep(1,n), col=sample(col_vector, n))
 ```
 
 ### List variables you can play with
 ```{r}
 colnames(env_sub_meta)
 ```
+
+
+## MAKE ADDITIONAL VARS
+
+**INSER YOURS HERE - E.G. COMBINED SPECIES LISTS?**
+```{r}
+
+```
+
+
 
 
 # EXPLORATORY PLOTS
