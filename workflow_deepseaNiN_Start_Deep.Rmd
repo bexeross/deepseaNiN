@@ -1191,6 +1191,24 @@ p_land <- ggplot(data = env_vis,
 p_land
 ```
 
+##### deal with geomorphon codes
+```{r}
+env_vis<- env_vis %>% 
+  mutate(
+    gmorphName = case_when(
+            gmorph == "1" ~ "flat",
+            gmorph == "2" ~ "peak",
+            gmorph == "3" ~ "ridge",
+            gmorph == "4" ~ "shoulder",
+            gmorph == "5" ~ "convexSlope",
+            gmorph == "6" ~ "slope",
+            gmorph == "7" ~ "concaveSlope",
+            gmorph == "8" ~ "footslope",
+            gmorph == "9" ~ "valley",
+            gmorph == "10" ~ "pit"
+    )
+  )
+```
 
 #### Gnmds w gmorph
 ```{r}
@@ -1202,7 +1220,7 @@ p_gmo <- ggplot(data = env_vis,
   coord_fixed() +
   ggtitle("GNMDS coloured by landscape class",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(gmorph))) +
+  geom_point(aes(colour = factor(gmorphName))) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
