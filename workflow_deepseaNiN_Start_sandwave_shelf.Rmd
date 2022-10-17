@@ -154,12 +154,12 @@ by using complete cases here since env_sort contains the sandwave current data, 
 otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
-## Removing observations with less than 7 OTUs
+## Removing observations with less than 4 OTUs
 
 otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Zoanthidae")))]!=0)
 
-sel <- otuCompl$SpR>7
-inv.sel<-otuCompl$SpR<7
+sel <- otuCompl$SpR>4
+inv.sel<-otuCompl$SpR<4
 
 
 otuCompl<-otuCompl %>% select(-c("SpR"))
@@ -174,7 +174,7 @@ envSel <- envCompl[sel, ]
 
 dim(otuSel); dim(envSel)
 ```
-#### Show what samples are left after complete cases and >4 OTUs filters
+#### Show what samples are left after complete cases and <4 OTUs filters
 ```{r}
 env_sel_locations<- ggplot(data = envSel,
                       aes(x = X.y,
@@ -938,23 +938,12 @@ ggexport(ordsrfs_plt,
 
 ### Sel env var (manual)
 ```{r}
-env_os_m <- env[,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
-                  "Smax_Robinson", #comparison to top corr
-                  "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
-                  "X.y", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+env_os_m <- env[,c("bathy", #top corr
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+                  "sw_spd_mean", #interest for VF LKM
+                  "sw_spd_max" #interest for VF LKM
+                  
                 )]
 env_os_m
 str(env_os_m)
