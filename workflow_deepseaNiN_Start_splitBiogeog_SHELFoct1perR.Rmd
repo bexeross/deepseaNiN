@@ -52,6 +52,8 @@ Note that biotopes were last assigned in march 2022 and therefore there are some
 biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
   select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
 
+biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=2)
+
 env_sub_meta<-left_join(env_sub_meta1,biotopeInfo, by="SampID")
 ```
 
@@ -61,10 +63,11 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo, by="SampID")
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-
+# discrete colur pallete where you decide the number of colours - max is 74.
 n <- 61
-qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
 pie(rep(1,n), col=sample(col_vector, n))
 ```
 
@@ -72,7 +75,7 @@ pie(rep(1,n), col=sample(col_vector, n))
 ```{r}
 colnames(env_sub_meta)
 ```
-# MAK MORE VARS
+# MAKE MORE VARS
 
 ```{r}
 
@@ -154,6 +157,33 @@ ggplotly(p_gmo)
 ```
 
 ## GNMDS with seddan
+
+### seddan classes
+```{r}
+env_sub_meta<- env_sub_meta %>% 
+  mutate(
+    seddanName = case_when(
+            seddan == "10" ~ "Morraine_indet", ########### ALL NEW NAMES NEED ADDING!
+            seddan == "11" ~ "Morraine_thick",
+            seddan == "15" ~ "Morraine_marginal",
+            seddan == "140" ~ "Rock",
+            seddan == "150" ~ "Sedimentary_rock",
+            seddan == "200" ~ "Suspension",
+            seddan == "201" ~ "Bottom_current",
+            seddan == "202" ~ "Glaciomarine",
+            seddan == "211" ~ "Contourite",
+            seddan == "213" ~ "Debris_flow",
+            seddan == "215" ~ "Channel_deposit",
+            seddan == "217" ~ "Bioclastic",
+            seddan == "219" ~ "Layered_over_debris_flow",
+            seddan == "220" ~ "Carbonate_crust",
+            seddan == "230" ~ "Morraine_glaciomarineCover",
+            seddan == "240" ~ "Slide_w_cover",
+            seddan == "241" ~ "Slide_part_cover"
+    ))
+```
+
+
 ```{r}
 p_gmo <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
