@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions_SHELF oct 1 sample per R station"
+title: "MAREANO - NiN:splitting biogeographic regions - SHELF october 2022 - 1 sample per R station"
 output: html_notebook
 ---
 
@@ -191,7 +191,7 @@ p_gmo <- ggplot(data = env_sub_meta,
   theme_classic() +
   coord_fixed() +
   ggtitle("GNMDS coloured by sediment origin")+
-  geom_point(aes(colour = factor(env_sub_meta$seddan))) +
+  geom_point(aes(colour = factor(env_sub_meta$seddanName))) +
   scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
   geom_vline(xintercept = 0,
              linetype = 2,
@@ -203,6 +203,12 @@ p_gmo <- ggplot(data = env_sub_meta,
 
 ggplotly(p_gmo)
 ```
+
+
+# CONCLUSIONS
+Looks like the core of the data is all associated with morraine and diverse hard bottom sponge communities (you can turn those on and off by clicking the legend in the two interactive plots above). 
+
+There is therefore definitely a need to split the dataset into hard bottom taxa and soft bottom taxa so that the datasets can be evalautated separately (M2, M5).
 
 
 
