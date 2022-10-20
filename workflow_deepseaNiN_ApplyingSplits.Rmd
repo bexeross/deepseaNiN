@@ -15,18 +15,19 @@ Requires the main analysis environment to be loaded.
 # Selecting geographic subsets
 This is to explore thresholds/relationships locally. E.g. To look for threshold values/ local relationships before deciding on splits. You need to already have a theory that you want to test in order to select the geographic regions to look at.
 
-In this instance, for example, we are interested in at least making one split (into 2 groups) by temperature. We expect this to separate the shelf data from the combined deep/arctic data. We therefore should have a look at at least 3 areas: 
-- the slope off lofoten (Norland VI/Norland VII) to see the temperature gradient with depth
-- the finmark coast from Tromsøflaket to the southern end of Mareano Øst to follow the temperature gradient east into the Barents sea
-- the MAREANO Øst region where we can follow a temperature gradient from the coast North into arctic water
-
 
 ## OPTIONAL: load new dataset and apply splits SKIP IF ALREADY HAVE "joinedDat"
 
 
 ```{r}
-env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-09-29.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %>% as.data.frame
+#NB 2022-09-29 was the topcopy (all sample/Oslo) dataset being used before the latest species cleaning
+#2022-10-19 latest (all sample/Oslo) species cleaning applied
+# USE DIFFERENT SCRIPT FOR 1perR station dataset
+
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-10-19.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-10-19.csv")) %>% as.data.frame
+
+
 
 #left join and split to ensure ordered identically
 
