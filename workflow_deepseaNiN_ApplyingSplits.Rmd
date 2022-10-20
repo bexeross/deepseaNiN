@@ -21,7 +21,8 @@ This is to explore thresholds/relationships locally. E.g. To look for threshold 
 
 ```{r}
 #NB 2022-09-29 was the topcopy (all sample/Oslo) dataset being used before the latest species cleaning
-#2022-10-19 latest (all sample/Oslo) species cleaning applied
+#NB 2022-10-19 latest (all sample/Oslo) species cleaning applied so smaller spp dataset
+
 # USE DIFFERENT SCRIPT FOR 1perR station dataset
 
 env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-10-19.csv")) %>% as.data.frame
@@ -51,30 +52,38 @@ joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
                          pressure=(joinedDat$bathy*-1),
                          eos="unesco")
 
+## MAKE SHALLOW DATSET
 loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1031.1)
 plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
-LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:391))
-LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,397:532))                                
+LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:251)) #dataset 19-10-22 or after
+LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,257:392))    #dataset  19-10-22 or after
+# LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:391)) #dataset before 19-10-22
+# LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,397:532))    #dataset before 19-10-22  
 
 
+## MAKE DEEP DATASET
 hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.1)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
-HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:391))
-HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,397:532))  
+HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after
+# HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22
 ```
 
 
 ##### SAVE DATASETS
 ```{r}
+# DEEP DATSET
 write.csv(HDensDeep_otu_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_otu_sort_", Sys.Date(),".csv"))))
 write.csv(HDensDeep_env_sort, file=file.path(dataPath,(paste0("inputs/HDensDeep_env_sort_", Sys.Date(),".csv"))))
 
+#SHALLOW DATASET
 write.csv(LDensShlw_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
-### Split HiDens at 1500m
+### Split DEEP (HiDens) at 1500m
 
 ```{r}
 
@@ -85,28 +94,38 @@ DeepAbove1500<-subset(hiDensDeepJoinedDat,bathyPositive<1500)
 DeepBelow1500<-DeepBelow1500%>%select(-c("bathyPositive"))
 DeepAbove1500<-DeepAbove1500%>%select(-c("bathyPositive"))
 
+# DEEP BELOW 1500m
 plot(DeepBelow1500$X.y, DeepBelow1500$Y)
-DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))
-DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  
+DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:251))#dataset 19-10-22 or after
+DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,257:392))  #dataset 19-10-22 or after
+# DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))#dataset before 19-10-22
+# DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  #dataset before 19-10-22
 
 
+# DEEP ABOVE 1500m
 plot(DeepAbove1500$X.y, DeepAbove1500$Y)
-DeepAbove1500_otu_sort<-DeepAbove1500 %>% select(c(2:391))
-DeepAbove1500_env_sort<-DeepAbove1500 %>% select(c(2,397:532))  
+DeepAbove1500_otu_sort<-DeepAbove1500 %>% select(c(2:251))#dataset 19-10-22 or after
+DeepAbove1500_env_sort<-DeepAbove1500 %>% select(c(2,257:392))  #dataset 19-10-22 or after
+# DeepBelow1500_otu_sort<-DeepBelow1500 %>% select(c(2:391))#dataset before 19-10-22
+# DeepBelow1500_env_sort<-DeepBelow1500 %>% select(c(2,397:532))  #dataset before 19-10-22
 ```
 
 ##### SAVE DATASETS
 ```{r}
+# DEEP BELOW 1500m
 write.csv(DeepBelow1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_otu_sort_", Sys.Date(),".csv"))))
 write.csv(DeepBelow1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepBelow1500_env_sort_", Sys.Date(),".csv"))))
 
+# DEEP ABOVE 1500m
 write.csv(DeepAbove1500_otu_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_otu_sort_", Sys.Date(),".csv"))))
 write.csv(DeepAbove1500_env_sort, file=file.path(dataPath,(paste0("inputs/DeepAbove1500_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
 
-### REMOVE SPITSBERGENBANKEN OUTLIERS FROM LowDens Dataset
+### REMOVE ALL STATIONS SHALLOWER THAN 100m in SHALLOW dataset
+
+INCLUDES REMOVING SPITSBERGENBANKEN OUTLIERS FROM LowDens Dataset
 
 c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
 
@@ -123,6 +142,8 @@ plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
                                                                         # "1798_02",
                                                                         # "1800_00",
                                                                         # "1995_00")))
+
+# RETAIN ONLY SAMPLES BELOW 100m depth
 loDensShallowJoinedDat$bathyPositive<-(loDensShallowJoinedDat$bathy*-1)
 loDensNoSBJoinedDat <-subset(loDensShallowJoinedDat, bathyPositive>100)
 loDensNoSBJoinedDat<-loDensNoSBJoinedDat%>%select(-c("bathyPositive"))
@@ -132,42 +153,53 @@ loDensNoSBJoinedDat<-loDensNoSBJoinedDat%>%select(-c("bathyPositive"))
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
 
 
-LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:391))
-LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,397:532))  
+LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after
+# LDensNoSB_otu_sort<-loDensNoSBJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDensNoSB_env_sort<-loDensNoSBJoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22
 
 ```
 ##### SAVE DATASETS
 ```{r}
+# SHALLOW BELOW 100m dataset
 write.csv(LDensNoSB_otu_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDensNoSB_env_sort, file=file.path(dataPath,(paste0("inputs/LDensNoSB_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
-### Split LoDensNoSB by dissox
+### Split SHALLOW BELOW 100m (LoDensNoSB) by dissox 305 threshold
+Makes SHELF and BARENTS datasets
 
 ```{r}
 #SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
 
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
 
-
+# MAKE SHELF DATASET
 loDensNoSBhiO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean>305)
 plot(loDensNoSBhiO2JoinedDat$X.y, loDensNoSBhiO2JoinedDat$Y)
-LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))
-LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532))  
+LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
+# LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
 
 
+# MAKE BARENTS DATSET
 loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<305)
 plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
-LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))
-LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))    
+LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
+# LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22  
 
 ```
 ##### SAVE DATASETS
 ```{r}
+# SHELF DATASET
 write.csv(LDnoSBlo02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo02_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDnoSBlo02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo02_env_sort_", Sys.Date(),".csv"))))
 
+#BARENTS DATSET
 write.csv(LDnoSBhi02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDnoSBhi02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_env_sort_", Sys.Date(),".csv"))))
 ```
@@ -217,18 +249,18 @@ After these explorations it was decided to generate a subset by density. A thres
 ```{r}
 NorlandSlopeJoinedDat<-subset(joinedDat, X.y>205261 & X.y<364461 & Y>743294 & Y<7621734)
 plot(NorlandSlopeJoinedDat$X.y, NorlandSlopeJoinedDat$Y)
-NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:391))
-NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,397:532))
+NSotu_sort<-NorlandSlopeJoinedDat %>% select(c(2:391)) #dataset before 19-10-22
+NSenv_sort<-NorlandSlopeJoinedDat %>% select(c(2,397:532))#dataset before 19-10-22
 
 FinnmarkCoastJoinedDat<-subset(joinedDat, X.y>599461 & X.y<1138061 & Y>7794534 & Y<8013534)
 plot(FinnmarkCoastJoinedDat$X.y, FinnmarkCoastJoinedDat$Y)
-FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:391))
-FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,397:532))
+FCotu_sort<-FinnmarkCoastJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+FCenv_sort<-FinnmarkCoastJoinedDat %>% select(c(2,397:532))#dataset before 19-10-22
 
 MareanoØstJoinedDat<-subset(joinedDat, X.y>1009861 & X.y<1162261 & Y>7834134 & Y<8505934)
 plot(MareanoØstJoinedDat$X.y, MareanoØstJoinedDat$Y)
-MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:391))
-MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,397:532))
+MØotu_sort<-MareanoØstJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+MØenv_sort<-MareanoØstJoinedDat %>% select(c(2,397:532))#dataset before 19-10-22
 
 
 ```
@@ -251,13 +283,13 @@ write.csv(MØenv_sort, file=file.path(dataPath,(paste0("inputs/MOenv_sort_", Sys
 ```{r}
 SvalbardSlopeJoinedDat<-subset(joinedDat, X.y>361061 & X.y<561862 & Y>7915734 & Y<8782734)
 plot(SvalbardSlopeJoinedDat$X.y, SvalbardSlopeJoinedDat$Y)
-SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:391))
-SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,397:532))
+SSotu_sort<-SvalbardSlopeJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+SSenv_sort<-SvalbardSlopeJoinedDat %>% select(c(2,397:532))#dataset before 19-10-22
 
 MøreSlopeJoinedDat<-subset(joinedDat, X.y>-47738 & X.y<93861 & Y>6976734 & Y<7234534)
 plot(MøreSlopeJoinedDat$X.y, MøreSlopeJoinedDat$Y)
-MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:391))
-MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,397:532))
+MSotu_sort<-MøreSlopeJoinedDat %>% select(c(2:391))#dataset before 19-10-22
+MSenv_sort<-MøreSlopeJoinedDat %>% select(c(2,397:532))#dataset before 19-10-22
 ```
 
 ##### SAVE DATASETS
