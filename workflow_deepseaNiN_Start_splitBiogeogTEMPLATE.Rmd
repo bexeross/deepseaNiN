@@ -1,7 +1,8 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions_BarentsDeep"
+title: "MAREANO - NiN:splitting biogeographic regions_Deep"
 output: html_notebook
 ---
+**NB THESE ARE ALL EXAMPLES OF PLOTS TO SPEED UP YOUR CUSTOM PLOT MAKING: NO NEED TO RUN ALL - JUST USE THIS SCRIPT AS A TEMPLATE**
 
 Asssumes you have aready run:
 - config
@@ -13,11 +14,9 @@ You now have the objects needed to explore the dataset and find the best way to 
 
 This requires exploring the dataset to theorise the best ways to split the data with:
 - environmental biplots/colourings
+- envrionmental/species variables symbolised on biplots and maps
 
-
-then applying the splits. 
-
-
+# SET UP
 ### Libraries
 ```{r}
 library(plotly)
@@ -25,15 +24,14 @@ library(readxl)
 ```
 
 
+### MAKE INPUTS
 
-
-## Exploring biplots
 #### make full dataset to explore 
 should include all env Vars and otus to explore, and make species richness variable
 
 ```{r}
 #add species data and sp richness variable
-env_sub_meta1<-left_join(env,otu_6, by="SampID")
+env_sub_meta1<-left_join(env,otu_6,by="SampID")
 env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
 #rename X
@@ -48,519 +46,246 @@ env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
 
 ### Add provisional biotope data to env file
 Note that biotopes were last assigned in march 2022 and therefore there are some addional samples that have not yet got a biotope assigned. These should just be NAs
+
 ```{r}
 biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
   select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
+
+biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=2)
 
 env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```
 
 
 ### a colour palette for discrete plots (see later in script)
-
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# discrete colur pallete where you decide the number of colours - max is 74.
+n <- 61
+qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+pie(rep(1,n), col=sample(col_vector, n))
 ```
 
-### Find min max of vars for scales
+### List variables you can play with
 ```{r}
-summary(env_sub_meta)
+colnames(env_sub_meta)
+```
+
+
+## MAKE ADDITIONAL VARS
+
+**INSER YOURS HERE - E.G. COMBINED SPECIES LISTS?**
+```{r}
+
 ```
 
 
 
-### Plots with CONTINUOUS colour scales (variables)
+
+# EXPLORATORY PLOTS
+GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the varaibles you are plotting at will, and customise this notebook for the split you are exploring.
 
 
-##### Bathy v Temp w gnmds ax 1
+**INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+# TEMPLATE CHUNKS TO COPY FROM
+
+## Plots with CONTINUOUS colour scales (variables)
+
+### VARIABLE BIPLOT
+example -
+#### Bathy v Temp w gnmds ax 1
 ```{r}
 tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = bathy)) +
+                      aes(x = Tmean_Robinson, #change at will
+                          y = bathy)) +#change at will
   theme_classic() +
-  geom_point(aes(colour = gnmds1),
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(-1.8, 1.9),
+  scale_colour_gradientn(limits = c(min(gnmds1),max(gnmds1)), #match variable acting as colour
                         colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1")
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
 
-tb_ax1
-
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_temp_nmds1.png"),
-       device = "png",
-       dpi=300 )
-```
-##### Bathy v Temp w salinity
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = bathy)) +
-  theme_classic() +
-  geom_point(aes(colour = Smax_Robinson),
-             size = 1) +
-  scale_colour_gradientn(limits = c(34.43, 35.43),
-                        colors=c('green','yellow','blue'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by salinity")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_temp_salinityMax.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"), #amend
        device = "png",
        dpi=300 )
 ```
 
-
-
-##### Bathy v Temp w longitude
+#### GNMDS BIPLOT
 ```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = bathy)) +
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
   theme_classic() +
-  geom_point(aes(colour = X.y),
-             size = 1) +
-  scale_colour_gradientn(limits = c(-59139, 1168661),
-                        colors=c('red','yellow','blue'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by longitude")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_temp_longitude.png"),
-       device = "png",
-       dpi=300 )
-```
-##### Bathy v Temp w latitude
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = bathy)) +
-  theme_classic() +
-  geom_point(aes(colour = Y),
-             size = 1) +
-  scale_colour_gradientn(limits = c(7015934, 8949334),
-                        colors=c('red','yellow','blue'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by latitude")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_temp_latitude.png"),
-       device = "png",
-       dpi=300 )
-```
-##### Bathy v Temp w iceCovLTMax
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = bathy)) +
-  theme_classic() +
-  geom_point(aes(colour = BO22_icecoverltmax_ss),
-             size = 1) +
-  scale_colour_gradientn(limits = c(0,0.93),
-                        colors=c('grey','turquoise','blue'))+
-  ggtitle("Temp (mean Robinson) vs Bathy - coloured by ice cover LT max")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_temp_iceCovLTmax.png"),
-       device = "png",
-       dpi=300 )
-```
-
-
-##### Bathy v Salinity coloured by temp
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Smax_Robinson,
-                          y = bathy)) +
-  theme_classic() +
-  geom_point(aes(colour = Tmean_Robinson),
-             size = 1) +
-  scale_colour_gradientn(limits = c(-1.31, 6.68),
+  coord_fixed() +
+  ggtitle("GNMDS coloured by species Richness")+ #amend
+  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
                         colors=c('red','yellow','green'))+
-  ggtitle("Salinity (max Robinson) vs Bathy - coloured by av Temp (R)")
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
 
-tb_ax1
-
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepbathy_v_salMax_temp.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_gnmds_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
 
-##### Salinity v Temp gnmds1
+#### DCA BIPLOT
 ```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Smax_Robinson,
-                          y = Tmean_Robinson)) +
+dca_spR <- ggplot(data = env_sub_meta,
+                     aes(x = dca1,
+                         y = dca2)) +
   theme_classic() +
-  geom_point(aes(colour = gnmds1),
-             size = 1) +
-scale_colour_gradientn(limits = c(-2, 2.5),
+  coord_fixed() +
+  ggtitle("DCA coloured by species Richness")+ #amend
+  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
                         colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by gnmds r6 ax 1 - grey 2.5-5")
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
 
-tb_ax1
-
+#p_spR #plot
+ggplotly(dca_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeeptempRmean_v_salinityRmax_nmds1.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_dca_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
-##### Salinity v Temp dissoxmean
+
+
+### MAP OF VARIABLE
+example -
+#### X v Y - temp
 ```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Smax_Robinson,
-                          y = Tmean_Robinson)) +
-  theme_classic() +
-  geom_point(aes(colour = BO22_dissoxmean_bdmean),
-             size = 1) +
-scale_colour_gradientn(limits = c(282.5, 372.2),
-                        colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) vs Salinity (max R) - coloured by dissolved oxygen")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeeptempRmean_v_salinityRmax_disooxmean.png"),
-       device = "png",
-       dpi=300 )
-```
-##### TS - icecoverLTMax
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Smax_Robinson,
-                          y = Tmean_Robinson)) +
-  theme_classic() +
-  geom_point(aes(colour = BO22_icecoverltmax_ss),
-             size = 1) +
-  scale_colour_gradientn(limits = c(0,0.93),
-                        colors=c('blue','green','red'))+
-  ggtitle("Temp (AvR) v Salinity (maxR) - coloured by ice cover LT max")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeeptempRmean_v_salinityRmax_iceCoveLTmax.png"),
-       device = "png",
-       dpi=800 )
-```
-
-
-##### X v Y - temp
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
+xy_t<- ggplot(data = env_sub_meta,
                       aes(x = X,
                           y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = Tmean_Robinson),
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(-1.1, 8.5),
+  scale_colour_gradientn(limits = c(min(Tmean_Robinson), max(Tmean_Robinson)), #match variable acting as colour
                         colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by mean temp")
+  ggtitle("Geography (X v Y) - coloured by mean temp") #amend
 
-ggplotly(tb_ax1)
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
 
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_X_v_Y_tmeanR.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"), #amend
        device = "png",
        dpi=300 )
 ```
 
-##### X v Y - density
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = swDensRob_avs),
-             size = 1) +
-  scale_colour_gradientn(limits = c(1027, 1031),
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by water density")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_X_v_Y_swDenRobavs.png"),
-       device = "png",
-       dpi=800 )
-```
-##### X v Y - dissox
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = BO22_dissoxmean_bdmean),
-             size = 1) +
-  scale_colour_gradientn(limits = c(282,373),
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by dissovled oxygen")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_X_v_Y_dissox.png"),
-       device = "png",
-       dpi=800 )
-```
-##### X v Y - icecoverLTMax
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = BO22_icecoverltmax_ss),
-             size = 1) +
-  scale_colour_gradientn(limits = c(0.00001,0.93),
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by ice cover LT max - grey <0.00001")
-
-tb_ax1
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_X_v_Y_iceCoveLTmax.png"),
-       device = "png",
-       dpi=800 )
-```
-
-
-##### Temp v disoxltmin gnmds
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = BO22_dissoxmean_bdmean)) +
-  theme_classic() +
-  geom_point(aes(colour = gnmds1),
-             size = 1) +
-  scale_colour_gradientn(limits = c(-2.3, 2),
-                        colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) v disox mean - coloured by gnmds ax 1")
-
-tb_ax1
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_TmeanR_v_dissoxltmin_gnmds1.png"),
-       device = "png",
-       dpi=300 )
-
-```
-##### Temp v disoxltmin bathy
-```{r}
-tb_ax1<- ggplot(data = env_sub_meta,
-                      aes(x = Tmean_Robinson,
-                          y = BO22_dissoxmean_bdmean)) +
-  theme_classic() +
-  geom_point(aes(colour = bathy),
-             size = 1) +
-  scale_colour_gradientn(limits = c(-702, -38),
-                        colors=c('red','yellow','green'))+
-  ggtitle("Temp (mean Robinson) v disox mean - coloured by bathymetry")
-
-tb_ax1
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeepTmeanR_v_dissoxltmin_bathy.png"),
-       device = "png",
-       dpi=300 )
-
-```
 
 
 
-### Plots with DISCRETE colour scales (variables)
+## Plots with DISCRETE colour scales (variables)
 
-#### X v Y with mld-bathy categories
-```{r}
-dis_split <- ggplot(data = env,
-              aes(x = X.y,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = MLDmean_bathy),
-             size = 1) +
-  scale_colour_manual(values=cbPalette)+
- # scale_colour_brewer(palette = "Set3") +
-  ggtitle("Easting vs Northing - coloured by Mixed layer depth proximity")
-
-dis_split
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_MLDmeanBathy.png"),
-       device = "png",
-       dpi=300 )
-
-```
-
-### categorise gnmds
-
+### MAKE VARIABLE CATEGORICAL
+#### categorise gnmds
 ```{r}
 env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
-      breaks=c(-3.2,-3,-2,-1,0,1,2,3,3.46))
-
+      breaks=c(-3.2,-3,-2,-1,0,1,2,3,3.46))# need min val first and max val last, then you decide intermediate
 env_sub_meta$ax2cat<-cut(env_sub_meta$gnmds2, 
-      breaks=c(-1.9,-1,0,1,2,3,4,4.9))
+      breaks=c(-1.9,-1,0,1,2,3,4,4.9))# need min val first and max val last, then you decide intermediate
+
+#same method, bu add custom labels
+env_sub_meta$dissoxav305<-cut(env_sub_meta$BO22_dissoxmean_bdmean, 
+     breaks=c(282.5,305,372.2),# need min val first and max val last, then you decide intermediate 
+     labels=c("lowO2","hiO2")) #custom labels which range from min to break,...,then break to max
 ```
 
+### VARIABLE BIPLOTS
+#### Gnmds w gmorph
+```{r}
 
+gnmds_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(gmorph))) + #change at will - categorical vars only
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+gnmds_gmo #plot
+ggploty(gnmds_gmo)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+### MAP OF CATEGORICAL VARIABLE
 #### X v Y with gnmds ax 1 as HC categories
 ```{r}
-dis_split <- ggplot(data = env_sub_meta,
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
               aes(x = X.y,
                   y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = ax1cat),
+  geom_point(aes(colour = ax1cat), #change at will - categorical vars only
              size = 1) +
  # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
   scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by gnmds axis 1 HC units")
+  ggtitle("Easting vs Northing - coloured by gnmds axis 1 HC units") #amend
 
-dis_split
-
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_ax1cat.png"),
-       device = "png",
-       dpi=300 )
-
-```
-
-### categorise temp 5.1
-
-```{r}
-env_sub_meta$temp5_1<-cut(env_sub_meta$Tmean_Robinson, 
-      breaks=c(-1.1, 5.1, 8.5))
-#
-```
-
-
-#### X v Y with temp 5.1
-```{r}
-dis_split <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = temp5_1),
-             size = 1) +
- # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by temp thresholded at 5.1*C")
-
-dis_split
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_temp5_1.png"),
-       device = "png",
-       dpi=300 )
-
-```
-### categorise dissox
-
-```{r}
-env_sub_meta$dissoxav305<-cut(env_sub_meta$BO22_dissoxmean_bdmean, 
-     # breaks=c(256, 282, 360)) #ltmin
-     breaks=c(282.5,305,372.2),
-     labels=c("lowO2","hiO2")) #mean
-#
-```
-
-
-#### X v Y with dissox
-```{r}
-dis_split <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = dissoxav305),
-             size = 1) +
- # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by dissox av thresholded at 305")
-
-dis_split
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_dissoxav305.png"),
-       device = "png",
-       dpi=300 )
-
-```
-
-### categorise iceCovLTMax
-
-```{r}
-env_sub_meta$iceMx_gt0<-cut(env_sub_meta$BO22_icecoverltmax_ss, 
-      breaks=c(0, 0.00001, 0.92838))
-#
-```
-
-
-#### X v Y with temp 5.1
-```{r}
-dis_split <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = iceMx_gt0),
-             size = 1) +
- # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  scale_colour_brewer(palette = "Set1") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by ice LT Max thresholded at >0")
-
-dis_split
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_iceLTmx_gt0.png"),
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax1cat.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -569,128 +294,19 @@ ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_iceLTmx_gt0.png"),
 
 
 
-#### X v Y with gnmds ax 2 as HC categories
+
+
+
+# COMBINE SEVERAL PLOTS
 ```{r}
-dis_split <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = ax2cat),
-             size = 1) +
- # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by gnmds axis 2 HC units")
-
-dis_split
-
-```
-
-
-
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_XvY_ax2cat.png"),
-       device = "png",
-       dpi=300 )
-
-```
-
-#### Gnmds w temp 5.1
-```{r}
-
-t_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by temp 5.1 threshold",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(temp5_5))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-t_gmo
+comp<-xy_t+cat_y_ax1+p_spR
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_gnmds_temp5_1.png"),
-       device = "png",
-       dpi=300 )
-```
-#### Gnmds w dissox 305
-```{r}
-
-o_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by dissox 305 threshold",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(dissox305))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-o_gmo
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_gnmds_dissox305.png"),
-       device = "png",
-       dpi=300 )
-```
-
-#### Gnmds w iceLT max >0
-```{r}
-
-i_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by ice max >0 threshold",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(iceMx_gt0))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-i_gmo
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/BarentsDeep_gnmds_iceMxgt0.png"),
-       device = "png",
-       dpi=300 )
-```
-
-```{r}
-comp<-i_gmo+o_gmo+t_gmo
-```
-##### Save the plot
-```{r}
-
-
 ##### Save some outputs
-
 ggexport(comp,
-          filename = file.path(dataPath,"outputs/BarentsDeep_gnmds_compare.png"),
-          width = 1500,
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_compare.png"), #amend
+          width = 1500, #amend with/height for expected shape ratio
           height = 500)
 
 ```
@@ -702,7 +318,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-save.image(file.path(dataPath,"inputs/Renv_deepseaNiN_BarentsDeep.RData")) # edit area first
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
 
 ```
 
