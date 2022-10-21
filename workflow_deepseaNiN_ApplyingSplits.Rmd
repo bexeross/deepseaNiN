@@ -44,7 +44,7 @@ joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 
 ### Density threshold splits
 
-density split 1031.8 threshold
+Threshold at 1030 kg/m3 to ensure AIW included (after SHELF SOFT analysis) (origial density split 1031.8 threshold)
 
 ```{r}
 joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
@@ -53,7 +53,7 @@ joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
                          eos="unesco")
 
 ## MAKE SHALLOW DATSET
-loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1031.1)
+loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1030)
 plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
 LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:251)) #dataset 19-10-22 or after
 LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,257:392))    #dataset  19-10-22 or after
@@ -62,7 +62,7 @@ LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,257:392))    #dataset 
 
 
 ## MAKE DEEP DATASET
-hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.1)
+hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1030)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
 HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
 HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after
