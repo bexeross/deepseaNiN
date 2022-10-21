@@ -23,8 +23,11 @@ library(readxl)
 # PREFERABLY KEEP ALL LINES AND COMMENT OUT IF APPLYING TO NEW DATASET SO THAT THEY CAN BE TRACKED/REPEATED EASILY
 
 # After SHELFoct1perR analysis, but now applied to all sample (Oslo) dataset
-env_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_env_sort_2022-10-20.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_otu_sort_2022-10-20.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_env_sort_2022-10-21.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_otu_sort_2022-10-21.csv")) %>% as.data.frame
+
+dim(env_orig)
+dim(otu_orig)
 ```
 
 
@@ -87,13 +90,15 @@ otu_hard<-pivot_wider(otu_long_hard,
                       id_cols="SampID",
                       names_from="Taxon",
                       values_from = "Density",
-                      values_fill = 0)
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
 
 otu_soft<-pivot_wider(otu_long_soft,
                       id_cols="SampID",
                       names_from="Taxon",
                       values_from = "Density",
-                      values_fill = 0)
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
 ```
 
 ## Match hard/soft otu sample data to env sample data
