@@ -69,20 +69,51 @@ col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_co
 pie(rep(1,n), col=sample(col_vector, n))
 ```
 
-### List variables you can play with
-```{r}
-colnames(env_sub_meta)
-```
+
 
 
 ## MAKE ADDITIONAL VARS
 
 **INSER YOURS HERE - E.G. COMBINED SPECIES LISTS?**
-```{r}
 
+### seddan classes
+```{r}
+env_sub_meta<- env_sub_meta %>% 
+  mutate(
+    seddanName = case_when(
+            seddan == "10" ~ "Morraine_indet", ########### ALL NEW NAMES NEED ADDING!
+            seddan == "11" ~ "Morraine_thick",
+            seddan == "15" ~ "Morraine_marginal",
+            seddan == "140" ~ "Rock",
+            seddan == "150" ~ "Sedimentary_rock",
+            seddan == "200" ~ "Suspension",
+            seddan == "201" ~ "Bottom_current",
+            seddan == "202" ~ "Glaciomarine",
+            seddan == "211" ~ "Contourite",
+            seddan == "213" ~ "Debris_flow",
+            seddan == "215" ~ "Channel_deposit",
+            seddan == "217" ~ "Bioclastic",
+            seddan == "219" ~ "Layered_over_debris_flow",
+            seddan == "220" ~ "Carbonate_crust",
+            seddan == "230" ~ "Morraine_glaciomarineCover",
+            seddan == "240" ~ "Slide_w_cover",
+            seddan == "241" ~ "Slide_part_cover"
+    ))
+```
+
+### make xy interaction (helpful for visulisation in gnmds)
+
+```{r}
+env_sub_meta<- env_sub_meta %>% 
+  mutate(
+    XY = X*Y)
 ```
 
 
+### List variables you can play with
+```{r}
+colnames(env_sub_meta)
+```
 
 
 # EXPLORATORY PLOTS
@@ -113,6 +144,31 @@ ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_gnmds1.png"
        device = "png",
        dpi=300 )
 ```
+#### X v Y - gnmds axis 2
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds2), max(env_sub_meta$gnmds2)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds2") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_gnmds2.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
 
 #### X v Y - dissox
 ```{r}
@@ -250,6 +306,141 @@ ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_Smax.png"),
        device = "png",
        dpi=300 )
 ```
+#### X v Y with seddanName
+```{r}
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = seddanName), #change at will - categorical vars only
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by sediment origin") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__XvY_seddanName.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+#### GNMDS BIPLOT - X
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by X/latitude")+ #amend
+  geom_point(aes(colour = X)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$X),max(env_sub_meta$X)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030_gnmds_Xlat.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### GNMDS BIPLOT - Y
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by Y/longitude")+ #amend
+  geom_point(aes(colour = Y)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Y),max(env_sub_meta$Y)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030_gnmds_Ylon.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+#### GNMDS BIPLOT - X*Y
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by XYinteraction")+ #amend
+  geom_point(aes(colour = XY)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$XY),max(env_sub_meta$XY)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030_gnmds_XYinteraction.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+#### X v Y - XY for colour comparison in gnmds
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = XY),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$XY), max(env_sub_meta$XY)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by X*Y interaction (for comparison vals/colours)") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_XYinteraction.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+-----------------
+
 
 
 # TEMPLATE CHUNKS TO COPY FROM
