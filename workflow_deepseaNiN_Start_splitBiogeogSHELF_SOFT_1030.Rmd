@@ -122,7 +122,7 @@ xy_t<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_dissoxmean_bdmean),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$BO22_dissoxmean_bdmean), max(env_sub_meta$BO22_dissoxmean_bdmean)), #match variable acting as colour
+  scale_colour_gradientn(limits = c(294, max(env_sub_meta$BO22_dissoxmean_bdmean)), #match variable acting as colour
                         colors=c('red','yellow','green'))+
   ggtitle("Geography (X v Y) - coloured by dissolved oxygen") #amend
 
@@ -132,7 +132,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_dissoxmean.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_dissoxmean_294thresh.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -168,7 +168,7 @@ xy_t<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = BO22_chloltmin_ss),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$BO22_chloltmin_ss), max(env_sub_meta$BO22_chloltmin_ss)), #match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$BO22_chloltmin_ss), 0.06), #match variable acting as colour
                         colors=c('red','yellow','green'))+
   ggtitle("Geography (X v Y) - coloured by min long term chlorophyll") #amend
 
@@ -178,10 +178,79 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_chloltmin.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_chloltmin_0pt06thresh.png"), #amend
        device = "png",
        dpi=300 )
 ```
+#### X v Y - Tmean
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson), max(env_sub_meta$Tmean_Robinson)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by Temperature (meanR)") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_Tean_Rob.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+#### X v Y - Smax Roinson
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Smax_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Smax_Robinson), max(env_sub_meta$Smax_Robinson)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by Salinity (maxR)") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_Smax_Rob.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+#### X v Y - Smax blended
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = salt_max),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$salt_max), max(env_sub_meta$salt_max)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by Salinity (max BlendedModel)") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__X_v_Y_Smax.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
 
 # TEMPLATE CHUNKS TO COPY FROM
 
@@ -351,7 +420,7 @@ ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_1030__gnmds_gmo.png"), 
 #### X v Y with gnmds ax 1 as HC categories
 ```{r}
 cat_xy_ax1 <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
+              aes(x = X,
                   y = Y)) +
   theme_classic() +
   geom_point(aes(colour = ax1cat), #change at will - categorical vars only
