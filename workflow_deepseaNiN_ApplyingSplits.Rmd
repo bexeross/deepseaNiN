@@ -175,7 +175,7 @@ Makes SHELF and BARENTS datasets
 
 plot(loDensNoSBJoinedDat$X.y, loDensNoSBJoinedDat$Y)
 
-# MAKE SHELF DATASET
+# MAKE BARENTS DATASET
 loDensNoSBhiO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean>305)
 plot(loDensNoSBhiO2JoinedDat$X.y, loDensNoSBhiO2JoinedDat$Y)
 LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
@@ -184,7 +184,7 @@ LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,257:392)) #dataset 1
 # LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
 
 
-# MAKE BARENTS DATSET
+# MAKE SHELF DATSET
 loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<305)
 plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
 LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
@@ -203,6 +203,48 @@ write.csv(LDnoSBlo02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBlo0
 write.csv(LDnoSBhi02_otu_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_otu_sort_", Sys.Date(),".csv"))))
 write.csv(LDnoSBhi02_env_sort, file=file.path(dataPath,(paste0("inputs/LDnoSBhi02_env_sort_", Sys.Date(),".csv"))))
 ```
+
+
+
+### Split SHELF dataset into WBarents & Atlantic by Dissox 294 threshold
+Makes SHELF and BARENTS datasets
+
+```{r}
+#SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
+
+plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
+
+# MAKE WEST BARENTS DATASET
+loDensNoSBmidO2JoinedDat<-subset(loDensNoSBloO2JoinedDat,BO22_dissoxmean_bdmean>294)
+plot(loDensNoSBmidO2JoinedDat$X.y, loDensNoSBmidO2JoinedDat$Y)
+loDensNoSBmidO2_otu_sort<-loDensNoSBmidO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBmidO2_env_sort<-loDensNoSBmidO2JoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
+# LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
+
+
+# MAKE ATLANTIC S OF BARENTS DATASET
+loDensNoSBlowestO2JoinedDat<-subset(loDensNoSBloO2JoinedDat,BO22_dissoxmean_bdmean<294)
+plot(loDensNoSBlowestO2JoinedDat$X.y, loDensNoSBlowestO2JoinedDat$Y)
+loDensNoSBlowestO2_otu_sort<-loDensNoSBlowestO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBlowestO2_env_sort<-loDensNoSBlowestO2JoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
+# LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22  
+
+```
+##### SAVE DATASETS
+```{r}
+# SHELF DATASET
+write.csv(loDensNoSBmidO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2_wbarents_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2_wbarents_env_sort_", Sys.Date(),".csv"))))
+
+#BARENTS DATSET
+write.csv(loDensNoSBlowestO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2_atlanticShelf_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBlowestO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2_atlanticShelf_env_sort_", Sys.Date(),".csv"))))
+```
+
+
+
 
 
 
