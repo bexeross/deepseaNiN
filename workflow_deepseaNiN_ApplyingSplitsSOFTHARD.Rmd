@@ -23,8 +23,8 @@ library(readxl)
 # PREFERABLY KEEP ALL LINES AND COMMENT OUT IF APPLYING TO NEW DATASET SO THAT THEY CAN BE TRACKED/REPEATED EASILY
 
 # After SHELFoct1perR analysis, but now applied to all sample (Oslo) dataset
-env_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_env_sort_2022-10-21.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/LDnoSBlo02_otu_sort_2022-10-21.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBlowestO2lowS_WB_CW_env_sort_2022-10-25.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBlowestO2lowS_WB_CW_otu_sort_2022-10-25.csv")) %>% as.data.frame
 
 dim(env_orig)
 dim(otu_orig)
@@ -36,13 +36,13 @@ dim(otu_orig)
 NB Up-to-date live version of taxonary available at dataPath_2, but snapshot version from 20.10.22 is available in dataPath (includes hardSoft checked by bex & gjertrud)
 
 ```{r}
-taxonary <- read_xlsx(file.path(dataPath_2, "Taxonary.xlsx"), sheet=1) %>%
-  mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
-  mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+# taxonary <- read_xlsx(file.path(dataPath_2, "Taxonary.xlsx"), sheet=1) %>%
+#   mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+#   mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
 
-#taxonary <- read_xlsx(file.path(dataPath, "Taxonary.xlsx"), sheet=1)%>%
-#  mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
-#  mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+taxonary <- read_xlsx(file.path(dataPath, "Taxonary.xlsx"), sheet=1)%>%
+ mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+ mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
 ```
 
 # SPLIT DATASET INTO SOFT/HARD
@@ -120,12 +120,12 @@ length(unique(otu_soft$SampID)) # samp in otu dataset
 # BE SURE TO EDIT FILENAMES
 
 # HARD DATSET
-write.csv(otu_hard, file=file.path(dataPath,(paste0("inputs/SHELFhard_otu_", Sys.Date(),".csv"))))
-write.csv(env_hard, file=file.path(dataPath,(paste0("inputs/SHELFhard_env_", Sys.Date(),".csv"))))
+write.csv(otu_hard, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_hard_otu_", Sys.Date(),".csv"))))
+write.csv(env_hard, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_hard_env_", Sys.Date(),".csv"))))
 
 # SOFT DATASET
-write.csv(otu_soft, file=file.path(dataPath,(paste0("inputs/SHELFsoft_otu_", Sys.Date(),".csv"))))
-write.csv(env_soft, file=file.path(dataPath,(paste0("inputs/SHELFsoft_env_", Sys.Date(),".csv"))))
+write.csv(otu_soft, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_soft_otu_", Sys.Date(),".csv"))))
+write.csv(env_soft, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_soft_env_", Sys.Date(),".csv"))))
 ```
 
 
