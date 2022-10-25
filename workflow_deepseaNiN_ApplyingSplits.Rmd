@@ -62,7 +62,7 @@ LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,257:392))    #dataset 
 
 
 ## MAKE DEEP DATASET
-hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1030)
+hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>=1030)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
 HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
 HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after
@@ -89,7 +89,7 @@ write.csv(LDensShlw_env_sort, file=file.path(dataPath,(paste0("inputs/LDensShlw_
 
 hiDensDeepJoinedDat$bathyPositive<-(hiDensDeepJoinedDat$bathy*-1)
 
-DeepBelow1500<-subset(hiDensDeepJoinedDat,bathyPositive>1500)
+DeepBelow1500<-subset(hiDensDeepJoinedDat,bathyPositive>=1500)
 DeepAbove1500<-subset(hiDensDeepJoinedDat,bathyPositive<1500)
 DeepBelow1500<-DeepBelow1500%>%select(-c("bathyPositive"))
 DeepAbove1500<-DeepAbove1500%>%select(-c("bathyPositive"))
@@ -185,7 +185,7 @@ LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,257:392)) #dataset 1
 
 
 # MAKE SHELF DATSET
-loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<305)
+loDensNoSBloO2JoinedDat<-subset(loDensNoSBJoinedDat,BO22_dissoxmean_bdmean<=305)
 plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
 LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
 LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
@@ -215,7 +215,7 @@ Makes SHELF and BARENTS datasets
 plot(loDensNoSBloO2JoinedDat$X.y, loDensNoSBloO2JoinedDat$Y)
 
 # MAKE WEST BARENTS DATASET
-loDensNoSBmidO2JoinedDat<-subset(loDensNoSBloO2JoinedDat,BO22_dissoxmean_bdmean>294)
+loDensNoSBmidO2JoinedDat<-subset(loDensNoSBloO2JoinedDat,BO22_dissoxmean_bdmean>=294)
 plot(loDensNoSBmidO2JoinedDat$X.y, loDensNoSBmidO2JoinedDat$Y)
 loDensNoSBmidO2_otu_sort<-loDensNoSBmidO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
 loDensNoSBmidO2_env_sort<-loDensNoSBmidO2JoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
@@ -241,6 +241,45 @@ write.csv(loDensNoSBmidO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDe
 #BARENTS DATSET
 write.csv(loDensNoSBlowestO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2_atlanticShelf_otu_sort_", Sys.Date(),".csv"))))
 write.csv(loDensNoSBlowestO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2_atlanticShelf_env_sort_", Sys.Date(),".csv"))))
+```
+
+
+
+### Split SHELF WBARENTS dataset into CW & NAW by Salinity Mean 35 threshold
+Makes SHELF and BARENTS datasets
+
+```{r}
+#SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
+
+plot(loDensNoSBlowestO2JoinedDat$X.y, loDensNoSBlowestO2JoinedDat$Y)
+
+# MAKE CW DATASET
+loDensNoSBlowestO2lowSJoinedDat<-subset(loDensNoSBlowestO2JoinedDat,Smean_Robinson<=35)
+plot(loDensNoSBlowestO2lowSJoinedDat$X.y, loDensNoSBlowestO2lowSJoinedDat$Y)
+loDensNoSBlowestO2lowS_otu_sort<-loDensNoSBlowestO2lowSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBlowestO2lowS_env_sort<-loDensNoSBlowestO2lowSJoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
+# LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
+
+
+# MAKE NAW DATASET
+loDensNoSBlowestO2hiSJoinedDat<-subset(loDensNoSBlowestO2JoinedDat,Smean_Robinson>35)
+plot(loDensNoSBlowestO2hiSJoinedDat$X.y, loDensNoSBlowestO2hiSJoinedDat$Y)
+loDensNoSBlowestO2hiS_otu_sort<-loDensNoSBlowestO2hiSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBlowestO2hiS_env_sort<-loDensNoSBlowestO2hiSJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
+# LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
+# LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22  
+
+```
+##### SAVE DATASETS
+```{r}
+# WBARENTS CW DATASET
+write.csv(loDensNoSBlowestO2lowS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2lowS_WB_CW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBlowestO2lowS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2lowS_WB_CW_env_sort_", Sys.Date(),".csv"))))
+
+# WBARENTS NAW DATSET
+write.csv(loDensNoSBlowestO2hiS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2hiS_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBlowestO2hiS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2hiS_WB_NAW_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
