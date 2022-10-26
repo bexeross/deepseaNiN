@@ -23,8 +23,8 @@ library(readxl)
 # PREFERABLY KEEP ALL LINES AND COMMENT OUT IF APPLYING TO NEW DATASET SO THAT THEY CAN BE TRACKED/REPEATED EASILY
 
 # After SHELFoct1perR analysis, but now applied to all sample (Oslo) dataset
-env_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBlowestO2lowS_WB_CW_env_sort_2022-10-25.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBlowestO2lowS_WB_CW_otu_sort_2022-10-25.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBmidO2lowS_WB_CW_env_sort_2022-10-26.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBmidO2lowS_WB_CW_otu_sort_2022-10-26.csv")) %>% as.data.frame
 
 dim(env_orig)
 dim(otu_orig)
@@ -40,7 +40,7 @@ NB Up-to-date live version of taxonary available at dataPath_2, but snapshot ver
 #   mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
 #   mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
 
-taxonary <- read_xlsx(file.path(dataPath, "Taxonary.xlsx"), sheet=1)%>%
+taxonary <- read_xlsx(file.path(dataPath, "inputs/Taxonary.xlsx"), sheet=1)%>%
  mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
  mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
 ```
