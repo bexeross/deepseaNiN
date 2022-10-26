@@ -251,22 +251,22 @@ Makes SHELF and BARENTS datasets
 ```{r}
 #SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
 
-plot(loDensNoSBlowestO2JoinedDat$X.y, loDensNoSBlowestO2JoinedDat$Y)
+plot(loDensNoSBmidO2JoinedDat$X.y, loDensNoSBmidO2JoinedDat$Y)
 
 # MAKE CW DATASET
-loDensNoSBlowestO2lowSJoinedDat<-subset(loDensNoSBlowestO2JoinedDat,Smean_Robinson<=35)
-plot(loDensNoSBlowestO2lowSJoinedDat$X.y, loDensNoSBlowestO2lowSJoinedDat$Y)
-loDensNoSBlowestO2lowS_otu_sort<-loDensNoSBlowestO2lowSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
-loDensNoSBlowestO2lowS_env_sort<-loDensNoSBlowestO2lowSJoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
+loDensNoSBmidO2lowSJoinedDat<-subset(loDensNoSBmidO2JoinedDat,Smean_Robinson<=35)
+plot(loDensNoSBmidO2lowSJoinedDat$X.y, loDensNoSBmidO2lowSJoinedDat$Y)
+loDensNoSBmidO2lowS_otu_sort<-loDensNoSBmidO2lowSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBmidO2lowS_env_sort<-loDensNoSBmidO2lowSJoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
 # LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
 # LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
 
 
 # MAKE NAW DATASET
-loDensNoSBlowestO2hiSJoinedDat<-subset(loDensNoSBlowestO2JoinedDat,Smean_Robinson>35)
-plot(loDensNoSBlowestO2hiSJoinedDat$X.y, loDensNoSBlowestO2hiSJoinedDat$Y)
-loDensNoSBlowestO2hiS_otu_sort<-loDensNoSBlowestO2hiSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
-loDensNoSBlowestO2hiS_env_sort<-loDensNoSBlowestO2hiSJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
+loDensNoSBmidO2hiSJoinedDat<-subset(loDensNoSBmidO2JoinedDat,Smean_Robinson>35)
+plot(loDensNoSBmidO2hiSJoinedDat$X.y, loDensNoSBmidO2hiSJoinedDat$Y)
+loDensNoSBmidO2hiS_otu_sort<-loDensNoSBmidO2hiSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBmidO2hiS_env_sort<-loDensNoSBmidO2hiSJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
 # LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
 # LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22  
 
@@ -274,12 +274,12 @@ loDensNoSBlowestO2hiS_env_sort<-loDensNoSBlowestO2hiSJoinedDat %>% select(c(2,25
 ##### SAVE DATASETS
 ```{r}
 # WBARENTS CW DATASET
-write.csv(loDensNoSBlowestO2lowS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2lowS_WB_CW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBlowestO2lowS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2lowS_WB_CW_env_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2lowS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2lowS_WB_CW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2lowS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2lowS_WB_CW_env_sort_", Sys.Date(),".csv"))))
 
 # WBARENTS NAW DATSET
-write.csv(loDensNoSBlowestO2hiS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2hiS_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBlowestO2hiS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBlowestO2hiS_WB_NAW_env_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2hiS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiS_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2hiS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiS_WB_NAW_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
