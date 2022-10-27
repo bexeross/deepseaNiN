@@ -200,7 +200,7 @@ xy_t<- ggplot(data = env_sub_meta,
   scale_colour_gradientn(limits = c(min(env_sub_meta$BO22_dissoxmean_bdmean), 
                                     300.5), #match variable acting as colour
                         colors=c('red'))+
-  ggtitle("Geography (X v Y) - coloured by dissox mean") #amend
+  ggtitle("Geography (X v Y) - coloured by dissox mean with threshold 300.5") #amend
 
 #xy_t #plot
 ggplotly(xy_t) #interactive plot
