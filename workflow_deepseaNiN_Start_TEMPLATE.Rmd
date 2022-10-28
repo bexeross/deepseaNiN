@@ -108,7 +108,11 @@ env_sort<-left_join(env_sort,envTOC, by=c("SampID"="SampID2"))
 
 #### remove any variables with not enough coverage
 ```{r}
-
+lightvars<-env_sort %>% select(c("SampID",
+                                "BO22_lightbotmean_bdmean",
+                                "BO22_lightbotltmax_bdmean",
+                                "BO22_lightbotltmin_bdmean",
+                                "BO22_lightbotrange_bdmean"))
 env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotltmax_bdmean",
                                "BO22_lightbotltmin_bdmean",
