@@ -15,6 +15,13 @@ Requires the main analysis environment to be loaded.
 # Selecting geographic subsets
 This is to explore thresholds/relationships locally. E.g. To look for threshold values/ local relationships before deciding on splits. You need to already have a theory that you want to test in order to select the geographic regions to look at.
 
+## Libraries
+```{r}
+library(tidyverse)
+library(oce)
+```
+
+
 
 ## OPTIONAL: load new dataset and apply splits SKIP IF ALREADY HAVE "joinedDat"
 
@@ -245,41 +252,42 @@ write.csv(loDensNoSBlowestO2_env_sort, file=file.path(dataPath,(paste0("inputs/l
 
 
 
-### Split SHELF WBARENTS dataset into CW & NAW by Salinity Mean 35 threshold
-Makes SHELF and BARENTS datasets
+### Split SHELF WBARENTS dataset into W (Lophelia extent) & E (Primnoa/Paragorgia extent) by dissox 300.5 threshold
+Makes WB_W_LOPH and WB_E_PARAPRIM datasets
+(Previously trialled CW/NAW split by SmeanRobinson >=35 but is not supported, so amended here to new trial split)
 
 ```{r}
 #SB<-c("1805_01","1801_00","1802_02", "1799_01", "1803_00", "1798_02","1800_00","1995_00")
 
 plot(loDensNoSBmidO2JoinedDat$X.y, loDensNoSBmidO2JoinedDat$Y)
 
-# MAKE CW DATASET
-loDensNoSBmidO2lowSJoinedDat<-subset(loDensNoSBmidO2JoinedDat,Smean_Robinson<=35)
-plot(loDensNoSBmidO2lowSJoinedDat$X.y, loDensNoSBmidO2lowSJoinedDat$Y)
-loDensNoSBmidO2lowS_otu_sort<-loDensNoSBmidO2lowSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
-loDensNoSBmidO2lowS_env_sort<-loDensNoSBmidO2lowSJoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
+# MAKE WB W LOPH dataset
+loDensNoSBmidO2loO2JoinedDat<-subset(loDensNoSBmidO2JoinedDat,BO22_dissoxmean_bdmean<=300.5)
+plot(loDensNoSBmidO2loO2JoinedDat$X.y, loDensNoSBmidO2loO2JoinedDat$Y)
+loDensNoSBmidO2loO2_otu_sort<-loDensNoSBmidO2loO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBmidO2loO2_env_sort<-loDensNoSBmidO2loO2JoinedDat %>% select(c(2,257:392)) #dataset 19-10-22 or after
 # LDnoSBhi02_otu_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
 # LDnoSBhi02_env_sort<-loDensNoSBhiO2JoinedDat %>% select(c(2,397:532)) #dataset before 19-10-22 
 
 
-# MAKE NAW DATASET
-loDensNoSBmidO2hiSJoinedDat<-subset(loDensNoSBmidO2JoinedDat,Smean_Robinson>35)
-plot(loDensNoSBmidO2hiSJoinedDat$X.y, loDensNoSBmidO2hiSJoinedDat$Y)
-loDensNoSBmidO2hiS_otu_sort<-loDensNoSBmidO2hiSJoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
-loDensNoSBmidO2hiS_env_sort<-loDensNoSBmidO2hiSJoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
+# MAKE WB E PARAPRIM dataset
+loDensNoSBmidO2hiO2JoinedDat<-subset(loDensNoSBmidO2JoinedDat,BO22_dissoxmean_bdmean>300.5)
+plot(loDensNoSBmidO2hiO2JoinedDat$X.y, loDensNoSBmidO2hiO2JoinedDat$Y)
+loDensNoSBmidO2hiO2_otu_sort<-loDensNoSBmidO2hiO2JoinedDat %>% select(c(2:251))#dataset 19-10-22 or after
+loDensNoSBmidO2hiO2_env_sort<-loDensNoSBmidO2hiO2JoinedDat %>% select(c(2,257:392))  #dataset 19-10-22 or after 
 # LDnoSBlo02_otu_sort<-loDensNoSBloO2JoinedDat %>% select(c(2:391))#dataset before 19-10-22
 # LDnoSBlo02_env_sort<-loDensNoSBloO2JoinedDat %>% select(c(2,397:532))  #dataset before 19-10-22  
 
 ```
 ##### SAVE DATASETS
 ```{r}
-# WBARENTS CW DATASET
-write.csv(loDensNoSBmidO2lowS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2lowS_WB_CW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBmidO2lowS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2lowS_WB_CW_env_sort_", Sys.Date(),".csv"))))
+# MAKE WB W LOPH dataset
+write.csv(loDensNoSBmidO2loO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_CW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2loO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_CW_env_sort_", Sys.Date(),".csv"))))
 
-# WBARENTS NAW DATSET
-write.csv(loDensNoSBmidO2hiS_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiS_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBmidO2hiS_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiS_WB_NAW_env_sort_", Sys.Date(),".csv"))))
+# MAKE WB E PARAPRIM dataset
+write.csv(loDensNoSBmidO2hiO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2hiO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_NAW_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
