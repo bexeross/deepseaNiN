@@ -34,6 +34,10 @@ should include all env Vars and otus to explore, and make species richness varia
 env_sub_meta1<-left_join(env,otu_6,by="SampID")
 env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
 
+#add light at the bottom back in
+env_sub_meta1<-left_join(env_sub_meta1,lightvars)
+
+
 #rename X
 env_sub_meta1$X <- env$X.y
 env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
@@ -61,18 +65,16 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-# discrete colur pallete where you decide the number of colours - max is 74.
-n <- 61
+# discrete colur pallete for up to 74 colours/categories
+n <- 74
 qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
+
 col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
 
 pie(rep(1,n), col=sample(col_vector, n))
 ```
 
-### List variables you can play with
-```{r}
-colnames(env_sub_meta)
-```
+
 
 
 ## MAKE ADDITIONAL VARS
@@ -82,6 +84,10 @@ colnames(env_sub_meta)
 
 ```
 
+### List variables you can play with
+```{r}
+colnames(env_sub_meta)
+```
 
 
 
@@ -116,7 +122,7 @@ tb_ax1<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = gnmds1),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(min(gnmds1),max(gnmds1)), #match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
                         colors=c('red','yellow','green'))+
   ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
 
@@ -139,7 +145,7 @@ gnmds_spR <- ggplot(data = env_sub_meta,
   coord_fixed() +
   ggtitle("GNMDS coloured by species Richness")+ #amend
   geom_point(aes(colour = spRich)) + #change at will - continuous vars only
-  scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour
                         colors=c('red','yellow','green'))+
   geom_vline(xintercept = 0,
              linetype = 2,
@@ -168,7 +174,7 @@ dca_spR <- ggplot(data = env_sub_meta,
   coord_fixed() +
   ggtitle("DCA coloured by species Richness")+ #amend
   geom_point(aes(colour = spRich)) + #change at will - continuous vars only
-  scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour
                         colors=c('red','yellow','green'))+
   geom_vline(xintercept = 0,
              linetype = 2,
@@ -199,7 +205,7 @@ xy_t<- ggplot(data = env_sub_meta,
   theme_classic() +
   geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(min(Tmean_Robinson), max(Tmean_Robinson)), #match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson), max(env_sub_meta$Tmean_Robinson)), #match variable acting as colour
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by mean temp") #amend
 
@@ -244,7 +250,7 @@ gnmds_gmo <- ggplot(data = env_sub_meta,
   coord_fixed() +
   ggtitle("GNMDS coloured by landscape class",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(gmorph))) + #change at will - categorical vars only
+  geom_point(aes(colour = factor(env_sub_meta$gmorph))) + #change at will - categorical vars only
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -270,10 +276,10 @@ ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), 
 #### X v Y with gnmds ax 1 as HC categories
 ```{r}
 cat_xy_ax1 <- ggplot(data = env_sub_meta,
-              aes(x = X.y,
+              aes(x = X,
                   y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = ax1cat), #change at will - categorical vars only
+  geom_point(aes(colour = env_sub_meta$ax1cat), #change at will - categorical vars only
              size = 1) +
  # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
   scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
