@@ -282,12 +282,12 @@ loDensNoSBmidO2hiO2_env_sort<-loDensNoSBmidO2hiO2JoinedDat %>% select(c(2,257:39
 ##### SAVE DATASETS
 ```{r}
 # MAKE WB W LOPH dataset
-write.csv(loDensNoSBmidO2loO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_CW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBmidO2loO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_CW_env_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2loO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_W_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2loO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2loO2_WB_W_env_sort_", Sys.Date(),".csv"))))
 
 # MAKE WB E PARAPRIM dataset
-write.csv(loDensNoSBmidO2hiO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_NAW_otu_sort_", Sys.Date(),".csv"))))
-write.csv(loDensNoSBmidO2hiO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_NAW_env_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2hiO2_otu_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_E_otu_sort_", Sys.Date(),".csv"))))
+write.csv(loDensNoSBmidO2hiO2_env_sort, file=file.path(dataPath,(paste0("inputs/loDensNoSBmidO2hiO2_WB_E_env_sort_", Sys.Date(),".csv"))))
 ```
 
 
