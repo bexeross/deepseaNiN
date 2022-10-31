@@ -1,7 +1,8 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions - SHELF october 2022 - 1 sample per R station"
+title: "MAREANO - NiN:splitting biogeographic regions_SHELF SOFT october (all samples)"
 output: html_notebook
 ---
+**NB THESE ARE ALL EXAMPLES OF PLOTS TO SPEED UP YOUR CUSTOM PLOT MAKING: NO NEED TO RUN ALL - JUST USE THIS SCRIPT AS A TEMPLATE**
 
 Asssumes you have aready run:
 - config
@@ -13,11 +14,9 @@ You now have the objects needed to explore the dataset and find the best way to 
 
 This requires exploring the dataset to theorise the best ways to split the data with:
 - environmental biplots/colourings
+- envrionmental/species variables symbolised on biplots and maps
 
-
-then applying the splits. 
-
-
+# SET UP
 ### Libraries
 ```{r}
 library(plotly)
@@ -25,20 +24,19 @@ library(readxl)
 ```
 
 
+### MAKE INPUTS
 
-
-## Exploring biplots
 #### make full dataset to explore 
 should include all env Vars and otus to explore, and make species richness variable
 
 ```{r}
 #add species data and sp richness variable
-env_sub_meta1<-left_join(env,otu_6, by="SampID")
-env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+env_sub_meta1<-left_join(env,otu_6,by="SampID")
+env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Ophiopleura_borealis"))]!=0)
 
 #rename X
 env_sub_meta1$X <- env$X.y
-#env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
+env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
 
 #add samplID
 #env_sub_meta1$SampID<-envSel$SampID
@@ -48,18 +46,18 @@ env_sub_meta1$X <- env$X.y
 
 ### Add provisional biotope data to env file
 Note that biotopes were last assigned in march 2022 and therefore there are some addional samples that have not yet got a biotope assigned. These should just be NAs
+
 ```{r}
 biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
   select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
 
 biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=2)
 
-env_sub_meta<-left_join(env_sub_meta1,biotopeInfo, by="SampID")
+env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```
 
 
 ### a colour palette for discrete plots (see later in script)
-
 ```{r}
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -75,64 +73,170 @@ pie(rep(1,n), col=sample(col_vector, n))
 ```{r}
 colnames(env_sub_meta)
 ```
-# MAKE MORE VARS
 
-```{r}
 
-```
+## MAKE ADDITIONAL VARS
+
+**INSERT YOURS HERE - E.G. COMBINED SPECIES LISTS?**
 
 
 # EXPLORATORY PLOTS
-GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the varaibles you are plotting at will, and customise this notebook for the split you are exploring.
+GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the variables you are plotting at will, and customise this notebook for the split you are exploring.
 
 
 **INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
-
-## GNMDS with PoriferaBig
+#### X v Y - gnmds1
 ```{r}
-gnmds_porBig<- ggplot(data = env_sub_meta,
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1), max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds axis1") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y - Tmean_Robinson
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson),
+                                   5.5), #match variable acting as colour
+                        colors=c('blue','yellow','red'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds Temp (meanR)thresh 5.5") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_TmeanR_thresh5_5.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+## GNMDS with Tmean_Robinson
+```{r}
+p_gmo <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by Porifera Big",
-          subtitle = "First run") +
-  geom_point(aes(colour = env_sub_meta$Porifera_big)) +
-  scale_colour_gradientn(limits = c(0.001,max(env_sub_meta$Porifera_big)),
+  ggtitle("GNMDS coloured by Tmean_Robinson thresh. 5.5*C")+
+  geom_point(aes(colour = Tmean_Robinson)) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson),5.5),#match variable acting as colour
                         colors=c('red','yellow','green'))+
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
   geom_hline(yintercept = 0,
              linetype = 2,
-             colour = "lightgray")#+
-  #guides(colour="none", size="none")
+             colour = "lightgray")+
+  guides(colour="none", size="none")
 
-ggplotly(gnmds_porBig)
+ggplotly(p_gmo)
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__gnmds_TmeanRobinson_thresh5_5.png"), #amend
+       device = "png",
+       dpi=300 )
 ```
 
-## GNMDS with Lophelia
+
+
+
+#### X v Y - swDensRob_avs
 ```{r}
-gnmds_Loph<- ggplot(data = env_sub_meta,
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = swDensRob_avs),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(1030,
+                                    max(env_sub_meta$swDensRob_avs)), #match variable acting as colour
+                        colors=c('red','yellow','blue'))+
+  ggtitle("Geography (X v Y) - coloured by swDensRob_avs thresh 1030") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_swDensRob_avs_thresh1030.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+## GNMDS with swDensRob_avs
+```{r}
+p_gmo <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by Lophelia pertusa",
-          subtitle = "First run") +
-  geom_point(aes(colour = env_sub_meta$Lophelia_pertusa)) +
-  scale_colour_gradientn(limits = c(0.001,max(env_sub_meta$Lophelia_pertusa)),
+  ggtitle("GNMDS coloured by swDensRob_avs thresh 1030")+
+  geom_point(aes(colour = swDensRob_avs)) +
+  scale_colour_gradientn(limits = c(1030,max(env_sub_meta$swDensRob_avs)),#match variable acting as colour
                         colors=c('red','yellow','green'))+
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
   geom_hline(yintercept = 0,
              linetype = 2,
-             colour = "lightgray")#+
-  #guides(colour="none", size="none")
+             colour = "lightgray")+
+  guides(colour="none", size="none")
 
-ggplotly(gnmds_Loph)
+ggplotly(p_gmo)
 ```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__gnmds_swDensRob_avs_1030.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
+#### X v Y - biotope
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = BiotopeDesc),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette as colour
+  ggtitle("Geography (X v Y) - coloured by biotope") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
 
 
 ## GNMDS with biotope
@@ -156,43 +260,18 @@ p_gmo <- ggplot(data = env_sub_meta,
 ggplotly(p_gmo)
 ```
 
-## GNMDS with seddan
 
-### seddan classes
-```{r}
-env_sub_meta<- env_sub_meta %>% 
-  mutate(
-    seddanName = case_when(
-            seddan == "10" ~ "Morraine_indet", ########### ALL NEW NAMES NEED ADDING!
-            seddan == "11" ~ "Morraine_thick",
-            seddan == "15" ~ "Morraine_marginal",
-            seddan == "140" ~ "Rock",
-            seddan == "150" ~ "Sedimentary_rock",
-            seddan == "200" ~ "Suspension",
-            seddan == "201" ~ "Bottom_current",
-            seddan == "202" ~ "Glaciomarine",
-            seddan == "211" ~ "Contourite",
-            seddan == "213" ~ "Debris_flow",
-            seddan == "215" ~ "Channel_deposit",
-            seddan == "217" ~ "Bioclastic",
-            seddan == "219" ~ "Layered_over_debris_flow",
-            seddan == "220" ~ "Carbonate_crust",
-            seddan == "230" ~ "Morraine_glaciomarineCover",
-            seddan == "240" ~ "Slide_w_cover",
-            seddan == "241" ~ "Slide_part_cover"
-    ))
-```
-
-
+## GNMDS with Thenea_sp.
 ```{r}
 p_gmo <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by sediment origin")+
-  geom_point(aes(colour = factor(env_sub_meta$seddanName))) +
-  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+  ggtitle("GNMDS coloured by Thenea sp.")+
+  geom_point(aes(colour = Thenea_sp.)) +
+  scale_colour_gradientn(limits = c(0.0001,max(env_sub_meta$Thenea_sp.)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -203,12 +282,94 @@ p_gmo <- ggplot(data = env_sub_meta,
 
 ggplotly(p_gmo)
 ```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__gnmds_Thenea_sp.png"), #amend
+       device = "png",
+       dpi=300 )
+```
 
 
-# CONCLUSIONS
-Looks like the core of the data is all associated with morraine and diverse hard bottom sponge communities (you can turn those on and off by clicking the legend in the two interactive plots above). 
 
-There is therefore definitely a need to split the dataset into hard bottom taxa and soft bottom taxa so that the datasets can be evalautated separately (M2, M5).
+#### X v Y - Thenea_sp.
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Thenea_sp.),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(0.0001,
+                                    max(env_sub_meta$Thenea_sp.)), #match variable acting as colour
+                        colors=c('red','yellow','blue'))+
+  ggtitle("Geography (X v Y) - coloured by Thenea_sp.") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_Thenea_sp.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+## GNMDS with Stylocordyla_borealis
+```{r}
+p_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by Stylocordyla_borealis")+
+  geom_point(aes(colour = Stylocordyla_borealis)) +
+  scale_colour_gradientn(limits = c(0.0001,max(env_sub_meta$Stylocordyla_borealis)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__gnmds_Stylocordyla_borealis.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
+#### X v Y - Stylocordyla_borealis
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Stylocordyla_borealis),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(0.0001,
+                                    max(env_sub_meta$Stylocordyla_borealis)), #match variable acting as colour
+                        colors=c('red','yellow','blue'))+
+  ggtitle("Geography (X v Y) - coloured by Stylocordyla_borealis") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_Stylocordyla_borealis.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+---------------------------
 
 
 
@@ -235,7 +396,7 @@ ggplotly(tb_ax1) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_v_temp_nmds1.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct_bathy_v_temp_nmds1.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -264,7 +425,7 @@ ggplotly(gnmds_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_gnmds_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct_bathy_gnmds_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -293,7 +454,7 @@ ggplotly(dca_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR_bathy_dca_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct_bathy_dca_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -319,7 +480,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__X_v_Y_tmeanR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__X_v_Y_tmeanR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -370,7 +531,7 @@ ggploty(gnmds_gmo)
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__gnmds_gmo.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__gnmds_gmo.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -395,11 +556,16 @@ ggplotly(cat_xy_ax1) #interactive plot
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELFoct1perR__XvY_ax1cat.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFToct__XvY_ax1cat.png"), #amend
        device = "png",
        dpi=300 )
 
 ```
+
+
+
+
+
 
 
 # COMBINE SEVERAL PLOTS
@@ -410,7 +576,7 @@ comp<-xy_t+cat_y_ax1+p_spR
 ```{r}
 ##### Save some outputs
 ggexport(comp,
-          filename = file.path(dataPath,"outputs/SHELFoct1perR__compare.png"), #amend
+          filename = file.path(dataPath,"outputs/SHELF_SOFToct__compare.png"), #amend
           width = 1500, #amend with/height for expected shape ratio
           height = 500)
 
@@ -423,7 +589,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_SHELFoct1perR_.RData") # edit area first
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_SHELF_SOFToct_.RData") # edit area first
 
 ```
 

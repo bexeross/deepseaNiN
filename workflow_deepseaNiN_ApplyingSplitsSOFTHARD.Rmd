@@ -1,0 +1,133 @@
+---
+title: "Splitting data into SOFT and HARD dasets - for NiN v 3 analyses - R Notebook"
+output: html_notebook
+---
+
+#INPUTS
+Whatever MAREANO dataset you are working with, it may be that there are too many hardbottom environments and taxa, and that these are confounding your M5 (soft bottom) analysis. If this is the case you may need to split your dataset into soft and hard datasets to analyse separately (as it is still useful to do an evaluation of M2 with the hard data).
+
+This is done here using the taxonary to apply the split based on whether the taxa are obligate hard or soft bottom taxa. Any that could occur in either environment (e.g. those that are mobile or those where it is not so clear cut) are considered both and are retained in both datasets. This allows you to retain all samples, but only (roughly) the portions that are hard or soft separately.
+
+
+## Libraries
+
+```{r}
+library(readxl)
+```
+
+
+## load datasets to be split into hard and soft
+
+
+```{r}
+# PREFERABLY KEEP ALL LINES AND COMMENT OUT IF APPLYING TO NEW DATASET SO THAT THEY CAN BE TRACKED/REPEATED EASILY
+
+# After SHELFoct1perR analysis, but now applied to all sample (Oslo) dataset
+env_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBmidO2lowS_WB_CW_env_sort_2022-10-26.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/loDensNoSBmidO2lowS_WB_CW_otu_sort_2022-10-26.csv")) %>% as.data.frame
+
+dim(env_orig)
+dim(otu_orig)
+```
+
+
+
+## load taxonary and make hard/soft lookup tables
+NB Up-to-date live version of taxonary available at dataPath_2, but snapshot version from 20.10.22 is available in dataPath (includes hardSoft checked by bex & gjertrud)
+
+```{r}
+# taxonary <- read_xlsx(file.path(dataPath_2, "Taxonary.xlsx"), sheet=1) %>%
+#   mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+#   mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+
+taxonary <- read_xlsx(file.path(dataPath, "inputs/Taxonary.xlsx"), sheet=1)%>%
+ mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+ mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+```
+
+# SPLIT DATASET INTO SOFT/HARD
+
+## Format datasets for fitering spp
+```{r}
+otu_orig[otu_orig==0]<-NA
+otu_long<-otu_orig %>% pivot_longer(cols=!c("X","SampID"),
+                                    names_to="Taxon",
+                                    values_to="Density",
+                                    values_drop_na=T)
+unique(otu_long$Taxon) #list of species to see what to expect
+```
+
+## Split taxonary into hard/soft lookup tables
+Will retain only "soft" and "both" categories in the soft dataset
+Will retain only "hard" and "both" categories in the hard dataset
+
+N/A applies to pelagic species and objects to ensure they are also removed
+```{r}
+softsppincNA<-subset(taxonary,HardSoft_Affiliated!="Hard")
+softspp<-subset(softsppincNA,HardSoft_Affiliated!="N/A")
+print("Soft includes..")
+unique(softspp$HardSoft_Affiliated)
+
+hardsppincNA<-subset(taxonary,HardSoft_Affiliated!="Soft")
+hardspp<-subset(hardsppincNA,HardSoft_Affiliated!="N/A")
+print("Hard includes..")
+unique(hardspp$HardSoft_Affiliated)
+```
+
+## filter otu_long by hard/soft taxa
+
+```{r}
+otu_long_hard<-otu_long %>%filter(Taxon %in% hardspp$clean_taxonomy)
+unique(otu_long_hard$Taxon) #list of hard species to see what to expect
+otu_long_soft<-otu_long %>%filter(Taxon %in% softspp$clean_taxonomy)
+unique(otu_long_soft$Taxon) #list of soft species to see what to expect (number restarts from 1)
+```
+
+
+## pivot wider again
+```{r}
+otu_hard<-pivot_wider(otu_long_hard,
+                      id_cols="SampID",
+                      names_from="Taxon",
+                      values_from = "Density",
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
+
+otu_soft<-pivot_wider(otu_long_soft,
+                      id_cols="SampID",
+                      names_from="Taxon",
+                      values_from = "Density",
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
+```
+
+## Match hard/soft otu sample data to env sample data
+
+```{r}
+env_hard<-env_orig%>% filter(SampID%in%otu_hard$SampID) 
+#check lengths match
+length(unique(env_hard$SampID)) # samp in env dataset
+length(unique(otu_hard$SampID)) # samp in otu dataset
+
+env_soft<-env_orig%>% filter(SampID%in%otu_soft$SampID) 
+#check lengths match
+length(unique(env_soft$SampID)) # samp in env dataset
+length(unique(otu_soft$SampID)) # samp in otu dataset
+
+```
+# Write HARD and SOFT datasets
+```{r}
+# BE SURE TO EDIT FILENAMES
+
+# HARD DATSET
+write.csv(otu_hard, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_hard_otu_", Sys.Date(),".csv"))))
+write.csv(env_hard, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_hard_env_", Sys.Date(),".csv"))))
+
+# SOFT DATASET
+write.csv(otu_soft, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_soft_otu_", Sys.Date(),".csv"))))
+write.csv(env_soft, file=file.path(dataPath,(paste0("inputs/SH_WB_CW_soft_env_", Sys.Date(),".csv"))))
+```
+
+
+
+

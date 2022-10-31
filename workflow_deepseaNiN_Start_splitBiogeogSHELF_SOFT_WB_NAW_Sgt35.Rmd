@@ -32,7 +32,7 @@ should include all env Vars and otus to explore, and make species richness varia
 ```{r}
 #add species data and sp richness variable
 env_sub_meta1<-left_join(env,otu_6,by="SampID")
-env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Tubularia_sp."))]!=0)
 
 #rename X
 env_sub_meta1$X <- env$X.y
@@ -90,8 +90,27 @@ GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the vara
 
 
 **INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+#### X v Y - gnmds1
 ```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1), max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds1") #amend
 
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35__X_v_Y_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
 ```
 
 
@@ -125,7 +144,7 @@ ggplotly(tb_ax1) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35_bathy_v_temp_nmds1.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -154,7 +173,7 @@ ggplotly(gnmds_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_gnmds_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35_bathy_gnmds_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -183,7 +202,7 @@ ggplotly(dca_spR) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_dca_spR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35_bathy_dca_spR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -209,7 +228,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35__X_v_Y_tmeanR.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -260,7 +279,7 @@ ggploty(gnmds_gmo)
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35__gnmds_gmo.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -285,7 +304,7 @@ ggplotly(cat_xy_ax1) #interactive plot
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_XvY_ax1cat.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35__XvY_ax1cat.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -305,7 +324,7 @@ comp<-xy_t+cat_y_ax1+p_spR
 ```{r}
 ##### Save some outputs
 ggexport(comp,
-          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_compare.png"), #amend
+          filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_NAW_Sgt35__compare.png"), #amend
           width = 1500, #amend with/height for expected shape ratio
           height = 500)
 
@@ -318,7 +337,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_SHELF_SOFT_WB_NAW_Sgt35_.RData") # edit area first
 
 ```
 
