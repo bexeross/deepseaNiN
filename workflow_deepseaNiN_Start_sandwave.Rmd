@@ -58,12 +58,14 @@ source("gg_ordisurf_viridis.R")
 
 for the sandwave case study we are not using a split - input the original full dataset and select the relevant area later
 
+31.10.22  Update to envDataOslo_2022-10-19, widedataOslo_2022-10-19
+1.11.22 update to envDataOslo_2022-10-19, widedataOslo_2022-10-19
 
 
 ```{r}
 
-env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-09-29.csv")) %>% as.data.frame
-otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-09-29.csv")) %>% as.data.frame
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-10-19.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-10-19.csv")) %>% as.data.frame
 
 #left join and split to ensure ordered identically
 
@@ -74,11 +76,11 @@ joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
 joinedDat <- subset(joinedDat, (bathy*-1)>100)
 
 #remove Tromsøflaket 2006612
-joinedDat<- subset(joinedDat, cruise_no!="2006612")
+#joinedDat<- subset(joinedDat, cruise_no!="2006612")
 
 
-otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))
+otu_sort<-joinedDat %>% select(c(2:which(colnames(joinedDat)=="Weberella_bursa")))
+env_sort<-joinedDat %>% select(c(2,(which(colnames(joinedDat)=="Weberella_bursa")+1):which(colnames(joinedDat)=="sand")))
 
 # Sorting and ordering by SampID
 # env_orig <- env_orig[order(env_orig$SampID), ]
@@ -176,10 +178,10 @@ envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="b
 
 ## Removing observations with less than 4 OTUs
 
-otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Zoanthidae")))]!=0)
+otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Weberella_bursa")))]!=0)
 
 sel <- otuCompl$SpR>4
-inv.sel<-otuCompl$SpR<4
+inv.sel<-otuCompl$SpR<=4
 
 
 otuCompl<-otuCompl %>% select(-c("SpR"))
@@ -672,7 +674,7 @@ ggsave(file.path(dataPath,"outputs/sandwave_gnmds_dca_r6.png"),
 
 ## Check outlier species Richness
 ```{r}
-otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Weberella_bursa"))]!=0)
 
 summary(otu_6$spRich)
 
@@ -853,7 +855,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.55 #decide
+cor_cut<-0.45 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -910,364 +912,364 @@ ggexport(ordsrfs_plt,
 ```
 
 
-### Sel env var (manual)
-```{r}
-env_os_m <- env[,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
-                  "Smax_Robinson", #comparison to top corr
-                  "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
-                  "X.y", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
-                )]
-env_os_m
-str(env_os_m)
+<!-- ### Sel env var (manual) -->
+<!-- ```{r} -->
+<!-- env_os_m <- env[,c("Tmean_Robinson", #top corr -->
+<!--                   "salt_max", #top corr -->
+<!--                   "Smax_Robinson", #comparison to top corr -->
+<!--                   "swDensRob_avs", #top corr -->
+<!--                   "BO22_icecoverltmax_ss",#top corr ax2 -->
+<!--                   "BO22_icecovermean_ss",#top corr -->
+<!--                   "BO22_dissoxmean_bdmean",#top corr -->
+<!--                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf -->
+<!--                   "BO22_ppltmin_ss", #top corr -->
+<!--                   "X.y", #comparison to Y -->
+<!--                   "Y", #top corr -->
+<!--                   "spd_std", #top corr ax2 (blended model) -->
+<!--                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model) -->
+<!--                   "mud", #highest sed var ax1 + corr -->
+<!--                   "gravel",#highest sed var ax1 - corr -->
+<!--                   "BO22_silicateltmax_bdmean", #just under top corr ax1 -->
+<!--                   "bathy" #intuitive for comparisons -->
+<!--                 )] -->
+<!-- env_os_m -->
+<!-- str(env_os_m) -->
 
-```
-
-
-### Ordisurfs manually selected
-```{r}
-ordsrfs_m <- list(length = ncol(env_os_m))
-
-for (i in seq(ncol(env_os_m))) {
-  os.i_m <- gg_ordisurf(ord = ord,
-                      env.var = env_os_m[, i],
-                      pt.size = 1,
-                      # binwidth = 0.05,
-                      var.label = names(env_os_m)[i],
-                      gen.text.size = 10,
-                      title.text.size = 15,
-                      leg.text.size = 10)
-  
-  ordsrfs_m[[i]] <- os.i_m$plot
-}
-
-ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
-
-ordsrfs_plt_m
-```
-
-##### Save some outputs
-```{r}
-ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/sandwave_ordisurfs_man_sel_domean.png"),
-          width = 2000,
-          height = 2000)
-
-```
+<!-- ``` -->
 
 
+<!-- ### Ordisurfs manually selected -->
+<!-- ```{r} -->
+<!-- ordsrfs_m <- list(length = ncol(env_os_m)) -->
 
+<!-- for (i in seq(ncol(env_os_m))) { -->
+<!--   os.i_m <- gg_ordisurf(ord = ord, -->
+<!--                       env.var = env_os_m[, i], -->
+<!--                       pt.size = 1, -->
+<!--                       # binwidth = 0.05, -->
+<!--                       var.label = names(env_os_m)[i], -->
+<!--                       gen.text.size = 10, -->
+<!--                       title.text.size = 15, -->
+<!--                       leg.text.size = 10) -->
 
-### Envfit
-```{r}
-## Select if any var should be excluded from envfit (makes less busy to read)
-env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
-                  "Smax_Robinson", #comparison to top corr
-                  "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  #"BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_dissoxltmin_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
-                  "X.y", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                 # "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
-                
-  
-)]
+<!--   ordsrfs_m[[i]] <- os.i_m$plot -->
+<!-- } -->
 
-colnames(env_os_m_envfit)<-c("T", #top corr
-                  "sMx", #top corr
-                  "SmaxR", #comparison to top corr
-                  "swDensR", #top corr
-                  "icecovmax",#top corr ax2
-                  #"icecovav",#top corr
-                  "dissoxav",#top corr
-                  #"dissoxmin",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "ppltmin", #top corr
-                  "X", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                 # "CSsd", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
-                  "SiLtmax", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
-                 )
+<!-- ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m, -->
+<!--                          nrow = 4, -->
+<!--                          ncol = 4) -->
 
-## Envfot plot
-gg_envfit(ord = ord,
-          env = env_os_m_envfit,
-          pt.size = 1)
+<!-- ordsrfs_plt_m -->
+<!-- ``` -->
 
-## Envfit analysis
+<!-- ##### Save some outputs -->
+<!-- ```{r} -->
+<!-- ggexport(ordsrfs_plt_m, -->
+<!--           filename = file.path(dataPath,"outputs/sandwave_ordisurfs_man_sel_domean.png"), -->
+<!--           width = 2000, -->
+<!--           height = 2000) -->
 
-ef <- envfit(ord = ord,
-             env = env_os_m_envfit,
-             # na.rm = TRUE
-             )
-efDF <- as.data.frame(scores(ef,
-                             display = "vectors"))
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_EnvFit_man_sel_cln_domean.png"),
-       device = "png",
-       dpi=300 )
-```
-### Categorical envVar visualised on the mdsplots
-
-#### use dataset with categorical var included
-
-```{r}
-env_vis<-env
-env_vis$gnmds1 <- otu_6$gnmds1
-env_vis$gnmds2 <- otu_6$gnmds2
-
-env_vis$dca1 <- otu_6$dca1
-env_vis$dca2 <- otu_6$dca2
-```
-
-#### gnmds w mld mean - bathy
-```{r}
-dca_int <- ggplot(data = env_vis,
-                     aes(x = dca1,
-                         y = dca2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("Interactive DCA sample ID plot",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")
-
-ggplotly(dca_int)
-```
+<!-- ``` -->
 
 
 
 
-
-#### gnmds w mld mean - bathy
-```{r}
-p_mld <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by proximity to mixed layer depth",
-          subtitle = "First run") +
-  geom_point(aes(colour = MLDmean_bathy)) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")
-
-p_mld
-```
-
-#### gnmds w sedclass
-##### deal with sedclass codes
-```{r}
-env_vis<- env_vis %>% 
-  mutate(
-    sedclassName = case_when(
-            sedclass == "1" ~ "SedCoverR",
-            sedclass == "5" ~ "Rock",
-            sedclass == "20" ~ "Mud",
-            sedclass == "21" ~ "MwBlock",
-            sedclass == "40" ~ "sMud",
-            sedclass == "80" ~ "mSand",
-            sedclass == "100" ~ "Sand",
-            sedclass == "110" ~ "gMud",
-            sedclass == "115" ~ "gsMud",
-            sedclass == "120" ~ "gmSand",
-            sedclass == "130" ~ "gSand",
-            sedclass == "150" ~ "MSG",
-            sedclass == "160" ~ "sGravel",
-            sedclass == "170" ~ "Gravel",
-            sedclass == "175" ~ "GravBlock",
-            sedclass == "185" ~ "SGBmix",
-            sedclass == "205" ~ "S/MwB",
-            sedclass == "206" ~ "S/MwG/B",
-            sedclass == "215" ~ "SGBalt",
-            sedclass == "300" ~ "HardSed",
-            sedclass == "500" ~ "Biogenic"
-                        
-    )
-  )
-```
-
-###### colour palette to cope with up to 25 categorical colours
-```{r}
-c25 <- c(
-  "dodgerblue2", "#E31A1C", # red
-  "green4",
-  "#6A3D9A", # purple
-  "#FF7F00", # orange
-  "black", "gold1",
-  "skyblue2", "#FB9A99", # lt pink
-  "palegreen2",
-  "#CAB2D6", # lt purple
-  "#FDBF6F", # lt orange
-  "gray70", "khaki2",
-  "maroon", "orchid1", "pink1", "blue1", "steelblue4",
-  "darkturquoise", "green1", "yellow4", "yellow3",
-  "darkorange4", "brown"
-)
-```
+<!-- ### Envfit -->
+<!-- ```{r} -->
+<!-- ## Select if any var should be excluded from envfit (makes less busy to read) -->
+<!-- env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr -->
+<!--                   "salt_max", #top corr -->
+<!--                   "Smax_Robinson", #comparison to top corr -->
+<!--                   "swDensRob_avs", #top corr -->
+<!--                   "BO22_icecoverltmax_ss",#top corr ax2 -->
+<!--                   #"BO22_icecovermean_ss",#top corr -->
+<!--                   "BO22_dissoxmean_bdmean",#top corr -->
+<!--                   #"BO22_dissoxltmin_bdmean",#top corr -->
+<!--                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf -->
+<!--                   "BO22_ppltmin_ss", #top corr -->
+<!--                   "X.y", #comparison to Y -->
+<!--                   "Y", #top corr -->
+<!--                   "spd_std", #top corr ax2 (blended model) -->
+<!--                  # "CSpdsd_Robinson", #comparison to top corr ax2 (blended model) -->
+<!--                   "mud", #highest sed var ax1 + corr -->
+<!--                   "gravel",#highest sed var ax1 - corr -->
+<!--                   "BO22_silicateltmax_bdmean", #just under top corr ax1 -->
+<!--                   "bathy" #intuitive for comparisons -->
 
 
+<!-- )] -->
+
+<!-- colnames(env_os_m_envfit)<-c("T", #top corr -->
+<!--                   "sMx", #top corr -->
+<!--                   "SmaxR", #comparison to top corr -->
+<!--                   "swDensR", #top corr -->
+<!--                   "icecovmax",#top corr ax2 -->
+<!--                   #"icecovav",#top corr -->
+<!--                   "dissoxav",#top corr -->
+<!--                   #"dissoxmin",#top corr -->
+<!--                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf -->
+<!--                   "ppltmin", #top corr -->
+<!--                   "X", #comparison to Y -->
+<!--                   "Y", #top corr -->
+<!--                   "spd_std", #top corr ax2 (blended model) -->
+<!--                  # "CSsd", #comparison to top corr ax2 (blended model) -->
+<!--                   "mud", #highest sed var ax1 + corr -->
+<!--                   "gravel",#highest sed var ax1 - corr -->
+<!--                   "SiLtmax", #just under top corr ax1 -->
+<!--                   "bathy" #intuitive for comparisons -->
+<!--                  ) -->
+
+<!-- ## Envfot plot -->
+<!-- gg_envfit(ord = ord, -->
+<!--           env = env_os_m_envfit, -->
+<!--           pt.size = 1) -->
+
+<!-- ## Envfit analysis -->
+
+<!-- ef <- envfit(ord = ord, -->
+<!--              env = env_os_m_envfit, -->
+<!--              # na.rm = TRUE -->
+<!--              ) -->
+<!-- efDF <- as.data.frame(scores(ef, -->
+<!--                              display = "vectors")) -->
+<!-- ``` -->
+
+<!-- ##### Save the plot -->
+<!-- ```{r} -->
+<!-- ggsave(filename = file.path(dataPath,"outputs/sandwave_EnvFit_man_sel_cln_domean.png"), -->
+<!--        device = "png", -->
+<!--        dpi=300 ) -->
+<!-- ``` -->
+<!-- ### Categorical envVar visualised on the mdsplots -->
+
+<!-- #### use dataset with categorical var included -->
+
+<!-- ```{r} -->
+<!-- env_vis<-env -->
+<!-- env_vis$gnmds1 <- otu_6$gnmds1 -->
+<!-- env_vis$gnmds2 <- otu_6$gnmds2 -->
+
+<!-- env_vis$dca1 <- otu_6$dca1 -->
+<!-- env_vis$dca2 <- otu_6$dca2 -->
+<!-- ``` -->
+
+<!-- #### gnmds w mld mean - bathy -->
+<!-- ```{r} -->
+<!-- dca_int <- ggplot(data = env_vis, -->
+<!--                      aes(x = dca1, -->
+<!--                          y = dca2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("Interactive DCA sample ID plot", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(SampID))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") -->
+
+<!-- ggplotly(dca_int) -->
+<!-- ``` -->
 
 
-```{r}
-
-p_sed <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sediment class",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(sedclassName))) +
-   scale_colour_manual(values=c25)+
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-p_sed
-```
-
-#### gnmds w lanscape
-##### deal with sedclass codes
-```{r}
-env_vis<- env_vis %>% 
-  mutate(
-    landscapeName = case_when(
-            landscape == "1" ~ "Strandflat",
-            landscape == "21" ~ "ContSlope",
-            landscape == "22" ~ "Canyon",
-            landscape == "31" ~ "Valley",
-            landscape == "32" ~ "Fjord",
-            landscape == "41" ~ "DeepSeaPlane",
-            landscape == "42" ~ "SlopePlain",
-            landscape == "43" ~ "ShelfPlain",
-            landscape == "431" ~ "shallowValley"
-    )
-  )
-```
 
 
-```{r}
 
-p_land <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by landscape class",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(landscapeName))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
+<!-- #### gnmds w mld mean - bathy -->
+<!-- ```{r} -->
+<!-- p_mld <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by proximity to mixed layer depth", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = MLDmean_bathy)) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") -->
 
-p_land
-```
+<!-- p_mld -->
+<!-- ``` -->
+
+<!-- #### gnmds w sedclass -->
+<!-- ##### deal with sedclass codes -->
+<!-- ```{r} -->
+<!-- env_vis<- env_vis %>%  -->
+<!--   mutate( -->
+<!--     sedclassName = case_when( -->
+<!--             sedclass == "1" ~ "SedCoverR", -->
+<!--             sedclass == "5" ~ "Rock", -->
+<!--             sedclass == "20" ~ "Mud", -->
+<!--             sedclass == "21" ~ "MwBlock", -->
+<!--             sedclass == "40" ~ "sMud", -->
+<!--             sedclass == "80" ~ "mSand", -->
+<!--             sedclass == "100" ~ "Sand", -->
+<!--             sedclass == "110" ~ "gMud", -->
+<!--             sedclass == "115" ~ "gsMud", -->
+<!--             sedclass == "120" ~ "gmSand", -->
+<!--             sedclass == "130" ~ "gSand", -->
+<!--             sedclass == "150" ~ "MSG", -->
+<!--             sedclass == "160" ~ "sGravel", -->
+<!--             sedclass == "170" ~ "Gravel", -->
+<!--             sedclass == "175" ~ "GravBlock", -->
+<!--             sedclass == "185" ~ "SGBmix", -->
+<!--             sedclass == "205" ~ "S/MwB", -->
+<!--             sedclass == "206" ~ "S/MwG/B", -->
+<!--             sedclass == "215" ~ "SGBalt", -->
+<!--             sedclass == "300" ~ "HardSed", -->
+<!--             sedclass == "500" ~ "Biogenic" -->
+
+<!--     ) -->
+<!--   ) -->
+<!-- ``` -->
+
+<!-- ###### colour palette to cope with up to 25 categorical colours -->
+<!-- ```{r} -->
+<!-- c25 <- c( -->
+<!--   "dodgerblue2", "#E31A1C", # red -->
+<!--   "green4", -->
+<!--   "#6A3D9A", # purple -->
+<!--   "#FF7F00", # orange -->
+<!--   "black", "gold1", -->
+<!--   "skyblue2", "#FB9A99", # lt pink -->
+<!--   "palegreen2", -->
+<!--   "#CAB2D6", # lt purple -->
+<!--   "#FDBF6F", # lt orange -->
+<!--   "gray70", "khaki2", -->
+<!--   "maroon", "orchid1", "pink1", "blue1", "steelblue4", -->
+<!--   "darkturquoise", "green1", "yellow4", "yellow3", -->
+<!--   "darkorange4", "brown" -->
+<!-- ) -->
+<!-- ``` -->
 
 
-#### Gnmds w gmorph
-```{r}
-
-p_gmo <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by landscape class",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(gmorph))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-p_gmo
-```
 
 
-```{r}
-cat_var_plots<-p_mld+p_sed+p_land+p_gmo
-```
-##### Save the plot
-```{r}
-ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/sandwave_gnmds_catvar.png"),
-          width = 1000,
-          height = 800)
-```
+<!-- ```{r} -->
 
-#### Sample identification in the mdsplot
+<!-- p_sed <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by sediment class", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(sedclassName))) + -->
+<!--    scale_colour_manual(values=c25)+ -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")+ -->
+<!--   guides(colour=guide_legend(ncol=2)) -->
 
-```{r}
-p_gmo <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sample",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour="none", size="none")
+<!-- p_sed -->
+<!-- ``` -->
 
-ggplotly(p_gmo)
-```
+<!-- #### gnmds w lanscape -->
+<!-- ##### deal with sedclass codes -->
+<!-- ```{r} -->
+<!-- env_vis<- env_vis %>%  -->
+<!--   mutate( -->
+<!--     landscapeName = case_when( -->
+<!--             landscape == "1" ~ "Strandflat", -->
+<!--             landscape == "21" ~ "ContSlope", -->
+<!--             landscape == "22" ~ "Canyon", -->
+<!--             landscape == "31" ~ "Valley", -->
+<!--             landscape == "32" ~ "Fjord", -->
+<!--             landscape == "41" ~ "DeepSeaPlane", -->
+<!--             landscape == "42" ~ "SlopePlain", -->
+<!--             landscape == "43" ~ "ShelfPlain", -->
+<!--             landscape == "431" ~ "shallowValley" -->
+<!--     ) -->
+<!--   ) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+
+<!-- p_land <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by landscape class", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(landscapeName))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")+ -->
+<!--   guides(colour=guide_legend(ncol=2)) -->
+
+<!-- p_land -->
+<!-- ``` -->
+
+
+<!-- #### Gnmds w gmorph -->
+<!-- ```{r} -->
+
+<!-- p_gmo <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by landscape class", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(gmorph))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")+ -->
+<!--   guides(colour=guide_legend(ncol=2)) -->
+
+<!-- p_gmo -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- cat_var_plots<-p_mld+p_sed+p_land+p_gmo -->
+<!-- ``` -->
+<!-- ##### Save the plot -->
+<!-- ```{r} -->
+<!-- ggexport(cat_var_plots, -->
+<!--           filename = file.path(dataPath,"outputs/sandwave_gnmds_catvar.png"), -->
+<!--           width = 1000, -->
+<!--           height = 800) -->
+<!-- ``` -->
+
+<!-- #### Sample identification in the mdsplot -->
+
+<!-- ```{r} -->
+<!-- p_gmo <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by sample", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(SampID))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")+ -->
+<!--   guides(colour="none", size="none") -->
+
+<!-- ggplotly(p_gmo) -->
+<!-- ``` -->
 
 
 ### Density threshold splits
@@ -1280,16 +1282,16 @@ joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
                          pressure=(joinedDat$bathy*-1),
                          eos="unesco")
 
-loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1031.1)
+loDensShallowJoinedDat<-subset(joinedDat,swDensRob_avs<1030)
 plot(loDensShallowJoinedDat$X.y, loDensShallowJoinedDat$Y)
-LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))                                
+LDensShlw_otu_sort<-loDensShallowJoinedDat %>% select(c(2:which(colnames(joinedDat)=="Weberella_bursa")))
+LDensShlw_env_sort<-loDensShallowJoinedDat %>% select(c(2,(which(colnames(joinedDat)=="Weberella_bursa")+1):which(colnames(joinedDat)=="sand")))                                
 
 
-hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1031.1)
+hiDensDeepJoinedDat<-subset(joinedDat,swDensRob_avs>1030)
 plot(hiDensDeepJoinedDat$X.y, hiDensDeepJoinedDat$Y)
-HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))  
+HDensDeep_otu_sort<-hiDensDeepJoinedDat %>% select(c(2:which(colnames(joinedDat)=="Weberella_bursa")))
+HDensDeep_env_sort<-hiDensDeepJoinedDat %>% select(c(2,(which(colnames(joinedDat)=="Weberella_bursa♥")+1):which(colnames(joinedDat)=="sand")))  
 ```
 
 ##### SAVE DATASETS
@@ -1304,35 +1306,35 @@ see subset scripts sandwave Ldens and sandwave Hdens for working further...
 
 
 
-### Landscape splits
+<!-- ### Landscape splits -->
 
-```{r}
-sandwave_shelf <-subset(joinedDat,landscape != 21)
-sandwave_slope <-subset(joinedDat,landscape == 21)
-
-
-plot(sandwave_shelf$X.y, sandwave_shelf$Y)
-sandwave_shelf_otu_sort<-sandwave_shelf %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-sandwave_shelf_env_sort<-sandwave_shelf %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))  
+<!-- ```{r} -->
+<!-- sandwave_shelf <-subset(joinedDat,landscape != 21) -->
+<!-- sandwave_slope <-subset(joinedDat,landscape == 21) -->
 
 
-plot(sandwave_slope$X.y, sandwave_slope$Y)
-sandwave_slope_otu_sort<-sandwave_slope %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae")))
-sandwave_slope_env_sort<-sandwave_slope %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))  
-
-```
+<!-- plot(sandwave_shelf$X.y, sandwave_shelf$Y) -->
+<!-- sandwave_shelf_otu_sort<-sandwave_shelf %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae"))) -->
+<!-- sandwave_shelf_env_sort<-sandwave_shelf %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))   -->
 
 
+<!-- plot(sandwave_slope$X.y, sandwave_slope$Y) -->
+<!-- sandwave_slope_otu_sort<-sandwave_slope %>% select(c(2:which(colnames(joinedDat)=="Zoanthidae"))) -->
+<!-- sandwave_slope_env_sort<-sandwave_slope %>% select(c(2,(which(colnames(joinedDat)=="Zoanthidae")+1):which(colnames(joinedDat)=="sand")))   -->
+
+<!-- ``` -->
 
 
 
-##### SAVE DATASETS
-```{r}
-write.csv(sandwave_slope_otu_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_slope_otu_sort_", Sys.Date(),".csv"))))
-write.csv(sandwave_slope_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_slope_env_sort", Sys.Date(),".csv"))))
 
-write.csv(sandwave_shelf_otu_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_shelf_otu_sort", Sys.Date(),".csv"))))
-write.csv(sandwave_shelf_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_shelf_env_sort", Sys.Date(),".csv"))))
-```
-see new script for analysing sandwaved_shelf (slope not really necessary)
+
+<!-- ##### SAVE DATASETS -->
+<!-- ```{r} -->
+<!-- write.csv(sandwave_slope_otu_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_slope_otu_sort_", Sys.Date(),".csv")))) -->
+<!-- write.csv(sandwave_slope_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_slope_env_sort", Sys.Date(),".csv")))) -->
+
+<!-- write.csv(sandwave_shelf_otu_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_shelf_otu_sort", Sys.Date(),".csv")))) -->
+<!-- write.csv(sandwave_shelf_env_sort, file=file.path(dataPath,(paste0("inputs/SPLITS/sandwave/sandwave_shelf_env_sort", Sys.Date(),".csv")))) -->
+<!-- ``` -->
+<!-- see new script for analysing sandwaved_shelf (slope not really necessary) -->
 
