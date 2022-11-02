@@ -323,7 +323,13 @@ ggplotly(gnmds_gmo)
 
 ```
 
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_shelf_gnmds_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
 
+```
 
 ### MAP OF CATEGORICAL VARIABLE
 #### X v Y with gnmds ax 1 as HC categories
