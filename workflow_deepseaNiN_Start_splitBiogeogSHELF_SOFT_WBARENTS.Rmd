@@ -62,7 +62,7 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 # discrete colur pallete where you decide the number of colours - max is 74.
-n <- 61
+n <- 74
 qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
 col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
 
@@ -175,9 +175,9 @@ xy_t<- ggplot(data = env_sub_meta,
   geom_point(aes(colour = BO22_dissoxltmin_bdmean),#change at will - continuous vars only
              size = 1) +
   scale_colour_gradientn(limits = c(min(env_sub_meta$BO22_dissoxltmin_bdmean), 
-                                    max(env_sub_meta$BO22_dissoxltmin_bdmean)), #match variable acting as colour
+                                    281.6), #match variable acting as colour
                         colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by dissox lt min") #amend
+  ggtitle("Geography (X v Y) - coloured by dissox lt min thresh281.6") #amend
 
 #xy_t #plot
 ggplotly(xy_t) #interactive plot
@@ -185,7 +185,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__X_v_Y_dissoxltmin.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__X_v_Y_dissoxltmin_thresh281pt6.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -228,9 +228,10 @@ xy_t<- ggplot(data = env_sub_meta,
   geom_point(aes(colour = Smean_Robinson),#change at will - continuous vars only
              size = 1) +
   scale_colour_gradientn(limits = c(min(env_sub_meta$Smean_Robinson), 
-                                    35.05), #match variable acting as colour
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by Salinity (meanR) thresh 35.05") #amend
+                                    35), #match variable acting as colour
+                        colors=c('green'))+ #for binary plots
+                        #colors=c('blue','green','red'))+ #for contnuous plots
+  ggtitle("Geography (X v Y) - coloured by Salinity (meanR) thresh 35") #amend
 
 #xy_t #plot
 ggplotly(xy_t) #interactive plot
@@ -238,7 +239,7 @@ ggplotly(xy_t) #interactive plot
 ```
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__X_v_Y_SmeanR_thresh35pt05.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__X_v_Y_SmeanR_thresh35.png"), #amend
        device = "png",
        dpi=300 )
 ```
@@ -315,6 +316,32 @@ ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__XvY_MLDmean_b
        dpi=300 )
 
 ```
+
+#### X v Y with biotope
+```{r}
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = BiotopeDesc), #change at will - categorical vars only
+             size = 1) +
+  scale_colour_manual(values=rev(col_vector)) +# non-ordered colourblind pallette
+ # scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by MAREANO 03.22 biotope") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WBARENTS__XvY_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+
 
 
 

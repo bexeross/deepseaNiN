@@ -57,8 +57,8 @@ ep<-0.8 #epsilon (to avoid having to find and run just this line from code block
 ## Data
 ```{r}
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/SHELF/SH_WB_NAW_soft_env_2022-10-25.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/SHELF/SH_WB_NAW_soft_otu_2022-10-25.csv")) %>% as.data.frame
+env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/SHELF/SH_WB_NAW_soft_env_2022-10-26.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/SHELF/SH_WB_NAW_soft_otu_2022-10-26.csv")) %>% as.data.frame
 
 
 table(env_sort$SampID2 == otu_sort$SampID)
@@ -69,6 +69,21 @@ table(env_sort$SampID2 == otu_sort$SampID)
 dim(env_sort)
 dim(otu_sort)
 ```
+### Remove outlier
+```{r}
+env_sort<-env_sort %>% 
+  filter(!grepl('439_02', SampID))
+
+otu_sort<-otu_sort %>% 
+  filter(!grepl('439_02', SampID))
+
+dim(env_sort)
+dim(otu_sort)
+
+```
+
+
+
 
 ### Additional env data
 
@@ -626,7 +641,7 @@ p_gnmds_r6 <- ggplot(data = otu_6,
              colour = "lightgray")
 
 p_dca_r6 <- ggplot(data = otu_6,
-                   aes(x = dca1,
+                   aes(x = -dca1,
                        y = dca2)) +
   theme_classic() +
   coord_fixed() +
@@ -800,6 +815,7 @@ env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bath
                            vSand_with_biomaterial, vGelatinous_snow, #too many NAs
                            vClayOutcrop, vClay, vBiobush, vConsolidated_clay,#too many NAs
                            vCoral_rubble, vDead_lophelia, vLive_lophelia, vLophelia_rubble, #too many NAs 
+                           vBedrock,#too many NAs 
                            "NA",vKarbonatskorpe, vCompacted_sediment, vSand_with_shells, vClay_spicules)) #too many NAs
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont #%>% select(-c(SampID))
@@ -864,7 +880,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.3 #decide
+cor_cut<-0.5 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
