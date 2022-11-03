@@ -970,23 +970,29 @@ Needs further splitting - not at local variation yet.
 
 ### Sel env var (manual)
 ```{r}
-env_os_m <- env[,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
-                  "Smax_Robinson", #comparison to top corr
-                  "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  "BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxmean_bdmean",#top corr
+env_os_m <- env[,c(#"Tmean_Robinson", #top corr
+                  # "salt_max", #top corr
+                  # "Smax_Robinson", #comparison to top corr
+                  # "swDensRob_avs", #top corr
+                  # "BO22_icecoverltmax_ss",#top corr ax2
+                  # "BO22_icecovermean_ss",#top corr
+                  # "BO22_dissoxmean_bdmean",#top corr
                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
-                  "X.y", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                  "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  #"BO22_ppltmin_ss", #top corr
+                  #"X", #comparison to Y
+                  #"Y", #top corr
+                  #"spd_std", #top corr ax2 (blended model)
+                  #"CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+                  "sw_spd_mean",
+                  "sw_spd_max",
+                  "CSpdmean_Robinson",
+                  "CSpdmax_Robinson",
+                  "spd_mean",
+                  "spd_max"
+                  #"BO22_silicateltmax_bdmean", #just under top corr ax1
+                  #"bathy" #intuitive for comparisons
                 )]
 env_os_m
 str(env_os_m)
@@ -1012,8 +1018,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 3,
+                         ncol = 3)
 
 ordsrfs_plt_m
 ```
@@ -1021,9 +1027,9 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_ordisurfs_man_sel_domean.png"),
-          width = 2000,
-          height = 2000)
+          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_ordisurfs_man_sel.png"),
+          width = 1000,
+          height = 1000)
 
 ```
 
@@ -1270,6 +1276,90 @@ p_land <- ggplot(data = env_vis,
 p_land
 ```
 
+
+```{r}
+env_vis<- env_vis %>%
+  mutate(
+    seddanName = case_when(
+            seddan == "10" ~ "Moraine_indet", ########### ALL NEW NAMES NEED ADDING!
+            seddan == "11" ~ "Moraine_thick",
+            seddan == "15" ~ "Moraine_marginal",
+            seddan == "140" ~ "Rock",
+            seddan == "150" ~ "Sedimentary_rock",
+            seddan == "200" ~ "Suspension",
+            seddan == "201" ~ "Bottom_current",
+            seddan == "202" ~ "Glaciomarine",
+            seddan == "211" ~ "Contourite",
+            seddan == "213" ~ "Debris_flow",
+            seddan == "215" ~ "Channel_deposit",
+            seddan == "217" ~ "Bioclastic",
+            seddan == "219" ~ "Layered_over_debris_flow",
+            seddan == "220" ~ "Carbonate_crust",
+            seddan == "230" ~ "Moraine_glaciomarineCover",
+            seddan == "240" ~ "Slide_w_cover",
+            seddan == "241" ~ "Slide_part_cover"
+    ))
+```
+
+
+
+```{r}
+
+p_dann <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sed dann",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(seddanName))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_dann
+ggplotly(p_dann)
+```
+
+```{r}
+env_vis<- env_vis %>%
+  mutate(
+    sedmilName = case_when(
+            sedmil == "1" ~ "Deposition from suspension", ########### ALL NEW NAMES NEED ADDING!
+            sedmil == "2" ~ "Deposition from suspension, local erosion of fine-grained sediments",
+            sedmil == "7" ~ "No/very slow deposition",
+            sedmil == "3" ~ "Deposition from bottom currents",
+            sedmil == "4" ~ "Erosion, local deposition of sediments in topographic lows",
+            sedmil == "5" ~ "Erosion"
+    ))
+```
+
+
+```{r}
+
+p_sedmil <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sed env",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedmilName))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+p_sedmil
+ggplotly(p_sedmil)
+```
 
 #### Gnmds w gmorph
 ```{r}
