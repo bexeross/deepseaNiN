@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN - loDens <1031.8 without SpitsbergenBanken outliers"
+title: "MAREANO - NiN - BarentsDeep"
 authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -14,6 +14,7 @@ always_allow_html: true
 
 ## Packages
 ```{r}
+library(magrittr)
 library(dplyr)
 library(ggcorrplot)
 library(ggpubr)
@@ -65,6 +66,7 @@ otu_orig <- rbind(otu_sort1, otu_sort2)
 ```
 
 
+#Re-split and check
 
 ```{r}
 #joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
@@ -86,22 +88,6 @@ dim(env_sort)
 dim(otu_sort)
 ```
 
-
-
-
-
-
-## Data
-```{r}
-table(env_sort$SampID2 == otu_sort$SampID)
-
-
-#must be same length and equal to unique sample number length - the ordered lists are assumed to be directly relatable on a row by row basis
-
-dim(env_sort)
-dim(otu_sort)
-```
-
 #### remove any variables with not enough coverage
 ```{r}
 
@@ -111,6 +97,8 @@ env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
                                "BO22_lightbotrange_bdmean"))
 
 env_sort$X.y<-env_sort$X.y.y
+env_sort<-env_sort %>% select(-c("X.y.y"))
+
 ```
 
 
@@ -130,6 +118,20 @@ env_sort_locations<- ggplot(data = env_sort,
 env_sort_locations
 ```
 
+#### Plot map to check SampleIDs
+```{r}
+env_sort_SampID<- ggplot(data = env_sort,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = factor(SampID)), size=1) +
+  ggtitle("Location of samplesIDs in sorted env file")
+
+ggplotly(env_sort_SampID)
+
+```
+
+
 
 ### Data cleaning
 ```{r}
@@ -138,7 +140,15 @@ otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="b
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
 ## Removing observations with less than 4 OTUs
-sel <- rowSums(otuCompl[, -c(1)]) >= 4
+
+otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Zoanthidae")))]!=0)
+
+sel <- otuCompl$SpR>4
+inv.sel<-otuCompl$SpR<4
+
+
+otuCompl<-otuCompl %>% select(-c("SpR"))
+
 otuSel <- otuCompl[sel, ]
 envSel <- envCompl[sel, ]
 
@@ -186,7 +196,7 @@ envCompl_ccrem_locations
 
 
 ```{r}
-inv.sel <- rowSums(otuCompl[, -c(1:2)]) < 4
+
 env.invSel <- envCompl[inv.sel, ]
 
 env.invSel_locations<- ggplot(data = env.invSel,
@@ -204,19 +214,12 @@ env.invSel_locations
 
 ```
 
-### [Optional] Data thinning
-```{r, eval=FALSE}
-# otu_red <- otu1[1:500, ]
-# otu <- otu_red
-# 
-# env_red <- env[1:500, ]
-# env <- env_red
-```
+
 
 ### Whole dataset for first run
 ```{r}
 otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
-env<-envSel[, -c(2:(which(colnames(envSel)=="bathy")-1))]
+env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
 
 table(is.na(otu))
 
@@ -227,64 +230,16 @@ table(is.na(env))
 ```
 
 
-### Splitting in subsets
-```{r}
-# ## Class 1
-# otu1 <- subset(otuSel, envSel$SplitRev == 1)
-# env1 <- envSel %>% filter(SplitRev == 1)
-# 
-# ## Class 2
-# otu2 <- subset(otuSel, envSel$SplitRev == 2)
-# env2 <- envSel %>% filter(SplitRev == 2)
-# 
-# ## Class 4
-# otu3 <- subset(otuSel, envSel$SplitRev == 3)
-# env3 <- envSel %>% filter(SplitRev == 3)
-# 
-# ## Class 4
-# otu4 <- subset(otuSel, envSel$SplitRev == 4)
-# env4 <- envSel %>% filter(SplitRev == 4)
-# 
-# ## Class 6
-# otu6 <- subset(otuSel, envSel$SplitRev == 6)
-# env6 <- envSel %>% filter(SplitRev == 6)
-# 
-# ## Class 7
-# otu7 <- subset(otuSel, envSel$SplitRev == 7)
-# env7 <- envSel %>% filter(SplitRev == 7)
-# 
-# ## Class 8
-# otu8 <- subset(otuSel, envSel$SplitRev == 8)
-# env8 <- envSel %>% filter(SplitRev == 8)
-```
-
-## Selecting subset
-```{r}
-# ## Selecting 
-# otu <- otu2
-# env <- env2
-
-```
-
-## format data correctly
-```{r}
-#env$coords.x1<-as.numeric(env$coords.x1)
-#env$coords.x2<-as.numeric(env$coords.x2)
-
-
-```
-
-
 ## Abundance weighting
 Make function
 You might have to drop variables that have been imported as character
 ```{r}
 
-otu_pa <- decostand(x = otu[, -c(1)],
+otu_pa <- decostand(x = otu,
                     method = "pa")
 
 # y = ax^w         # power transformation formula
-dt <- otu[, -c(1:2)]          # species data to transform
+dt <- otu          # species data to transform
 x_mn <- min(dt[dt > 0])
 x_mx <- max(dt)
 rng <- 6           # abundance range
@@ -322,15 +277,18 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/BarentsDeep_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/DEEP/BarentsDeep_geodist_pa.rds")))
 ```
 
 #### Ordination
 
 #### monoMDS - don't run if loading saved object
 took 6.4mins with jonatan's paralell solution (usually ~10mins)
+
+Using old version without furrr
 ```{r}
-# 
+# UNCOMMENT IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+#
 # Sys.time()
 # d <- 2
 # mds_pa <- list()
@@ -348,26 +306,8 @@ took 6.4mins with jonatan's paralell solution (usually ~10mins)
 # Sys.time()
 
 
-## monoMDS
-# d <- 2
-# mds_r6 <- list()
-# 
-# Sys.time()
-# for (i in 1:200) {
-#   mds_r6[[i]]<-monoMDS(geodist_r6,
-#                     matrix(c(runif(dim(otu_6)[1]*d)),
-#                            nrow = dim(otu_6)[1]),
-#                     k = d,
-#                     model = "global",
-#                     maxit = 2000,
-#                     smin = 1e-7,
-#                     sfgrmin = 1e-7)
-# }
-# Sys.time()
 
-#Jonatan's upgrade for speed - parallel processing of mds reptitions
-library(furrr) # Package to run non sequential functions in parallel
-#library(purrr)
+## COMMENT OUT FROM HERE IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
 plan(multisession)
 
 d <- 2
@@ -388,24 +328,17 @@ mds_pa<-furrr::future_map(List_geodist_pa,
                   .progress = TRUE)
 Sys.time() - start_t
 
-
-
 ```
 
 ##### Save the result - don't run if loading saved object
 can take a few mins
 ```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/BarentsDeep_mds_pa.rds"))
+        file = file.path(dataPath,"inputs/SPLITS/DEEP/BarentsDeep_mds_pa.rds"))
 ```
 
 
 ##### Best nmds solution - PA
-Make function?
-```{r, eval=TRUE}
-# Loading geodist object
-# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_pa_full.rds")
-```
 
 
 ```{r}
@@ -507,18 +440,21 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/BarentsDeep_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/DEEP/BarentsDeep_geodist_r6.rds")))
 ```
 
 
 #### Ordination 
 
 ##### 200 reps - don't run if loading saved object
-Jonatan's parallel solution took 5.4mins, before it took 10mins
+(Jonatan's parallel solution took 5.4mins, before it took 10mins)
 
-
+Using older version without furrr.
 ```{r}
-## monoMDS
+
+## UNCOMMENT IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+
+# monoMDS
 # d <- 2
 # mds_r6 <- list()
 # 
@@ -535,9 +471,9 @@ Jonatan's parallel solution took 5.4mins, before it took 10mins
 # }
 # Sys.time()
 
-#Jonatan's upgrade for speed - parallel processing of mds reptitions
-#library(furrr) # Package to run non sequential functions in parallel
-#library(purrr)
+## COMMENT OUT FROM HERE IN THIS CHUNK IF YOU CANNOT RUN THE PARALLEL SOLUTION
+
+## monoMDS
 plan(multisession)
 
 d <- 2
@@ -563,7 +499,7 @@ Sys.time() - start_t
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/BarentsDeep_mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/SPLITS/DEEP/BarentsDeep_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -613,82 +549,6 @@ png(file.path(dataPath,"outputs/BarentsDeep_procrustes_r6.png"), width=1000, hei
 plot(procr_r6)
 dev.off()
 ```
-
- #### 1000 reps - don't run if loading saved object 
- Currently commented out as it gained nothing but took extra time. Can be removed in due course.
-<!-- took 1hr -->
-<!-- ```{r} -->
-<!-- # monoMDS -->
-<!-- d <- 2 -->
-<!-- mds_r6_1000 <- list()#obj added_1000 -->
-
-<!-- Sys.time() -->
-<!-- for (i in 1:1000) {#change from 200 (200 ra in 20min, 1000 ran in 1hr) -->
-<!--   mds_r6_1000[[i]]<-monoMDS(geodist_r6,#obj added _1000 -->
-<!--                     matrix(c(runif(dim(otu_6)[1]*d)), -->
-<!--                            nrow = dim(otu_6)[1]), -->
-<!--                     k = d, -->
-<!--                     model = "global", -->
-<!--                     maxit = 2000, -->
-<!--                     smin = 1e-7, -->
-<!--                     sfgrmin = 1e-7) -->
-<!-- } -->
-<!-- Sys.time() -->
-<!-- ``` -->
-
-<!-- ##### Save the result - don't run if loading saved object -->
-<!-- ```{r} -->
-<!-- saveRDS(mds_r6_1000, #obj added_1000 -->
-<!--         file = file.path(dataPath,"inputs/mds_r6_1000rep.rds")) #change from 200 -->
-<!-- ``` -->
-
-<!-- ##### Best nmds solution r6 1000 rep -->
-<!-- ```{r, eval=TRUE} -->
-<!-- # Loading geodist object -->
-<!-- # geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds") -->
-
-<!-- # Loading mds results -->
-<!-- # mds <- readRDS(file = "../SplitRev2_mds.rds") -->
-
-<!-- ## Extracting the stress of each nmds iteration -->
-<!-- mds_stress_r6_1000<-unlist(lapply(mds_r6_1000, function(v){v[[22]]})) #adeed 1000 -->
-
-<!-- ordered_r6_1000 <-order(mds_stress_r6_1000) -->
-
-<!-- ## Best, second best, and worst solution -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[1]] -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[2]] -->
-<!-- mds_stress_r6_1000[ordered_r6_1000[100]] -->
-
-<!-- ## Scaling of axes to half change units and varimax rotation by postMDS -->
-<!-- mds_best_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[1]]], -->
-<!--                      geodist_r6,  -->
-<!--                      pc = TRUE,  -->
-<!--                      halfchange = TRUE,  -->
-<!--                      threshold = ep)     # Is this threshold related to the epsilon above? -->
-<!-- mds_best_r6_1000 -->
-
-<!-- mds_secbest_r6_1000<-postMDS(mds_r6_1000[[ordered_r6_1000[2]]], -->
-<!--                         geodist_r6,  -->
-<!--                         pc = TRUE,  -->
-<!--                         halfchange = TRUE,  -->
-<!--                         threshold = ep) -->
-<!-- mds_secbest_r6_1000 -->
-
-<!-- ## Procrustes comparisons -->
-<!-- procr_r6_1000 <- procrustes(mds_best_r6_1000, -->
-<!--                        mds_secbest_r6_1000, -->
-<!--                        permutations=999) -->
-<!-- protest(mds_best_r6_1000, -->
-<!--         mds_secbest_r6_1000, -->
-<!--         permutations=999) -->
-
-<!-- plot(procr_r6_1000) -->
-
-<!-- png(file.path(dataPath,"outputs/procrustes_r6_1000.png"), width=1000, height=700,) #added 1000 -->
-<!-- plot(procr_r6_1000) -->
-<!-- dev.off() -->
-<!-- ``` -->
 
 
 
@@ -749,7 +609,7 @@ p_gnmds_r6 <- ggplot(data = otu_6,
              colour = "lightgray")
 
 p_dca_r6 <- ggplot(data = otu_6,
-                   aes(x = -dca1,
+                   aes(x = dca1,
                        y = dca2)) +
   theme_classic() +
   coord_fixed() +
@@ -774,6 +634,74 @@ ggsave(file.path(dataPath,"outputs/BarentsDeep_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
+
+## Check outlier species Richness
+```{r}
+otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+
+summary(otu_6$spRich)
+
+p_spR <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by species Richness",
+          subtitle = "First run") +
+  geom_point(aes(colour = spRich)) +
+  scale_colour_gradientn(limits = c(min(otu_6$spRich),max(otu_6$spRich)),
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+ggplotly(p_spR)
+```
+
+
+
+## Check outlier SampIDs
+```{r}
+
+otu_6$SampID<-envSel$SampID
+
+
+p_gmo <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sample",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(SampID))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+```
+
+
+
+
+
+------------------------
+
+# Environmental Correlates 
+
+If you are happy with proceeding (i.e. you have decent procrustes plots, and have identified and removed outliers with some understanding of why they are outliers) Then here you can continue with exploring environmental correlates from here.
+
+NB it can be useful to proceed anyway if you want to try and explain why some samples are outliers, but if it is possible to deal with minor sets of outliers already then this is a good idea.
+
+
 
 
 ## Species-environment relationships
@@ -824,8 +752,8 @@ env$swDensRob_avs<-swRho(salinity=env$Smean_Robinson,
 env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy, #categorical
                            optional, #not a var
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
-                           MLDsd_Robinson, #not meaningful
-                           SampID))
+                           MLDsd_Robinson #not meaningful
+                           ))
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont #%>% select(-c(SampID))
 
@@ -870,7 +798,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/BarentsDeep_cor-table_r6_200rep_MLD-bathy.csv"),
+          file = file.path(dataPath,"inputs/SPLITS/DEEP/BarentsDeep_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -888,7 +816,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.49 #decide
+cor_cut<-0.4 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -919,14 +847,15 @@ for (i in seq(ncol(env_os))) {
                       var.label = names(env_os)[i],
                       gen.text.size = 10,
                       title.text.size = 15,
-                      leg.text.size = 10)
+                      leg.text.size = 10
+                      )
   
   ordsrfs[[i]] <- os.i$plot
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
                          nrow = 5,
-                         ncol = 6)
+                         ncol = 4)
 
 ordsrfs_plt
 ```
@@ -934,8 +863,8 @@ ordsrfs_plt
 ```{r}
 ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/BarentsDeep_ordisurfs_top_corr.png"),
-          width = 2500,
-          height = 2000)
+          width = 2000,
+          height = 2500)
 
 ```
 
@@ -1170,7 +1099,7 @@ c25 <- c(
   "#CAB2D6", # lt purple
   "#FDBF6F", # lt orange
   "gray70", "khaki2",
-  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "maroon", "orchid1", "BarentsDeeppink1", "blue1", "steelblue4",
   "darkturquoise", "green1", "yellow4", "yellow3",
   "darkorange4", "brown"
 )
@@ -1212,7 +1141,7 @@ env_vis<- env_vis %>%
             landscape == "22" ~ "Canyon",
             landscape == "31" ~ "Valley",
             landscape == "32" ~ "Fjord",
-            landscape == "41" ~ "DeepPlain",
+            landscape == "41" ~ "DeepSeaPlane",
             landscape == "42" ~ "SlopePlain",
             landscape == "43" ~ "ShelfPlain",
             landscape == "431" ~ "shallowValley"
