@@ -943,24 +943,44 @@ ggexport(ordsrfs_plt,
 
 ### Sel env var (manual)
 ```{r}
+# env_os_m <- env[,c("Tmean_Robinson", #top corr
+#                   "salt_max", #top corr
+#                   "Smax_Robinson", #comparison to top corr
+#                   "swDensRob_avs", #top corr
+#                  # "BO22_icecoverltmax_ss",#top corr ax2
+#                   #"BO22_icecovermean_ss",#top corr
+#                   "BO22_dissoxmean_bdmean",#top corr
+#                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+#                   "BO22_ppltmin_ss", #top corr
+#                   "X.y", #comparison to Y
+#                   "Y", #top corr
+#                   "spd_std", #top corr ax2 (blended model)
+#                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+#                   "mud", #highest sed var ax1 + corr
+#                   "gravel",#highest sed var ax1 - corr
+#                   "BO22_silicateltmax_bdmean", #just under top corr ax1
+#                   "bathy" #intuitive for comparisons
+#                 )]
+
 env_os_m <- env[,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                 # "BO22_icecoverltmax_ss",#top corr ax2
-                  #"BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
                   "X.y", #comparison to Y
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                  "CSpdmean_Robinson", #comparison to top corr ax2 (blended model)
+                  "CSpdmax_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
                   "bathy" #intuitive for comparisons
                 )]
+
+
+
+
+
+
 env_os_m
 str(env_os_m)
 
@@ -986,7 +1006,7 @@ for (i in seq(ncol(env_os_m))) {
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
                          nrow = 4,
-                         ncol = 4)
+                         ncol = 3)
 
 ordsrfs_plt_m
 ```
@@ -994,7 +1014,7 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/SH_SOFT_WB_W_LOPH_ordisurfs_man_sel_domean.png"),
+          filename = file.path(dataPath,"outputs/SH_SOFT_WB_W_LOPH_ordisurfs_man_sel_adjusted.png"),
           width = 1000,
           height = 800)
 
@@ -1006,47 +1026,77 @@ ggexport(ordsrfs_plt_m,
 ### Envfit
 ```{r}
 ## Select if any var should be excluded from envfit (makes less busy to read)
-env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
+# env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
+#                   "salt_max", #top corr
+#                   "Smax_Robinson", #comparison to top corr
+#                   "swDensRob_avs", #top corr
+#                   #"BO22_icecoverltmax_ss",#top corr ax2
+#                   #"BO22_icecovermean_ss",#top corr
+#                   "BO22_dissoxmean_bdmean",#top corr
+#                  # "BO22_dissoxltmin_bdmean",#top corr
+#                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+#                   "BO22_ppltmin_ss", #top corr
+#                   "X.y", #comparison to Y
+#                   "Y", #top corr
+#                   "spd_std", #top corr ax2 (blended model)
+#                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+#                   "mud", #highest sed var ax1 + corr
+#                   "gravel",#highest sed var ax1 - corr
+#                   "BO22_silicateltmax_bdmean", #just under top corr ax1
+#                   "bathy" #intuitive for comparisons
+#                 
+#   
+# )]
+# 
+# colnames(env_os_m_envfit)<-c("T", #top corr
+#                   "sMx", #top corr
+#                   "SmaxR", #comparison to top corr
+#                   "swDensR", #top corr
+#                  # "icecovmax",#top corr ax2
+#                   #"icecovav",#top corr
+#                   "dissoxav",#top corr
+#                  # "dissoxmin",#top corr
+#                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+#                   "ppltmin", #top corr
+#                   "X", #comparison to Y
+#                   "Y", #top corr
+#                   "spd_std", #top corr ax2 (blended model)
+#                   "CSsd", #comparison to top corr ax2 (blended model)
+#                   "mud", #highest sed var ax1 + corr
+#                   "gravel",#highest sed var ax1 - corr
+#                   "SiLtmax", #just under top corr ax1
+#                   "bathy" #intuitive for comparisons
+#                  )
+
+
+
+env_os_m_envfit <- env[,c("Tmean_Robinson", #top corr
                   "Smax_Robinson", #comparison to top corr
                   "swDensRob_avs", #top corr
-                  #"BO22_icecoverltmax_ss",#top corr ax2
-                  #"BO22_icecovermean_ss",#top corr
                   "BO22_dissoxmean_bdmean",#top corr
-                 # "BO22_dissoxltmin_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
                   "X.y", #comparison to Y
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                  "CSpdmean_Robinson", #comparison to top corr ax2 (blended model)
+                  "CSpdmax_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
                   "bathy" #intuitive for comparisons
-                
-  
-)]
+                )]
 
 colnames(env_os_m_envfit)<-c("T", #top corr
-                  "sMx", #top corr
-                  "SmaxR", #comparison to top corr
-                  "swDensR", #top corr
-                 # "icecovmax",#top corr ax2
-                  #"icecovav",#top corr
-                  "dissoxav",#top corr
-                 # "dissoxmin",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "ppltmin", #top corr
+                  "Smax", #comparison to top corr
+                  "Dens", #top corr
+                  "dissoxmean",#top corr
                   "X", #comparison to Y
                   "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
+                  "CSmean", #comparison to top corr ax2 (blended model)
+                  "CSmax", #comparison to top corr ax2 (blended model)
                   "CSsd", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
-                  "SiLtmax", #just under top corr ax1
                   "bathy" #intuitive for comparisons
-                 )
+                )
 
 ## Envfot plot
 gg_envfit(ord = ord,
@@ -1065,7 +1115,7 @@ efDF <- as.data.frame(scores(ef,
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/SH_SOFT_WB_W_LOPH_EnvFit_man_sel_cln_domean.png"),
+ggsave(filename = file.path(dataPath,"outputs/SH_SOFT_WB_W_LOPH_EnvFit_man_sel_cln_adjusted.png"),
        device = "png",
        dpi=300 )
 ```
