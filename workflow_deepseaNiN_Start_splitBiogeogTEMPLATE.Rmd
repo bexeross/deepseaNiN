@@ -81,13 +81,6 @@ pie(rep(1,n), col=sample(col_vector, n))
 
 **INSERT YOURS HERE - E.G. COMBINED SPECIES LISTS?**
 ```{r}
-env_sub_meta<-env_sub_meta %>%
-   mutate(SpongeSpic= case_when(
-     str_detect(BiotopeDesc,regex("Atl.UB.MxSanSpicu.MxSponSpic"))~"SpSpic",
-     str_detect(BiotopeDesc,regex("Atl.UB.MxSanMu.DensSponSpic"))~"SpSpic",
-     TRUE~"other"))
-
-
 ### seddan classes
 
 env_sub_meta<- env_sub_meta %>% 
@@ -127,199 +120,12 @@ GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the vara
 
 **INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
 
-
-
-#### X v Y - gnmds1
 ```{r}
-xy_t<- ggplot(data = env_sub_meta,
-                      aes(x = X,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
-             size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1), 1.5), #match variable acting as colour
-                        colors=c('green','yellow','red'))+
-  ggtitle("Geography (X v Y) - coloured by gnmds1 max 1.5") #amend
-
-#xy_t #plot
-ggplotly(xy_t) #interactive plot
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__X_v_Y_gnmds1_1pt5.png"), #amend
-       device = "png",
-       dpi=300 )
-```
-#### X v Y - gnmds2
-```{r}
-xy_t<- ggplot(data = env_sub_meta,
-                      aes(x = X,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = gnmds2),#change at will - continuous vars only
-             size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds2),max(env_sub_meta$gnmds2)), #match variable acting as colour
-                        colors=c('green','yellow','red'))+
-  ggtitle("Geography (X v Y) - coloured by gnmds2") #amend
-
-#xy_t #plot
-ggplotly(xy_t) #interactive plot
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__X_v_Y_gnmds2.png"), #amend
-       device = "png",
-       dpi=300 )
-```
-
-#### X v Y with biotope categories
-```{r}
-cat_xy_ax1 <- ggplot(data = env_sub_meta,
-              aes(x = X,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = env_sub_meta$BiotopeDesc), #change at will - categorical vars only
-             size = 1) +
- # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by biotope") #amend
-
-#cat_xy_ax1 #plot
-ggplotly(cat_xy_ax1) #interactive plot
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__XvY_biotope.png"), #amend
-       device = "png",
-       dpi=300 )
 
 ```
 
 
 
-#### X v Y with SpongSpic
-```{r}
-cat_xy_ax1 <- ggplot(data = env_sub_meta,
-              aes(x = X,
-                  y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = env_sub_meta$SpongeSpic), #change at will - categorical vars only
-             size = 1) +
- scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
-  #scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
-  ggtitle("Easting vs Northing - coloured by SpongeSpic bitopes") #amend
-
-#cat_xy_ax1 #plot
-ggplotly(cat_xy_ax1) #interactive plot
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__XvY_spoSpicBiotopes.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-
-#### Gnmds w biotope
-```{r}
-
-gnmds_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by biotope",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$BiotopeDesc))) + #change at will - categorical vars only
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-gnmds_gmo #plot
-ggplotly(gnmds_gmo)
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__gnmds_biotope.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-#### Gnmds w biotope
-```{r}
-
-gnmds_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by Sponge Spicule biotopes",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$SpongeSpic))) + #change at will - categorical vars only
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-gnmds_gmo #plot
-ggplotly(gnmds_gmo)
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__gnmds_sponspicBiotope.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-#### Gnmds w seddan
-```{r}
-
-gnmds_gmo <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sediment dannelse",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$seddanName))) + #change at will - categorical vars only
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-gnmds_gmo #plot
-ggplotly(gnmds_gmo)
-
-```
-
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__gnmds_seddanName.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
 
 # TEMPLATE CHUNKS TO COPY FROM
 
@@ -473,7 +279,7 @@ gnmds_gmo <- ggplot(data = env_sub_meta,
   guides(colour=guide_legend(ncol=2))
 
 gnmds_gmo #plot
-ggploty(gnmds_gmo)
+ggplotly(gnmds_gmo)
 
 ```
 
