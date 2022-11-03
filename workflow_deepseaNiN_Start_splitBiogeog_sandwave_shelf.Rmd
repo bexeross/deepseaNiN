@@ -1,0 +1,405 @@
+---
+title: "MAREANO - NiN:splitting biogeographic regions_Deep"
+output: html_notebook
+---
+**NB THESE ARE ALL EXAMPLES OF PLOTS TO SPEED UP YOUR CUSTOM PLOT MAKING: NO NEED TO RUN ALL - JUST USE THIS SCRIPT AS A TEMPLATE**
+
+Asssumes you have aready run:
+- config
+- workflow_deepseaNiN_Start
+
+You now have the objects needed to explore the dataset and find the best way to apply biogeographic splits. This is a pre-step before running the workflow again on the split dataset to explore possible LKMs.
+
+# Finding Regional (biogeographic) Splits
+
+This requires exploring the dataset to theorise the best ways to split the data with:
+- environmental biplots/colourings
+- envrionmental/species variables symbolised on biplots and maps
+
+# SET UP
+### Libraries
+```{r}
+library(plotly)
+library(readxl)
+```
+
+
+### MAKE INPUTS
+
+#### make full dataset to explore 
+should include all env Vars and otus to explore, and make species richness variable
+
+```{r}
+#add species data and sp richness variable
+#env_sub_meta1<-left_join(env,otu_6,by="SampID")
+env_sub_meta1<-cbind(env,otu_6)
+#env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Zoanthidae"))]!=0)
+
+#rename X
+env_sub_meta1$X <- env$X.y
+env_sub_meta1 <-env_sub_meta1 %>% select (-c(X.y))
+
+#add samplID
+#env_sub_meta1$SampID<-envSel$SampID
+
+```
+
+
+### Add provisional biotope data to env file
+Note that biotopes were last assigned in march 2022 and therefore there are some addional samples that have not yet got a biotope assigned. These should just be NAs
+
+```{r}
+biotopeInfo<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=1) %>%
+  select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
+
+biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope_classification_0322.xlsx"), sheet=2)
+
+env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
+```
+
+
+### a colour palette for discrete plots (see later in script)
+```{r}
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+```
+
+### List variables you can play with
+```{r}
+colnames(env_sub_meta)
+```
+
+
+# EXPLORATORY PLOTS
+GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the varaibles you are plotting at will, and customise this notebook for the split you are exploring.
+
+
+**INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+
+#### X v Y - bathy
+```{r}
+xy_b<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = bathy),#change at will - continuous vars only
+             size = 1) +
+  #scale_colour_gradientn(limits = c(min(bathy), max(bathy)), #match variable acting as colour
+  #                      colors=c('blue','green','red'))+
+  scale_colour_gradientn(limits = c(-400, -100), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by mean bathy") #amend
+
+#xy_t #plot
+ggplotly(xy_b) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_shelf_X_v_Y_bathy.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(gnmds1),max(gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotl
+```
+
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  # scale_colour_gradientn(limits = c(min(gnmds1),max(gnmds1)), #match variable acting as colour
+  #                       colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+
+
+
+# TEMPLATE CHUNKS TO COPY FROM
+
+## Plots with CONTINUOUS colour scales (variables)
+
+### VARIABLE BIPLOT
+example -
+#### Bathy v Temp w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(gnmds1),max(gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### GNMDS BIPLOT
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by species Richness")+ #amend
+  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
+  # scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
+  #                       colors=c('red','yellow','green'))+
+  scale_colour_gradientn(limits = c(5,50),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_gnmds_spR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+#### DCA BIPLOT
+```{r}
+dca_spR <- ggplot(data = env_sub_meta,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("DCA coloured by species Richness")+ #amend
+  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(spRich),max(spRich)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(dca_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_dca_spR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+### MAP OF VARIABLE
+example -
+#### X v Y - temp
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(Tmean_Robinson), max(Tmean_Robinson)), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by mean temp") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
+
+## Plots with DISCRETE colour scales (variables)
+
+### MAKE VARIABLE CATEGORICAL
+#### categorise gnmds
+```{r}
+env_sub_meta$ax1cat<-cut(env_sub_meta$gnmds1, 
+      breaks=c(-3.2,-3,-2,-1,0,1,2,3,3.46))# need min val first and max val last, then you decide intermediate
+env_sub_meta$ax2cat<-cut(env_sub_meta$gnmds2, 
+      breaks=c(-1.9,-1,0,1,2,3,4,4.9))# need min val first and max val last, then you decide intermediate
+
+#same method, bu add custom labels
+env_sub_meta$dissoxav305<-cut(env_sub_meta$BO22_dissoxmean_bdmean, 
+     breaks=c(282.5,305,372.2),# need min val first and max val last, then you decide intermediate 
+     labels=c("lowO2","hiO2")) #custom labels which range from min to break,...,then break to max
+```
+
+### VARIABLE BIPLOTS
+#### Gnmds w gmorph
+```{r}
+
+gnmds_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(landscape))) + #change at will - categorical vars only
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+gnmds_gmo #plot
+ggplotly(gnmds_gmo)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+#### Gnmds w biotope
+```{r}
+
+gnmds_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by biotope",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(BiotopeDesc))) + #change at will - categorical vars only
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+gnmds_gmo #plot
+ggplotly(gnmds_gmo)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_shelf_gnmds_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+### MAP OF CATEGORICAL VARIABLE
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = ax1cat), #change at will - categorical vars only
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by gnmds axis 1 HC units") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_shelf_XvY_ax1cat.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+cat_xy_sampID <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = SampID), #change at will - categorical vars only
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  #scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by sampleID") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_sampID) #interactive plot
+```
+
+
+
+
+
+# COMBINE SEVERAL PLOTS
+```{r}
+comp<-xy_t+cat_y_ax1+p_spR
+```
+##### Save the plot
+```{r}
+##### Save some outputs
+ggexport(comp,
+          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_compare.png"), #amend
+          width = 1500, #amend with/height for expected shape ratio
+          height = 500)
+
+```
+
+
+
+# Save environment
+
+EDIT AREA FIRST!
+
+```{r}
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
+
+```
+
+NOW CLEAR ENVIRONMENT BEFORE RUNNING FOR NEW AREA
+
