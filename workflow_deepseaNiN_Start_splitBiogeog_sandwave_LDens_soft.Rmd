@@ -231,7 +231,7 @@ ggplotly(xy_t) #interactive plot
 
 #### X v Y - temp
 ```{r}
-xy_t<- ggplot(data = env_sub_meta,
+xy_swspdmax<- ggplot(data = env_sub_meta,
                       aes(x = X,
                           y = Y)) +
   theme_classic() +
@@ -241,11 +241,38 @@ xy_t<- ggplot(data = env_sub_meta,
                         colors=c('blue','green','red'))+
   ggtitle("Geography (X v Y) - coloured by max speed") #amend
 
-#xy_t #plot
-ggplotly(xy_t) #interactive plot
+xy_swspdmax #plot
+ggplotly(xy_swspdmax) #interactive plot
 
 ```
 
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_sw_spd_max.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+```{r}
+xy_spdmaxRob<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = CSpdmax_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$CSpdmax_Robinson), max(env_sub_meta$CSpdmax_Robinson)), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by max speed") #amend
+
+xy_spdmaxRob #plot
+ggplotly(xy_spdmaxRob) #interactive plot
+
+```
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_Rob_spd_max.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
 
 ## Plots with DISCRETE colour scales (variables)
 
@@ -267,7 +294,7 @@ env_sub_meta$dissoxav305<-cut(env_sub_meta$BO22_dissoxmean_bdmean,
 #### Gnmds w biotope
 ```{r}
 
-gnmds_gmo <- ggplot(data = env_sub_meta,
+gnmds_biotope <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
@@ -283,23 +310,23 @@ gnmds_gmo <- ggplot(data = env_sub_meta,
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=2))
 
-gnmds_gmo #plot
-ggplotly(gnmds_gmo)
+gnmds_biotope #plot
+ggplotly(gnmds_biotope)
 
 ```
 
-<!-- ##### Save the plot -->
-<!-- ```{r} -->
-<!-- ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_gnmds_gmo.png"), #amend -->
-<!--        device = "png", -->
-<!--        dpi=300 ) -->
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
 
-<!-- ``` -->
+```
 
 
 ```{r}
 
-gnmds_gmo <- ggplot(data = env_sub_meta,
+gnmds_sponge <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
@@ -315,8 +342,15 @@ gnmds_gmo <- ggplot(data = env_sub_meta,
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=2))
 
-gnmds_gmo #plot
-ggplotly(gnmds_gmo)
+gnmds_sponge #plot
+ggplotly(gnmds_sponge)
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sponge.png"), #amend
+       device = "png",
+       dpi=300 )
 
 ```
 
