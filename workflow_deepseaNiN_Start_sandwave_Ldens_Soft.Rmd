@@ -949,8 +949,8 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 5,
-                         ncol = 4)
+                         nrow = 3,
+                         ncol = 3)
 
 ordsrfs_plt
 ```
@@ -958,8 +958,8 @@ ordsrfs_plt
 ```{r}
 ggexport(ordsrfs_plt,
           filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_ordisurfs_top_corr.png"),
-          width = 2000,
-          height = 2500)
+          width = 1000,
+          height = 1000)
 
 ```
 
@@ -985,12 +985,16 @@ env_os_m <- env[,c(#"Tmean_Robinson", #top corr
                   #"CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
+                  "sand",
+                  "cobB",
                   "sw_spd_mean",
                   "sw_spd_max",
+                  "spd_mean",
+                  "spd_max",
                   "CSpdmean_Robinson",
                   "CSpdmax_Robinson",
-                  "spd_mean",
-                  "spd_max"
+                  "TOC0.10cm_median"
+                  
                   #"BO22_silicateltmax_bdmean", #just under top corr ax1
                   #"bathy" #intuitive for comparisons
                 )]
@@ -1018,7 +1022,7 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 3,
+                         nrow = 4,
                          ncol = 3)
 
 ordsrfs_plt_m
@@ -1039,46 +1043,48 @@ ggexport(ordsrfs_plt_m,
 ### Envfit
 ```{r}
 ## Select if any var should be excluded from envfit (makes less busy to read)
-env_os_m_envfit<-env_os_m [,c("Tmean_Robinson", #top corr
-                  "salt_max", #top corr
-                  "Smax_Robinson", #comparison to top corr
-                  "swDensRob_avs", #top corr
-                  "BO22_icecoverltmax_ss",#top corr ax2
-                  #"BO22_icecovermean_ss",#top corr
-                  "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_dissoxltmin_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "BO22_ppltmin_ss", #top corr
-                  "X.y", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                 # "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
-                  "BO22_silicateltmax_bdmean", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
-                
-  
+env_os_m_envfit<-env_os_m [,c(
+                  # "BO22_chlorange_ss", #top corr
+                  # "BO22_dissoxltmin_bdmean", #top corr
+                  # "Y", #top corr
+                  # "temp_max", #top corr
+                  # "BO22_carbonphytoltmin_bdmean",#top corr
+                  # "BO22_dissoxmean_bdmean",#top corr
+                  # "temp_mean", #top corr
+                  # "BO22_ppltmin_ss", #top corr
+                  # "BO22_chloltmin_ss", #top corr
+                  "mud", #manual
+                  "gravel",#manual
+                  "sw_spd_mean", #manual
+                  "sw_spd_max", #manual
+                  "spd_mean", #manual
+                  "spd_max", #manual
+                  "CSpdmean_Robinson", #manual
+                  "CSpdmax_Robinson",#manual
+                  "TOC0.10cm_median"#manual
+                  #"bathy" #intuitive for comparisons
 )]
 
-colnames(env_os_m_envfit)<-c("T", #top corr
-                  "sMx", #top corr
-                  "SmaxR", #comparison to top corr
-                  "swDensR", #top corr
-                  "icecovmax",#top corr ax2
-                  #"icecovav",#top corr
-                  "dissoxav",#top corr
-                  #"dissoxmin",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  "ppltmin", #top corr
-                  "X", #comparison to Y
-                  "Y", #top corr
-                  "spd_std", #top corr ax2 (blended model)
-                 # "CSsd", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
-                  "SiLtmax", #just under top corr ax1
-                  "bathy" #intuitive for comparisons
+colnames(env_os_m_envfit)<-c(
+                  # "chlorange", #top corr
+                  # "dissoxltmin", #top corr
+                  # "Y", #top corr
+                  # "temp_max", #top corr
+                  # "Cphytoltmin",#top corr
+                  # "dissoxmean",#top corr
+                  # "temp_mean", #top corr
+                  # "ppltmin", #top corr
+                  # "chloltmin", #top corr
+                  "mud", #manual
+                  "gravel",#manual
+                  "sw_spd_mean", #manual
+                  "sw_spd_max", #manual
+                  "spd_mean", #manual
+                  "spd_max", #manual
+                  "RobSpdmean", #manual
+                  "RobSpdmax", #manual
+                  "TOC"
+                  #"bathy" #intuitive for comparisons
                  )
 
 ## Envfot plot
@@ -1092,13 +1098,15 @@ ef <- envfit(ord = ord,
              env = env_os_m_envfit,
              # na.rm = TRUE
              )
+ef
 efDF <- as.data.frame(scores(ef,
                              display = "vectors"))
+efDF
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_EnvFit_man_sel_cln_domean.png"),
+ggsave(filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_EnvFit_man_sel.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1235,6 +1243,13 @@ p_sed <- ggplot(data = env_vis,
 p_sed
 ```
 
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sedclass.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
 #### gnmds w lanscape
 ##### deal with sedclass codes
 ```{r}
@@ -1275,7 +1290,12 @@ p_land <- ggplot(data = env_vis,
 
 p_land
 ```
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_land.png"), #amend
+       device = "png",
+       dpi=300 )
 
+```
 
 ```{r}
 env_vis<- env_vis %>%
@@ -1326,6 +1346,13 @@ ggplotly(p_dann)
 ```
 
 ```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_seddan.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+```{r}
 env_vis<- env_vis %>%
   mutate(
     sedmilName = case_when(
@@ -1360,6 +1387,30 @@ p_sedmil <- ggplot(data = env_vis,
 p_sedmil
 ggplotly(p_sedmil)
 ```
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sedmil.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+```{r}
+env_vis<- env_vis %>%
+  mutate(
+    gmorphName = case_when(
+            gmorph == "1" ~ "flat", ########### ALL NEW NAMES NEED ADDING!
+            gmorph == "2" ~ "peak",
+            gmorph == "3" ~ "ridge",
+            gmorph == "4" ~ "shoulder",
+            gmorph == "5" ~ "convex slope",
+            gmorph == "6" ~ "slope",
+            gmorph == "7" ~ "concave slope",
+            gmorph == "8" ~ "footslope",
+            gmorph == "9" ~ "valley",
+            gmorph == "10" ~ "pit"
+    ))
+```
+
 
 #### Gnmds w gmorph
 ```{r}
@@ -1369,9 +1420,9 @@ p_gmo <- ggplot(data = env_vis,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by landscape class",
+  ggtitle("GNMDS coloured by geomorphon class",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(gmorph))) +
+  geom_point(aes(colour = factor(gmorphName))) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -1384,16 +1435,17 @@ p_gmo
 ```
 
 
-```{r}
-cat_var_plots<-p_mld+p_sed+p_land+p_gmo
-```
+
 ##### Save the plot
 ```{r}
-ggexport(cat_var_plots,
-          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_gnmds_catvar.png"),
+ggexport(morph_plots,
+          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_gnmds_gmorph.png"),
           width = 1000,
           height = 800)
 ```
+
+
+
 
 #### Sample identification in the mdsplot
 
