@@ -93,7 +93,7 @@ env_sort_locations
 ```{r}
 joinData <- left_join(otu_sort, env_sort, by = "SampID")
 #remove data above east of X = 600000
-joinData <- subset(joinData, (x_coord<600000)&(Tmean_Robinson<2.5))
+joinData <- subset(joinData, (x_coord<600000)&(Tmean_Robinson<=2.5))
 
 
 otu_sort<-joinData %>% select(c(2:which(colnames(joinData)=="Umbellula_encrinus")))
