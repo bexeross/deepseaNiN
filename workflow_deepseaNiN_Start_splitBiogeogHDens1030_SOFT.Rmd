@@ -120,7 +120,7 @@ GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the vara
 
 **INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
 
-#### X v Y - temp
+#### X v Y - gnmds1
 ```{r}
 xy_t<- ggplot(data = env_sub_meta,
                       aes(x = X,
@@ -142,6 +142,30 @@ ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_gnmds1
        device = "png",
        dpi=300 )
 ```
+
+#### X v Y - gnmds1 threshold 0
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c( min(env_sub_meta$gnmds1),0), #match variable acting as colour
+                        colors=c('red'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds1 thresholded at 0") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_gnmds1_thresh0.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
 
 #### Gnmds w seddan
 ```{r}
@@ -165,7 +189,12 @@ gnmds_gmo <- ggplot(data = env_sub_meta,
                                "Bioclastic"="midnightblue",
                                "Carbonate_crust"="black",
                                "Morraine_glaciomarineCover"="aquamarine3",
-                               "Slide_part_cover"="darkorchid1"
+                               "Slide_part_cover"="darkorchid1",
+                               "Channel_deposit"="tan1",
+                               "Contourite"="gold1",
+                               "Layered_over_debris_flow"="tomato3",
+                               "Slide_w_cover"="purple4",
+                               "Sedimentary_rock"="saddlebrown"
   )) +
 
   geom_vline(xintercept = 0,
@@ -188,9 +217,385 @@ ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__gnmds_seddan
        dpi=300 )
 
 ```
+####gnmds with Tmean_R
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by TmeanR")+ #amend
+  geom_point(aes(colour = Tmean_Robinson)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson),max(env_sub_meta$Tmean_Robinson)),#match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
 
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_gnmds_TmeanR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+####gnmds with Tmean_R threshold 3
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by TmeanR 2.5*C threshold")+ #amend
+  geom_point(aes(colour = Tmean_Robinson)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(2.5,max(env_sub_meta$Tmean_Robinson)),#match variable acting as colour
+                        colors=c('red'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
 
-# TEMPLATE CHUNKS TO COPY FROM
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_gnmds_TmeanR_2pt5degThresh.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y - TmeanR
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Tmean_Robinson), max(env_sub_meta$Tmean_Robinson)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Geography (X v Y) - coloured by TmeanR") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_TmeanR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y - TmeanR threshold
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Tmean_Robinson),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(2.5, max(env_sub_meta$Tmean_Robinson)), #match variable acting as colour
+                        colors=c('red'))+
+  ggtitle("Geography (X v Y) - coloured by TmeanR 2.5*C Threshold") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_TmeanR_2pt5degthresh.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y - swDensR
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = swDensRob_avs),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$swDensRob_avs), max(env_sub_meta$swDensRob_avs)), #match variable acting as colour
+                        colors=c('green','yellow','red'))+
+  ggtitle("Geography (X v Y) - coloured by swDensR") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_swDensR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y - swDensR threshold
+```{r}
+xy_t<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = swDensRob_avs),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$swDensRob_avs),1031.7), #match variable acting as colour
+                        colors=c('red'))+
+  ggtitle("Geography (X v Y) - coloured by swDensR 1031.7 Threshold") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__X_v_Y_swDensR_1031pt7thresh.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+####gnmds with swDensR
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by swDensR ")+ #amend
+  geom_point(aes(colour = swDensRob_avs)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$swDensRob_avs), max(env_sub_meta$swDensRob_avs)),#match variable acting as colour
+                        colors=c('green','yellow','orange','red'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_gnmds_swDensR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+####gnmds with SminR
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by SminR ")+ #amend
+  geom_point(aes(colour = Smin_Robinson)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$Smin_Robinson), max(env_sub_meta$Smin_Robinson)),#match variable acting as colour
+                        colors=c('green','yellow','orange','red'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_gnmds_SminR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+####gnmds with swDensR threshold 3
+```{r}
+gnmds_spR <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by swDensR 1031.5 threshold")+ #amend
+  geom_point(aes(colour = swDensRob_avs)) + #change at will - continuous vars only
+  scale_colour_gradientn(limits = c(min(env_sub_meta$swDensRob_avs), 1031.5),#match variable acting as colour
+                        colors=c('red'))+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+#p_spR #plot
+ggplotly(gnmds_spR) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_gnmds_swDensR_1031pt5Thresh.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+#### Gnmds w biotope
+```{r}
+
+gnmds_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$BiotopeDesc))) + #change at will - categorical vars only
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+gnmds_gmo #plot
+ggplotly(gnmds_gmo)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__gnmds_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+#### Bathy v Temp w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Tmean_Robinson, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Temp (mean Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_bathy_v_temp_nmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### Bathy v SaltMin w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Smin_Robinson, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Saliniy (min Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_bathy_v_SminR_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### Bathy v swDensR w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = swDensRob_avs, #change at will
+                          y = bathy)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Density (T/Savs Robinson) vs Bathy - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_bathy_v_swDensR_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### TmeanR v SaltMin w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = Smin_Robinson, #change at will
+                          y = Tmean_Robinson)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Saliniy (min Robinson) vs Temp (mean Robinson) - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT_TmeanR_v_SminR_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = env_sub_meta$ax1cat), #change at will - categorical vars only
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by gnmds axis 1 HC units") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HDENS_1030_DEEP_SOFT__XvY_ax1cat.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+***# TEMPLATE CHUNKS TO COPY FROM***
 
 ## Plots with CONTINUOUS colour scales (variables)
 
