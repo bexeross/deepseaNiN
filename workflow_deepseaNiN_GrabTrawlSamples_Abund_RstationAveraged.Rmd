@@ -1,0 +1,1990 @@
+---
+title: "Workflow_GrabData"
+output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
+  html_notebook:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    fig_width: 7
+    fig_height: 7
+always_allow_html: yes
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+## Packages
+
+```{r}
+library(dplyr)
+library(ggcorrplot)
+library(ggpubr)
+library(patchwork)
+# library("here")
+# library("bookdown")
+# library("downloadthis")
+library(vegan)
+library(plyr)
+library(e1071)
+library(tidyverse)
+library(viridis)
+library(GGally)
+library(ggrepel)
+library(ggordiplots)
+library(readr)
+library(RColorBrewer)
+library(oce) 
+library(plotly)
+library(purrr)
+library(furrr)
+
+library(rworldmap)
+library(rworldxtra)
+library(sp)
+library(rgdal)
+#library(marmap) # R crashes when I run it :S
+#library(raster) # R crashes when I run it :S
+library(readxl)
+library(rgeos)
+library(reshape2)
+
+source("C:/Users/a39495/OneDrive - Havforskningsinstituttet/General/R/gg_ordisurf_viridis.R")
+dmdm2dec <- function(dmdm, separators = "[.]") {
+  temp_coord<-strsplit(as.character(dmdm), separators)
+  min<-substr(sapply(temp_coord, "[[", 1), start=nchar(sapply(temp_coord, "[[", 1))-1, stop=nchar(sapply(temp_coord, "[[", 1)))
+  deg<-substr(sapply(temp_coord, "[[", 1), start=1, stop=nchar(sapply(temp_coord, "[[", 1))-2)
+  sec<-sapply(temp_coord, "[", 2)
+  sec<-ifelse(is.na(sec), 0, sec)
+  min<-paste(min, sec, sep = ".")
+  dec <- colSums(rbind(as.numeric(deg), (as.numeric(min) / 60)), na.rm = TRUE)
+  return(dec)
+}
+  
+HaveRunAlready<-FALSE
+```
+
+Loading background maps for plotting later
+
+```{r}
+# LAND
+worldMap <- getMap(resolution = "high")[which(getMap(resolution = "high")$ADMIN%in%c("Norway", "Russia", "Sweden", "Finland")),]
+worldMap <- spTransform(worldMap, sp::CRS("+proj=utm +ellps=WGS84 +zone=33 +datum=WGS84"))
+ggworldMap<-fortify(worldMap)
+
+# # BATHYMETRY
+# bathy <- getNOAA.bathy(-40,70,49,85,res=100, keep=TRUE)
+# bathy_df <- fortify(bathy) 
+# coordinates(bathy_df)<-coordinates(bathy_df[,c('x', 'y')])
+# raster::crs(bathy_df)<-"+proj=longlat +ellps=WGS84"
+# bathy_df <- spTransform(bathy_df, CRS=CRS("+proj=utm +ellps=WGS84 +zone=33 +datum=WGS84"))
+# 
+# bathy_df<-data.frame(bathy_df)
+# bathy_df<-data.frame(y= bathy_df$y.1, x = bathy_df$x.1, z = bathy_df$z)
+
+```
+
+LOAD OBJECTS IF HAVE RUN ALREADY
+
+```{r}
+if(HaveRunAlready){
+  # geodist_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_pa.rds"))
+  # geodist_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_geodist_r6.rds"))
+  # 
+  # mds_pa<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_pa.rds"))
+  # mds_r6<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_r6.rds"))
+  # #mds_r6_1000<-readRDS(file.path(dataPath,"inputs/LoDensNoSB1031p1_mds_r6_1000rep.rds"))
+  # 
+  # ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made)
+}
+```
+
+## Biological data
+
+```{r, warning=FALSE}
+GEAR<-c("Large VV grab", "Small VV grab", "VVgrab020")
+# GEAR<-c("Beamtrawl")
+# GEAR<-c("RP-slede")
+SPLIT<-"AllData"
+#SPLIT<-"Deep"
+#SPLIT<-"Barents"
+#SPLIT<-"Shelf"
+
+dataPath<-"C:/Users/a39495/OneDrive - Havforskningsinstituttet/General"
+Env_data <- read.csv(file.path(dataPath,"inputs/grab/grab_env.csv")) %>% as.data.frame
+Env_data$swDensRob_avs<-swRho(salinity=Env_data$Smean_Robinson,
+                           temperature=Env_data$Tmean_Robinson,
+                           pressure=(Env_data$bathy*-1),
+                           eos="unesco")
+# LOAD DATA                                       
+BT_temp<-read_excel(file.path(dataPath, "inputs/grab/ArterPunchetPr20211207_totalopparbeidet.xlsx"), sheet = "Beamtrawl", col_names = TRUE)
+RP_temp<-read_excel(file.path(dataPath, "inputs/grab/ArterPunchetPr20211207_totalopparbeidet.xlsx"), sheet = "RP-slede", col_names = TRUE)
+Grab_temp<-read_excel(file.path(dataPath, "inputs/grab/ArterPunchetPr20211207_totalopparbeidet.xlsx"), sheet = "Grab", col_names = TRUE)
+colnames(Grab_temp)<-colnames(RP_temp)
+Bio_data<-rbind(BT_temp, RP_temp, Grab_temp)
+
+Bio_data$SampleID<-paste(Bio_data$refstation_no, Bio_data$station_no, Bio_data$sample_no, sep = "_")
+
+Bio_data<-Bio_data %>% 
+  dplyr::select(-c(field_notes, quality_sample, quality_comment, loader_info, lab_notes, preservation_type,preservation_type, abundance_data_quality,fraction_type, identified_by, photo_character, author))
+
+Bio_data %>%
+  group_by(equipment_name)  %>%
+  summarise(count = n_distinct(SampleID))
+
+```
+
+#### Couple samples to environmental data (+ to closest known biotopes acording to VideoSamples file, currently off)
+
+```{r, warning=FALSE}
+
+### GRAB DATA to spatial type
+Bio_data_sp<-unique(Bio_data[,c('SampleID', 'longitude_start', 'latitude_start', "equipment_name")])
+Bio_data_sp$lon<-dmdm2dec(Bio_data_sp$longitude_start)
+Bio_data_sp$lat<-dmdm2dec(Bio_data_sp$latitude_start)
+coordinates(Bio_data_sp)<- ~lon+lat
+proj4string(Bio_data_sp)<-sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+Bio_data_sp <- spTransform(Bio_data_sp, sp::CRS("+proj=utm +ellps=WGS84 +zone=33 +datum=WGS84"))
+
+### MERGE environmental data
+if(all(Bio_data_sp$SampleID == Env_data$SamplID)){
+  data_biot<-cbind(data.frame(Bio_data_sp), subset(Env_data,select = -c(X.1, SamplID, optional)))
+                   }
+
+data_biot<-merge(data_biot, unique(Bio_data[,c(1,3,which(colnames(Bio_data) == "datetime_start"):ncol(Bio_data))]), by = c('SampleID', 'longitude_start', 'latitude_start', 'equipment_name'), all.x = TRUE)
+
+data_biot$refstation_no<-str_split_fixed(data_biot$SampleID, "_",3)[,1]
+
+data_biot<-data_biot[!is.na(data_biot$bottom_temperature) & !is.na(data_biot$temp_mean) & !is.na(data_biot$BO22_carbonphytoltmin_bdmean),]
+
+```
+
+#### Plot map to check location of samples
+
+```{r, warning=FALSE}
+Bio_data<-Bio_data[Bio_data$SampleID %in% data_biot$SampleID ,]
+
+#To get coordinates in "CRS("+proj=utm +ellps=WGS84 +zone=33 +datum=WGS84")":
+Bio_data<-merge(Bio_data, data.frame(coordinates(Bio_data_sp), SampleID= Bio_data_sp$SampleID), by= "SampleID")
+
+Bio_data<-Bio_data[Bio_data$equipment_name %in% GEAR,]
+
+Bio_data<-Bio_data[Bio_data$refstation_no != "1748", ]
+
+Env_data_locations<-ggplot(data = Bio_data,
+                            aes(x = lon, y = lat)) +
+  theme_classic() +
+  geom_point(aes(colour = equipment_name),
+             size = 2) +
+  ggtitle("Location of samples by equipment")+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75")+
+  coord_cartesian(xlim = c(range(Bio_data$lon)), ylim = c(range(Bio_data$lat))) +
+  theme(legend.position = "bottom")
+# geom_contour(data = bathy_df, aes(x=x, y=y, z=z),
+#              breaks=c(-100),
+#              size=c(0.3),
+#              colour="grey", inherit.aes = FALSE)
+
+SpRich_locations<-Bio_data %>%
+  group_by(SampleID)  %>%
+  mutate(SpeciesCount = n_distinct(scientific_name),
+            towed_distance = towed_distance,
+            Depth = mean(c(bottom_depth_start, bottom_depth_stop)),
+            cruise_no = cruise_no) %>%
+  ggplot(.,  aes(x = lon, y = lat, color = SpeciesCount))+geom_point(alpha = 0.7)+theme_classic()+
+  scale_color_viridis_c(option = "magma",direction = -1)+
+  theme(legend.position = "bottom")+
+  ggtitle("Species richnes per samples")+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75", inherit.aes = FALSE)+
+  coord_cartesian(xlim = c(range(Bio_data$lon)), ylim = c(range(Bio_data$lat))) +
+  theme(legend.position = "bottom")
+  
+TOC_map<-InsituTOC_locations<-Bio_data %>%
+  ggplot(.,  aes(x = lon, y = lat, color = TOC_percent))+geom_point(alpha = 0.7)+theme_classic()+
+  scale_color_viridis_c(option = "magma",direction = -1)+
+  theme(legend.position = "bottom")+
+  ggtitle("with TOC % data")+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75", inherit.aes = FALSE)+
+  coord_cartesian(xlim = c(range(Bio_data$lon)), ylim = c(range(Bio_data$lat))) +
+  theme(legend.position = "bottom")
+
+Grain_map<-Bio_data %>%
+  ggplot(.,  aes(x = lon, y = lat, color = grainsize_percent))+geom_point(alpha = 0.7)+theme_classic()+
+  scale_color_viridis_c(option = "magma",direction = -1)+
+  theme(legend.position = "bottom")+
+  ggtitle("with gransize data")+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75", inherit.aes = FALSE)+
+  coord_cartesian(xlim = c(range(Bio_data$lon)), ylim = c(range(Bio_data$lat))) +
+  theme(legend.position = "bottom")
+
+TOM_map<-Bio_data %>%
+  ggplot(.,  aes(x = lon, y = lat, color = TOM_percent))+geom_point(alpha = 0.7)+theme_classic()+
+  scale_color_viridis_c(option = "magma",direction = -1)+
+  theme(legend.position = "bottom")+
+  ggtitle("with TOM % data")+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75", inherit.aes = FALSE)+
+  coord_cartesian(xlim = c(range(Bio_data$lon)), ylim = c(range(Bio_data$lat))) +
+  theme(legend.position = "bottom")
+
+
+Env_data_locations + SpRich_locations 
+
+#TOC_map + 
+Grain_map + TOM_map
+
+
+
+```
+
+Subsetting workable Beamtrawl data
+
+```{r}
+
+Dat_gear_long<-Bio_data %>% 
+  filter(!(taxa_rank %in% c("Kingdom", "Phylum", "Subphylum", "Superclass", "Class")),
+         !(scientific_name %in% c("Actiniaria", 'Cephalaspidea', 'Dendrobranchiata')))
+
+Dat_gear_long[Dat_gear_long$scientific_name == "Jassa falcata", 'aphia_id' ]<- 102431
+Dat_gear_long[Dat_gear_long$scientific_name == "Ericthonius difformis", 'aphia_id' ]<- 102403
+
+  Dat_gear_long<- Dat_gear_long[Dat_gear_long$phylum != "Porifera", ]
+#Exploring data distribution and outliers
+
+# Summing weights of species occupying several rows in the same sample
+Dat_gear_long<-Dat_gear_long%>%
+  group_by(SampleID, scientific_name) %>%
+  mutate(Sum_SampleDen = sum(nos_100m2, na.rm =TRUE))%>%
+  ungroup()
+
+
+temp<-Dat_gear_long %>%
+  group_by(scientific_name) %>%
+  summarise(MeanDen=mean(nos_100m2, na.rm =TRUE)) %>%
+  filter(MeanDen>500)
+
+### Average density by R station
+# Total area covered at the Rstation
+X<-Dat_gear_long %>%
+  group_by(refstation_no) %>%
+  select(refstation_no, sample_no, station_no, opening) %>%
+  unique() %>%
+  group_by(refstation_no) %>%
+  mutate(TotArea_RStation = sum(opening)) 
+# Total number of individual of species caught at the Rstation
+Y<-Dat_gear_long %>%
+     group_by(refstation_no, scientific_name) %>%
+     mutate(nos_RStation = sum(nos_sample))
+# Average density by R station area coverage
+Dat_gear_long<-merge(Y,X, by =c('refstation_no', 'sample_no', 'station_no', 'opening'), all.x= TRUE)
+Dat_gear_long$nos_RStation_100m2<-(Dat_gear_long$nos_RStation/Dat_gear_long$TotArea_RStation)*100
+
+temp_RStation<-Dat_gear_long %>%
+  group_by(scientific_name) %>%
+  summarise(MeanDen_RStation=mean(nos_RStation_100m2, na.rm =TRUE)) %>%
+  filter(MeanDen_RStation>500)
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# 
+# Dat_gear_long %>%
+#   group_by(refstation_no, sample_no) %>%
+#   count() 
+#   group_by(refstation_no, scientific_name) %>%
+#   tally()
+#   summarise(MeanDen_RStation=mean(nos_100m2, na.rm =TRUE)) %>%
+ 
+   #EG
+#Dat_gear_long[Dat_gear_long$refstation_no %in% c("160") & Dat_gear_long$aphia_id == 222,]
+
+RSt_averaged_plot<-ggplot(Dat_gear_long, aes(lat , nos_RStation_100m2, group = scientific_name))+
+  geom_line()+
+  geom_hline(data = temp_RStation, aes(yintercept = MeanDen_RStation), color = "red")+
+  geom_text_repel(data = temp_RStation, aes(8300000, MeanDen_RStation*1.1, label = scientific_name), color = "darkblue")+
+  theme_classic()
+
+Densities_plot<-ggplot(Dat_gear_long, aes(lat , nos_100m2, group = scientific_name))+
+  geom_line()+
+  geom_hline(data = temp, aes(yintercept = MeanDen), color = "red")+
+  geom_text_repel(data = temp, aes(8300000, MeanDen*1.1, label = scientific_name), color = "darkblue")+
+  theme_classic()
+
+RSt_averaged_plot + Densities_plot
+
+ggplot(Dat_gear_long, aes(reorder(scientific_name,scientific_name,function(x)-length(x))))+geom_bar() + coord_flip()+facet_wrap(~cruise_no)
+
+
+```
+
+
+```{r}
+
+table(Dat_gear_long$refstation_no, Dat_gear_long$sieve_mesh_size)
+
+```
+
+
+Subsetting splits
+
+```{r}
+if(SPLIT == "Deep"){
+  Dat_gear_long<-Dat_gear_long[Dat_gear_long$SampleID %in% Env_data[Env_data$swDensRob_avs>=1031.8  & !is.na(Env_data$bathy) & (is.na(Env_data$sw_spd_mean) | Env_data$sw_spd_mean<0.3) , 'SamplID'],]}
+
+
+if(SPLIT == "Barents"){
+  Dat_gear_long<-Dat_gear_long[Dat_gear_long$SampleID %in% Env_data[Env_data$swDensRob_avs < 1031.8 & Env_data$BO22_dissoxmean_bdmean > 305 & !is.na(Env_data$bathy) & Env_data$bathy<=100,  'SamplID'],]}
+if(SPLIT == "Shelf"){
+  Dat_gear_long<-Dat_gear_long[Dat_gear_long$SampleID %in% Env_data[Env_data$swDensRob_avs < 1031.8 & Env_data$BO22_dissoxmean_bdmean <= 305 & !is.na(Env_data$bathy) & Env_data$bathy<=100,  'SamplID'],]
+ # Dat_gear_long<-Dat_gear_long[Dat_gear_long$refstation_no != "434",]
+  }
+
+```
+
+Formatting data frame to wide
+```{r}
+
+if(GEAR[1] == "Large VV grab"){
+  Dat_gear_wide<-Dat_gear_long %>%
+  select(c(refstation_no, aphia_id, nos_RStation_100m2)) %>%
+  unique() %>%
+  dcast(., refstation_no ~ aphia_id, value.var = "nos_RStation_100m2",fun.aggregate = mean, na.rm = TRUE)
+}else{
+Dat_gear_wide<-dcast(Dat_gear_long, refstation_no ~ aphia_id, value.var = "nos_RStation_100m2",fun.aggregate = mean, na.rm = TRUE)
+}
+
+Dat_gear_wide[is.na(Dat_gear_wide)]<-0
+
+# #Should be TRUE
+# nrow(dcast(Dat_gear_long, cruise_no + sample_no + SampleID ~ aphia_id, value.var = "nos_100m2",fun.aggregate = sum, na.rm = TRUE)) == nrow(dcast(Dat_gear_long, SampleID ~ aphia_id, value.var = "nos_100m2",fun.aggregate = sum, na.rm = TRUE)) 
+
+# Remove species with 0 occurrences across all stations
+Dat_gear_wide<-Dat_gear_wide[, c(TRUE,colSums(Dat_gear_wide[2:ncol(Dat_gear_wide)])>0)]
+
+# Remove stations with 0 species (after having removed the rough ids)
+Dat_gear_wide<-Dat_gear_wide[rowSums(Dat_gear_wide[, -c(1)])>0,] 
+
+
+```
+
+# TRANSFORM data
+
+```{r}
+otu_pa <- decostand(x = Dat_gear_wide[, -c(1)],
+                    method = "pa")
+
+# y = ax^w         # power transformation formula
+dt <- Dat_gear_wide[, -c(1:2)]          # species data to transform
+x_mn <- min(dt[dt > 0])
+x_mx <- max(dt)
+rng <- 6           # abundance range
+w <- log(rng) / (log(x_mx) - log(x_mn))
+a <- x_mn^(-w)
+# otu_6 <- a * dt[, -c(1:3)]^w
+otu_6 <- a * dt^w
+range(otu_6)
+
+hist(unlist(c(otu_6[otu_6>0])))
+
+```
+
+## Ordination methods
+
+### DCA PA
+
+```{r}
+Sys.time()
+dca_pa <- decorana(veg = otu_pa)
+
+print(dca_pa, head=T)
+```
+
+### GNMDS PA
+
+#### Distances - don't run if loading saved object
+
+```{r}
+## Bray-Curtis
+dist_pa <- vegdist(x = otu_pa, method = "bray")
+
+## Geodist
+ep <- 0.9     # epsilon
+geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
+```
+
+##### Save the result - don't run if loading saved object
+
+```{r}
+saveRDS(geodist_pa,
+       file = (paste0(dataPath,"/inputs/grab/",GEAR[1],"_",SPLIT,"_geodist_pa.rds")))
+```
+
+#### Ordination
+
+#### monoMDS - don't run if loading saved object
+
+took 6.4mins with jonatan's paralell solution (usually \~10mins)
+
+```{r, warning=FALSE}
+
+plan(multisession) # # Activates the parallel processing
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_pa <- lapply(seq_len(i), function(X) geodist_pa) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_pa<-furrr::future_map(List_geodist_pa, 
+                           function(x) monoMDS(x,
+                                               matrix(c(runif(dim(otu_pa)[1]*d)),
+                                                      nrow = dim(otu_pa)[1]),
+                                               k = d,
+                                               model = "global",
+                                               maxit = 2000,
+                                               smin = 1e-7,
+                                               sfgrmin = 1e-7),
+                           .progress = TRUE)
+Sys.time() - start_t
+
+
+```
+
+##### Save the result - don't run if loading saved object
+
+can take a few mins
+
+```{r}
+ saveRDS(Xmds_pa,
+        file = (paste0(dataPath,"/inputs/grab/",GEAR[1],"_",SPLIT,"_mds_pa.rds")))
+```
+
+##### Best nmds solution - PA
+
+Make function?
+
+```{r, eval=TRUE}
+# Loading geodist object
+# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_pa_full.rds")
+```
+
+```{r, warning=FALSE}
+# Loading mds results
+# mds <- readRDS(file = "../SplitRev2_mds_pa_full.rds")
+
+## Extracting the stress of each nmds iteration
+mds_stress_pa<-unlist(lapply(Xmds_pa, function(v){v[[22]]})) 
+
+ordered_pa <-order(mds_stress_pa)
+
+## Best, second best, and worst solution
+mds_stress_pa[ordered_pa[1]]
+mds_stress_pa[ordered_pa[2]]
+mds_stress_pa[ordered_pa[10]]
+
+## Scaling of axes to half change units and varimax rotation by postMDS
+mds_best_pa<-postMDS(Xmds_pa[[ordered_pa[1]]],
+                     geodist_pa, 
+                     pc = TRUE, 
+                     halfchange = TRUE, 
+                     threshold = ep)     # Is this threshold related to the epsilon above?
+mds_best_pa
+
+mds_secbest_pa <- postMDS(Xmds_pa[[ordered_pa[2]]],
+                          geodist_pa, 
+                          pc = TRUE, 
+                          halfchange = TRUE, 
+                          threshold = ep)
+mds_secbest_pa
+
+## Procrustes comparisons
+procr_pa <- procrustes(mds_best_pa,
+                       mds_secbest_pa,
+                       permutations=999)
+protest(mds_best_pa,
+        mds_secbest_pa,
+        permutations=999)
+
+plot(procr_pa)
+
+png(file=paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_procrustes_pa.png"), width=1000, height=700)
+plot(procr_pa)
+dev.off()
+```
+
+##### Correlation of axis: DCA vs NMDS - PA
+
+```{r}
+# Extracting ordination axis
+ax <- 2
+axis_pa <- cbind(mds_best_pa$points,
+                 scores(dca_pa,
+                        display = "sites",
+                        origin = TRUE)[, 1:ax])
+
+ggcorr(axis_pa, 
+       method=c("everything","kendall"), 
+       label = TRUE,
+       label_size = 3, 
+       label_color = "black",  
+       nbreaks = 8,
+       label_round = 3,
+       low = "red",
+       mid = "white",
+       high = "green")
+
+
+```
+
+##### Save the figure
+
+```{r}
+ggsave(filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_correlationPCAvsNMDS_PA.png"),
+       device = "png",
+       dpi=300 )
+
+# Switching direction of NMDS1
+# mds_best$points[, 1] <- -mds_best$points[, 1]
+```
+
+### DCA R6
+
+```{r}
+dca_r6 <- decorana(veg = otu_6)
+
+print(dca_r6, head=T)
+```
+
+### GNMDS R6
+
+#### Distances - don't run if loading saved object
+
+```{r}
+## Bray-Curtis
+dist_r6 <- vegdist(x = otu_6, method = "bray")
+
+## Geodist
+ep <- 0.90     # epsilon
+geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
+```
+
+##### Save the result - don't run if loading saved object
+
+```{r}
+ saveRDS(geodist_r6,
+       file = (paste0(dataPath,"/inputs/grab/",GEAR[1],"_",SPLIT,"_geodist_r6.rds")))
+```
+
+#### Ordination
+
+```{r, warning=FALSE}
+
+plan(multisession)
+
+d <- 2
+
+i <-200 # number of reps
+
+List_geodist_r6 <- lapply(seq_len(i), function(X) geodist_r6) # makes a list with the input data repeated as many times as reps wanted
+start_t<-Sys.time()
+Xmds_r6<-furrr::future_map(List_geodist_r6, 
+                           function(x) monoMDS(x,
+                                               matrix(c(runif(dim(otu_6)[1]*d)),
+                                                      nrow = dim(otu_6)[1]),
+                                               k = d,
+                                               model = "global",
+                                               maxit = 2000,
+                                               smin = 1e-7,
+                                               sfgrmin = 1e-7),
+                           .progress = TRUE)
+Sys.time() - start_t
+
+```
+
+##### Save the result - don't run if loading saved object
+
+```{r}
+ saveRDS(Xmds_r6,
+       file = (paste0(dataPath,"/inputs/grab/",GEAR[1],"_",SPLIT,"_mds_r6.rds")))
+```
+
+##### Best nmds solution r6 200 rep
+
+```{r, eval=TRUE, warning=FALSE}
+# Loading geodist object
+# geodist_nfi <- readRDS(file = "../SplitRev2_geodist_nfi.rds")
+
+# Loading mds results
+# mds <- readRDS(file = "../SplitRev2_mds.rds")
+
+## Extracting the stress of each nmds iteration
+mds_stress_r6<-unlist(lapply(Xmds_r6, function(v){v[[22]]})) 
+
+ordered_r6 <-order(mds_stress_r6)
+
+## Best, second best, and worst solution
+mds_stress_r6[ordered_r6[1]]
+mds_stress_r6[ordered_r6[2]]
+mds_stress_r6[ordered_r6[100]]
+
+## Scaling of axes to half change units and varimax rotation by postMDS
+mds_best_r6<-postMDS(Xmds_r6[[ordered_r6[1]]],
+                     geodist_r6, 
+                     pc = TRUE, 
+                     halfchange = TRUE, 
+                     threshold = ep)     # Is this threshold related to the epsilon above?
+mds_best_r6
+
+mds_secbest_r6<-postMDS(Xmds_r6[[ordered_r6[2]]],
+                        geodist_r6, 
+                        pc = TRUE, 
+                        halfchange = TRUE, 
+                        threshold = ep)
+mds_secbest_r6
+
+## Procrustes comparisons
+procr_r6 <- procrustes(mds_best_r6,
+                       mds_secbest_r6,
+                       permutations=999)
+protest(mds_best_r6,
+        mds_secbest_r6,
+        permutations=999)
+
+plot(procr_r6)
+
+png(paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_procrustes_r6.png.png"), width=1000, height=700) #added 1000
+plot(procr_r6)
+dev.off()
+```
+
+##### Correlation of axis: DCA vs NMDS
+
+retain the 200 rep version
+
+```{r}
+# Extracting ordination axis
+ax <- 2
+axis_r6 <- cbind(mds_best_r6$points,
+                 scores(dca_r6,
+                        display = "sites",
+                        origin = TRUE)[, 1:ax])
+
+ggcorr(axis_r6, 
+       method=c("everything","kendall"), 
+       label = TRUE,
+       label_size = 3, 
+       label_color = "black",  
+       nbreaks = 8,
+       label_round = 3,
+       low = "red",
+       mid = "white",
+       high = "green")
+
+```
+
+##### Save the figure
+
+```{r}
+ggsave(filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_correlationPCAvsNMDS_r6.png"),
+       device = "png",
+       dpi=300 )
+
+# Switching direction of NMDS1
+# mds_best$points[, 1] <- -mds_best$points[, 1]
+```
+
+### Plotting DCA & GNMDS
+
+```{r}
+## Adding scores to environmental data frame
+# Averages by R Station and makes sure there is only 1 row per r station to prevent duplications later
+if(GEAR[1] == "Large VV grab"){
+  data_biot_Rstation<-data_biot[data_biot$equipment_name %in% GEAR,]
+  data_biot_Rstation<-data_biot_Rstation %>%
+    group_by(refstation_no) %>%
+    mutate_if(is.numeric, mean, na.rm = TRUE) %>%
+    select(-c(datetime_start, datetime_stop, SampleID, equipment_name)) %>%
+    unique(.)
+  
+  otu_6<-data_biot_Rstation[match(Dat_gear_wide$refstation_no, data_biot_Rstation$refstation_no),]
+}else{
+  otu_6<-data_biot[match(Dat_gear_wide$SampleID, data_biot$SampleID),]
+}
+
+otu_6$gnmds1 <- mds_best_r6$points[, 1]
+otu_6$gnmds2 <- mds_best_r6$points[, 2]
+otu_6$dca1 <- scores(dca_r6, display = "sites", origin = TRUE)[, 1]
+otu_6$dca2 <- scores(dca_r6, display = "sites", origin = TRUE)[, 2]
+
+p_gnmds_r6 <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS",
+          subtitle = "First run") +
+  geom_point(colour = "red") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_dca_r6 <- ggplot(data = otu_6,
+                   aes(x = dca1,
+                       y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("DCA",
+          subtitle = "First run") +
+  geom_point(colour = "red") +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_gnmds_r6 + p_dca_r6
+
+
+```
+
+##### Save the figure
+
+```{r}
+ggsave(paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_gnmds_dca_r6.png"),
+       device = "png",
+       dpi=300)
+```
+
+## Species-environment relationships
+
+### Selecting ordination
+
+```{r}
+ord <- mds_best_r6
+
+## Axis scores if selected ord is GNMDS
+axis <- ord$points %>% as.data.frame
+
+## Axis scores if selected ord is DCA
+# axis <- scores(ord,
+#                display = "sites",
+#                origin = TRUE)[, 1:ax])
+
+```
+
+### Create additional variables
+
+decided to make MLD-bathy vars
+
+```{r}
+
+otu_6<-otu_6 %>% 
+  mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
+          "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
+          "MLDmax_bathy"=MLDmax_Robinson-(bathy*-1))
+
+otu_6$MLDmean_bathy<-cut(otu_6$MLDmean_bathy, 
+                         breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+                         labels=c('belowMLD','onPycno','inMixLayer'))
+otu_6$MLDmin_bathy<-cut(otu_6$MLDmin_bathy, 
+                        breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+                        labels=c('belowMLD','onPycno','inMixLayer'))
+otu_6$MLDmax_bathy<-cut(otu_6$MLDmax_bathy, 
+                        breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+                        labels=c('belowMLD','onPycno','inMixLayer'))
+
+
+```
+
+### Correlation ordination axes and environmental variables
+
+#### Removing non-env vars
+
+```{r}
+env_cont<-otu_6%>% dplyr::select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy, #categorical
+                                    optional, #not a var
+                                    MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
+                                    MLDsd_Robinson #not meaningful
+))
+env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
+env_corr <- data.frame(env_cont)  #%>% select(-c(SampleID))
+
+# env_corr$coords.x1<-as.numeric(env_corr$coords.x1)
+# env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
+#env_corr[(!is.numeric(env_corr)),]
+```
+
+#### Correlations
+
+```{r, warning=FALSE}
+# Vector to hold correlations
+cor_ax1 <- NULL
+cor_ax2 <- NULL
+pv_ax1 <- NULL
+pv_ax2 <- NULL
+
+
+# NMDS1
+for( i in c(1:ncol(env_corr))[unlist(lapply(env_corr, is.numeric), use.names = FALSE)]){
+  #if(all(is.na(env_corr[, i]))){next} # needed to remove "tow time when running grabs"
+  if(sum(!is.na(env_corr[, i]))<10){
+  cor_ax1[i] <- NA
+  pv_ax1[i] <- NA
+  print(paste(names(env_corr)[i], "doesnt have enough data"))
+  next
+  }
+  
+  ct.i <- cor.test(axis$MDS1,
+                   env_corr[, i],
+                   method = "kendall")
+  cor_ax1[i] <- ct.i$estimate
+  pv_ax1[i] <- ct.i$p.value
+}
+
+# NMDS2
+for( i in c(1:ncol(env_corr))[unlist(lapply(env_corr, is.numeric), use.names = FALSE)]) {
+  #if(all(is.na(env_corr[, i]))){next}
+    if(sum(!is.na(env_corr[, i]))<10){
+  cor_ax1[i] <- NA
+  pv_ax1[i] <- NA
+  print(paste(names(env_corr)[i], "doesnt have enough data"))
+  next
+    }
+
+  ct.i <- cor.test(axis$MDS2,
+                   env_corr[, i],
+                   method = "kendall")
+  cor_ax2[i] <- ct.i$estimate
+  pv_ax2[i] <- ct.i$p.value
+}
+
+cor_tab <- data.frame(env = names(env_corr),
+                      ord_ax1 = cor_ax1,
+                      pval_ax1 = pv_ax1,
+                      ord_ax2 = cor_ax2,
+                      pval_ax2 = pv_ax2)
+
+cor_tab[!is.na(cor_tab$ord_ax1),]
+
+write.csv(x = cor_tab,
+          file = paste0(dataPath,"/inputs/grab/",GEAR[1],"_",SPLIT,"_cor-table_r6_200rep_MLD-bathy.csv"),
+          row.names = FALSE)
+
+```
+
+### Dot chart to check for gaps in correlation
+
+```{r}
+cor_a1_sort<-cor_tab%>%
+  mutate(abs_ord_ax1=abs(ord_ax1),
+         abs_ord_ax2=abs(ord_ax2)) %>%
+  arrange(desc(abs_ord_ax1))
+
+cor_a2_sort<-cor_tab%>%
+  mutate(abs_ord_ax1=abs(ord_ax1),
+         abs_ord_ax2=abs(ord_ax2)) %>%
+  arrange(desc(abs_ord_ax2))
+
+#######
+#Axis 1
+dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
+
+cor_cut<-0.45 #decide
+
+cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
+cor_sel
+
+as.data.frame(cor_sel$env)
+#############
+#Axis 2
+dotchart(cor_a2_sort$abs_ord_ax2, main="Absolute (+/-) correlations between envVars and gnmds axis 2")
+
+cor_sel2<-subset(cor_a2_sort,abs_ord_ax2>cor_cut)
+cor_sel2
+
+as.data.frame(cor_sel2$env)
+```
+
+### Sel env var (top corr)
+
+```{r}
+env_os <- env_corr[, cor_sel$env]
+env_os
+str(env_os)
+
+
+```
+
+### Ordisurfs top corr
+
+```{r}
+ordsrfs <- list(length = ncol(env_os))
+
+for (i in seq(ncol(env_os))) {
+if(sum(is.na(env_os[, i]))/length(env_os[, i])>0.90){
+  ordsrfs[[i]]<-NA
+  next}
+    os.i <- gg_ordisurf(ord = ord,
+                      env.var = env_os[, i],
+                      pt.size = 1,
+                      # binwidth = 0.05,
+                      var.label = names(env_os)[i],
+                      gen.text.size = 10,
+                      title.text.size = 15,
+                      leg.text.size = 10)
+  
+  ordsrfs[[i]] <- os.i$plot
+}
+
+ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
+                         nrow = round(((length(ordsrfs)/2)+0.1)),
+                         ncol = round(2))
+
+ordsrfs_plt
+```
+
+##### Save some outputs
+
+```{r}
+ggexport(ordsrfs_plt,
+         filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_ordisurfs_top_corr.png"),
+         width = 1000,
+         height = (500*round((length(ordsrfs)/2))))
+
+```
+
+### Sel env var (manual)
+
+```{r}
+env_os_m <- env_corr[,c("Tmean_Robinson", #top corr
+                        "salt_max", #top corr
+                        "Smax_Robinson", #comparison to top corr
+                        "swDensRob_avs", #top corr
+                        "BO22_icecoverltmax_ss",#top corr ax2
+                        "BO22_icecovermean_ss",#top corr
+                        "BO22_dissoxmean_bdmean",#top corr
+                        #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+                        "BO22_ppltmin_ss", #top corr
+                        "X", #comparison to Y
+                        "Y", #top corr
+                        "spd_std", #top corr ax2 (blended model)
+                        "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                        "mud", #highest sed var ax1 + corr
+                        "gravel",#highest sed var ax1 - corr
+                        "BO22_silicateltmax_bdmean", #just under top corr ax1
+                        "bathy" #intuitive for comparisons
+)]
+
+
+env_os_m
+str(env_os_m)
+
+```
+
+### Sel env var (manual)
+
+```{r , include=FALSE}
+# clay_cob<-ggplot(env_corr, aes(percent_clay, cobB))+geom_point()
+# clay_grav<-ggplot(env_corr, aes(percent_clay, gravel))+geom_point()
+# clay_mud<-ggplot(env_corr, aes(percent_clay, mud))+geom_point()
+# clay_rock<-ggplot(env_corr, aes(percent_clay, rock))+geom_point()
+# clay_sand<-ggplot(env_corr, aes(percent_clay, sand))+geom_point()
+# 
+# clay_cob + clay_grav + clay_mud + clay_rock + clay_sand
+# 
+# silt_cob<-ggplot(env_corr, aes(percent_silt, cobB))+geom_point()
+# silt_grav<-ggplot(env_corr, aes(percent_silt, gravel))+geom_point()
+# silt_mud<-ggplot(env_corr, aes(percent_silt, mud))+geom_point()
+# silt_rock<-ggplot(env_corr, aes(percent_silt, rock))+geom_point()
+# silt_sand<-ggplot(env_corr, aes(percent_silt, sand))+geom_point()
+# 
+# silt_cob + silt_grav + silt_mud + silt_rock + silt_sand
+# 
+# sand_cob<-ggplot(env_corr, aes(percent_sand , cobB))+geom_point()
+# sand_grav<-ggplot(env_corr, aes(percent_sand , gravel))+geom_point()
+# sand_mud<-ggplot(env_corr, aes(percent_sand , mud))+geom_point()
+# sand_rock<-ggplot(env_corr, aes(percent_sand , rock))+geom_point()
+# sand_sand<-ggplot(env_corr, aes(percent_sand , sand))+geom_point()
+# 
+# sand_cob + sand_grav + sand_mud + sand_rock + sand_sand
+# 
+# grav_cob<-ggplot(env_corr, aes(percent_gravel, cobB))+geom_point()
+# grav_grav<-ggplot(env_corr, aes(percent_gravel, gravel))+geom_point()
+# grav_mud<-ggplot(env_corr, aes(percent_gravel, mud))+geom_point()
+# grav_rock<-ggplot(env_corr, aes(percent_gravel, rock))+geom_point()
+# grav_sand<-ggplot(env_corr, aes(percent_gravel, sand))+geom_point()
+# 
+# grav_cob + grav_grav + grav_mud + grav_rock + grav_sand
+
+```
+
+### Ordisurfs manually selected
+
+```{r}
+ordsrfs_m <- list(length = ncol(env_os_m))
+
+for (i in seq(ncol(env_os_m))) {
+  if(sum(is.na(env_os_m[, i]))/length(env_os_m[, i])>0.90 | sum(env_os_m[, i]) == 0){
+  ordsrfs_m[[i]]<-NA
+  next}
+  os.i_m <- gg_ordisurf(ord = ord,
+                        env.var = env_os_m[, i],
+                        pt.size = 1,
+                        # binwidth = 0.05,
+                        var.label = names(env_os_m)[i],
+                        gen.text.size = 10,
+                        title.text.size = 15,
+                        leg.text.size = 10)
+  
+  ordsrfs_m[[i]] <- os.i_m$plot
+}
+
+ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
+                           nrow = round((length(ordsrfs_m)/2)),
+                         ncol = 2)
+
+ordsrfs_plt_m
+```
+
+##### Save some outputs
+
+```{r}
+ggexport(ordsrfs_plt_m,
+         filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_ordisurfs_man_sel_domean.png"),
+         width = 1000,
+         height = (500*round((length(ordsrfs_m)/2))))
+
+```
+
+### Sel env var (manual 2 insitu)
+
+```{r}
+env_os_m2 <- env_corr[,c("bottom_temperature", #top corr
+                        "bottom_salinity", #top corr
+                        "TOM_percent", #comparison to top corr
+                        "TOC_percent", #top corr
+                        "waterconsist_percent", 
+                        "grainsize_percent", 
+                        "percent_clay", 
+                        "percent_silt", 
+                        "percent_sand", 
+                        "percent_gravel")]
+env_os_m2
+str(env_os_m2)
+
+```
+
+### Ordisurfs manually selected
+
+```{r}
+ordsrfs_m <- list(length = ncol(env_os_m2))
+
+for (i in seq(ncol(env_os_m2))) {
+  if(sum(is.na(env_os_m2[, i]))/length(env_os_m2[, i])>0.90){
+  ordsrfs[[i]]<-NA
+  next}
+  os.i_m <- gg_ordisurf(ord = ord,
+                        env.var = env_os_m2[, i],
+                        pt.size = 1,
+                        # binwidth = 0.05,
+                        var.label = names(env_os_m2)[i],
+                        gen.text.size = 10,
+                        title.text.size = 15,
+                        leg.text.size = 10)
+  
+  ordsrfs_m[[i]] <- os.i_m$plot
+}
+
+ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
+                           nrow = round((length(ordsrfs_m)/2)),
+                         ncol = 2)
+
+ordsrfs_plt_m
+```
+
+##### Save insitu some outputs
+
+```{r}
+ggexport(ordsrfs_plt_m,
+         filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_ordisurfs_man_sel_domean_InsituEnviron.png"),
+          width = 1000,
+         height = (500*round((length(ordsrfs_plt_m)/2))))
+
+
+```
+
+
+
+
+### Envfit
+
+```{r, warning=FALSE}
+## Select if any var should be excluded from envfit (makes less busy to read)
+env_os_m_envfit<-env_os_m[,c("Tmean_Robinson", #top corr
+                              "salt_max", #top corr
+                              "Smax_Robinson", #comparison to top corr
+                              "swDensRob_avs", #top corr
+                              "BO22_icecoverltmax_ss",#top corr ax2
+                              #"BO22_icecovermean_ss",#top corr
+                              "BO22_dissoxmean_bdmean",#top corr
+                              #"BO22_dissoxltmin_bdmean",#top corr
+                              #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+                              "BO22_ppltmin_ss", #top corr
+                              "X", #comparison to Y
+                              "Y", #top corr
+                              "spd_std", #top corr ax2 (blended model)
+                              # "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                              "mud", #highest sed var ax1 + corr
+                              "gravel",#highest sed var ax1 - corr
+                              "BO22_silicateltmax_bdmean", #just under top corr ax1
+                              "bathy" #intuitive for comparisons
+)]
+
+colnames(env_os_m_envfit)<-c("T", #top corr
+                             "sMx", #top corr
+                             "SmaxR", #comparison to top corr
+                             "swDensR", #top corr
+                             "icecovmax",#top corr ax2
+                             #"icecovav",#top corr
+                             "dissoxav",#top corr
+                             #"dissoxmin",#top corr
+                             #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+                             "ppltmin", #top corr
+                             "X", #comparison to Y
+                             "Y", #top corr
+                             "spd_std", #top corr ax2 (blended model)
+                             # "CSsd", #comparison to top corr ax2 (blended model)
+                             "mud", #highest sed var ax1 + corr
+                             "gravel",#highest sed var ax1 - corr
+                             "SiLtmax", #just under top corr ax1
+                             "bathy" #intuitive for comparisons
+)
+
+## Envfot plot
+gg_envfit(ord = ord,
+          env = env_os_m_envfit,
+          pt.size = 1)
+
+## Envfit analysis
+
+ef <- envfit(ord = ord,
+             env = env_os_m_envfit,
+              na.rm = TRUE
+)
+efDF <- as.data.frame(scores(ef,
+                             display = "vectors"))
+```
+
+##### Save the plot
+
+```{r}
+ggsave(filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_EnvFit_man_sel_cln_domean.png"),
+       device = "png",
+       dpi=300 )
+```
+### Envfit (insitu)
+
+```{r, warning=FALSE}
+## Select if any var should be excluded from envfit (makes less busy to read)
+env_os_m_envfit2<-env_os_m2[,c("bottom_temperature" ,
+                              "bottom_salinity",
+                              "TOM_percent",
+                              "TOC_percent",
+                              "waterconsist_percent",
+                              "grainsize_percent" ,
+                              "percent_clay",
+                              "percent_silt",
+                              "percent_sand",
+                              "percent_gravel"
+)]
+
+
+## Envfot plot
+gg_envfit2(ord = ord,
+          env = env_os_m_envfit2,
+          pt.size = 1)
+
+## Envfit analysis
+
+ef2 <- envfit(ord = ord,
+             env = env_os_m_envfit2,
+              na.rm = TRUE
+)
+efDF2 <- as.data.frame(scores(ef2,
+                             display = "vectors"))
+```
+##### Save the plot
+
+```{r}
+ggsave(filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_EnvFit_InSitu_man_sel_cln_domean.png"),
+       device = "png",
+       dpi=300 )
+```
+
+######################################## 
+
+### Categorical envVar visualised on the mdsplots
+
+#### use dataset with categorical var included
+
+# `{r} # env_vis<-otu_6 # env_vis$gnmds1 <- otu_6$gnmds1 # env_vis$gnmds2 <- otu_6$gnmds2 #  # env_vis$dca1 <- otu_6$dca1 # env_vis$dca2 <- otu_6$dca2 #`
+
+#### gnmds w mld mean - bathy
+
+```{r}
+#env_vis<-cbind(env_vis, SampID=envSel$SampID)
+
+dca_int <- ggplot(data = otu_6,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive DCA sample ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+ggplotly(dca_int)
+```
+
+#### gnmds w mld mean - bathy
+
+```{r}
+p_mld <- ggplot(data = otu_6,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by proximity to mixed layer depth",
+          subtitle = "First run") +
+  geom_point(aes(colour = MLDmean_bathy)) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+p_mld
+```
+
+#### gnmds w sedclass
+
+##### deal with sedclass codes
+
+```{r}
+env_vis<- otu_6 %>% 
+  mutate(
+    sedclassName = case_when(
+            sedclass == "1" ~ "SedCoverR",
+            sedclass == "5" ~ "Rock",
+            sedclass == "20" ~ "Mud",
+            sedclass == "21" ~ "MwBlock",
+            sedclass == "40" ~ "sMud",
+            sedclass == "80" ~ "mSand",
+            sedclass == "100" ~ "Sand",
+            sedclass == "110" ~ "gMud",
+            sedclass == "115" ~ "gsMud",
+            sedclass == "120" ~ "gmSand",
+            sedclass == "130" ~ "gSand",
+            sedclass == "150" ~ "MSG",
+            sedclass == "160" ~ "sGravel",
+            sedclass == "170" ~ "Gravel",
+            sedclass == "175" ~ "GravBlock",
+            sedclass == "185" ~ "SGBmix",
+            sedclass == "205" ~ "S/MwB",
+            sedclass == "206" ~ "S/MwG/B",
+            sedclass == "215" ~ "SGBalt",
+            sedclass == "300" ~ "HardSed",
+            sedclass == "500" ~ "Biogenic"
+                        
+    )
+  )
+```
+
+###### colour palette to cope with up to 25 categorical colours
+
+```{r}
+c25 <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+```
+
+```{r}
+
+p_sed <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sediment class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedclassName))) +
+   scale_colour_manual(values=c25)+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_sed
+```
+
+#### gnmds w lanscape
+
+##### deal with sedclass codes
+
+```{r}
+env_vis<- env_vis %>% 
+  mutate(
+    landscapeName = case_when(
+            landscape == "1" ~ "Strandflat",
+            landscape == "21" ~ "ContSlope",
+            landscape == "22" ~ "Canyon",
+            landscape == "31" ~ "Valley",
+            landscape == "32" ~ "Fjord",
+            landscape == "41" ~ "DeepPlain",
+            landscape == "42" ~ "SlopePlain",
+            landscape == "43" ~ "ShelfPlain",
+            landscape == "431" ~ "shallowValley"
+    )
+  )
+```
+
+```{r}
+
+p_land <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(landscapeName))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_land
+```
+
+#### Gnmds w gmorph
+
+```{r}
+
+p_gmo <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by landscape class",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(gmorph))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_gmo
+```
+
+```{r}
+cat_var_plots<-p_mld+p_sed+p_land+p_gmo
+cat_var_plots
+```
+
+##### Save the plot
+
+```{r}
+ggexport(cat_var_plots,
+          filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_gnmds_catvar.png"),
+          width = 1000,
+          height = 800)
+```
+
+#### Sample identification in the cda and mdsplot
+
+```{r}
+#env_vis<-cbind(env_vis, SampID=envSel$SampID)
+
+dca_int <- ggplot(data = otu_6,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive DCA sample ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")
+
+ggplotly(dca_int)
+
+map_int <- ggplot(data = otu_6,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive map ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no))) 
+
+ggplotly(map_int)
+```
+
+```{r}
+p_gmo <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive GNMDS sample ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gmo)
+
+map_gmo <- ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Interactive map ID plot",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no)))
+
+ggplotly(map_gmo)
+```
+
+```{r}
+p_dca_plotly <- ggplot(data = otu_6,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("DCA coloured by sample",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(refstation_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_dca_plotly)
+```
+
+```{r}
+find_hull <- function(df) df[chull(df$gnmds2, df$gnmds1), ]
+hulls <- ddply(env_vis, "sedclassName", find_hull)
+
+p_gmo2 <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sediment",
+          subtitle = "First run") +
+  geom_polygon(data = hulls, alpha = 0.5, aes(fill = factor(sedclassName))) +
+  geom_point(aes(colour = factor(sedclassName))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")#+
+  #guides(colour="none", size="none")
+
+ggplotly(p_gmo2)
+
+```
+
+```{r}
+
+p_dca_plotly <- ggplot(data = env_vis,
+                     aes(x = dca1,
+                         y = dca2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("DCA coloured by cruise",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(cruise_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_dca_plotly)
+
+
+
+p_gnmds_plotly <- ggplot(data = env_vis,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by cruise",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(cruise_no))) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour="none", size="none")
+
+ggplotly(p_gnmds_plotly)
+```
+
+
+
+```{r}
+
+map_gnmds1<-ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Distribution of gnmds1",
+          subtitle = "First run") +
+  geom_point(aes(colour = gnmds1)) +
+  scale_color_viridis_c()+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75")+
+  coord_cartesian(xlim = c(range(env_vis$lon)), ylim = c(range(env_vis$lat))) +
+  theme_classic()
+
+map_gnmds2<-ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Distribution of gnmds2",
+          subtitle = "First run") +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75")+
+  coord_cartesian(xlim = c(range(env_vis$lon)), ylim = c(range(env_vis$lat))) +
+  theme_classic() 
+
+
+map_dca1<-ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Distribution of dca1",
+          subtitle = "First run") +
+  geom_point(aes(colour = dca1)) +
+  scale_color_viridis_c()+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75")+
+  coord_cartesian(xlim = c(range(env_vis$lon)), ylim = c(range(env_vis$lat))) +
+  theme_classic()
+
+map_dca2<-ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Distribution of dca2",
+          subtitle = "First run") +
+  geom_point(aes(colour = dca2)) +
+  scale_color_viridis_c()+
+  geom_map(data =  ggworldMap, map = ggworldMap, aes(long, lat, map_id = id), fill = "grey75")+
+  coord_cartesian(xlim = c(range(env_vis$lon)), ylim = c(range(env_vis$lat))) +
+  theme_classic() 
+
+
+map_ordin_gnmds_dca<-map_gnmds1 + map_gnmds2 + map_dca1 + map_dca2
+
+ggexport(map_ordin_gnmds_dca,
+          filename = paste0(dataPath,"/outputs/grab/",GEAR[1],"_",SPLIT,"_spatialdistribution_ordinations.png"),
+          width = 1000,
+          height = 800)
+
+map_ordin_gnmds_dca
+
+```
+
+```{r}
+
+
+env_vis$dca1_turn <- cut(env_vis$dca1, breaks = seq(-3.5, 3.5, 0.5),
+                  labels =  seq(-3.5, 3, 0.5))
+env_vis$dca2_turn <- cut(env_vis$dca2, breaks = seq(-3.5, 3.5, 0.5),
+                  labels =  seq(-3.5, 3, 0.5))
+env_vis$gnmda1_turn <- cut(env_vis$gnmds1, breaks = seq(-3.5, 3.5, 0.5),
+                  labels =  seq(-3.5, 3, 0.5))
+env_vis$gnmda2_turn <- cut(env_vis$gnmds2, breaks = seq(-3.5, 3.5, 0.5),
+                  labels =  seq(-3.5, 3, 0.5))
+
+map_samples<-ggplot(data = env_vis,
+                     aes(x = lon,
+                         y = lat)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("Distribution of dca2",
+          subtitle = "First run") +
+  geom_point(aes(colour = as.factor(gnmda1_turn))) +
+  scale_color_viridis_d()+
+  coord_cartesian(xlim = c(range(env_vis$lon)), ylim = c(range(env_vis$lat))) +
+  theme_classic() 
+
+ggplotly(map_samples)
+
+```
+```{r}
+
+map_samples1<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = swDensRob_avs)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples3<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples4<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = TOC0.10cm_median)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples5<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = BO22_dissoxmean_bdmean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples6<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = lat)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples7<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = sw_spd_mean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+
+ggarrange(map_samples1 ,map_samples7, map_samples3, map_samples4 , map_samples5, map_samples6 , common.legend = TRUE)
+
+
+```
+
+```{r}
+
+
+map_samples1<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = swDensRob_avs)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples3<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = bathy)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples4<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = TOC0.10cm_median)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples5<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = BO22_dissoxmean_bdmean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples6<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = lat)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+map_samples7<-ggplot(data = env_vis,
+                    aes(x = Tmean_Robinson,
+                        y = sw_spd_mean)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds2)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+
+ggarrange(map_samples1 ,map_samples7, map_samples3, map_samples4 , map_samples5, map_samples6 , common.legend = TRUE)
+
+
+
+```
+
+
+# SPLITS:
+Deep and Shallow:
+Based on water density
+```{r}
+map_samples2_wden<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Grab split (water density)") +
+  geom_point(aes(colour = swDensRob_avs > 1030.101)) +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_depth<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Grab split (depth)") +
+  geom_point(aes(colour = bathy < -498))+
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_video<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Video split") +
+  geom_point(aes(colour = swDensRob_avs > 1030)) +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_video + map_samples2_wden   + map_samples2_depth
+
+##############################
+map_samples2_wden_CS<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Grab split (water density)") +
+  geom_point(aes(colour = swDensRob_avs > 1030.101)) +
+  geom_point(data = env_vis[env_vis$swDensRob_avs > 1030 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_depth_CS<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Grab split (depth)") +
+  geom_point(aes(colour = bathy < -495)) +
+  geom_point(data = env_vis[env_vis$bathy < -495 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_video_CS<-ggplot(data = env_vis,
+                    aes(x = lon,
+                        y = lat)) +
+  theme_classic() +
+  ggtitle("Video split") +
+  geom_point(aes(colour = swDensRob_avs > 1030)) +
+  geom_point(data = env_vis[env_vis$swDensRob_avs > 1030 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+map_samples2_video_CS + map_samples2_wden_CS   + map_samples2_depth_CS
+
+##########
+gnmds_samples2_wden<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Grab split (water density)") +
+  geom_point(aes(colour = swDensRob_avs > 1030.101)) +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_depth<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Grab split (depth)") +
+  geom_point(aes(colour = bathy < -495)) +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_video<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Video split") +
+  geom_point(aes(colour = swDensRob_avs > 1030)) +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_video + gnmds_samples2_wden   + gnmds_samples2_depth
+
+##############################
+gnmds_samples2_wden_CS<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Grab split (water density)") +
+  geom_point(aes(colour = swDensRob_avs > 1030.101)) +
+  geom_point(data = env_vis[env_vis$swDensRob_avs > 1030 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_depth_CS<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Grab split (depth)") +
+  geom_point(aes(colour = bathy < -495)) +
+  geom_point(data = env_vis[env_vis$bathy < -495 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_video_CS<-ggplot(data = env_vis,
+                    aes(x = gnmds1,
+                        y = gnmds2)) +
+  theme_classic() +
+  ggtitle("Video split") +
+  geom_point(aes(colour = swDensRob_avs > 1030)) +
+  geom_point(data = env_vis[env_vis$swDensRob_avs > 1030 & env_vis$spd_mean >0.25,], colour = "green") +
+  scale_colour_manual(values = setNames(c("#ae2012", "#005f73"),c(T, F))) +
+  theme_classic() +theme(legend.position = "none", axis.text.y = element_text(angle = 90, vjust = 0.5, hjust=0.5))
+
+gnmds_samples2_video_CS + gnmds_samples2_wden_CS   + gnmds_samples2_depth_CS
+
+
+```
+
+
+```{r}
+
+Wden_samples<-ggplot(data = env_vis,
+                    aes(x =  gnmds1, 
+                        y = swDensRob_avs)) +
+  geom_hline(yintercept = 1030.101) +
+  geom_hline(yintercept = 1030, color = "#f28482") +
+  ggtitle("Video vs grab split") +
+  geom_point(aes(colour = spd_mean)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+ggplotly(Wden_samples)
+
+bathy_samples<-ggplot(data = env_vis,
+                    aes(x =  gnmds1, 
+                        y = bathy)) +
+  geom_hline(yintercept = -495) +
+  ggtitle("Video vs grab split") +
+  geom_point(aes(colour = spd_mean)) +
+  scale_color_viridis_c()+
+  theme_classic() 
+
+ggplotly(bathy_samples)
+
+bathy_samples2<-ggplot(data = env_vis,
+                    aes(x =  gnmds1, 
+                        y = bathy)) +
+  geom_hline(yintercept = -495) +
+  ggtitle("Video vs grab split") +
+  geom_point(aes(colour = as.factor(refstation_no))) +
+  scale_color_viridis_d()+
+  theme_classic() 
+
+ggplotly(bathy_samples2)
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
