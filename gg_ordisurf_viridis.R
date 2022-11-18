@@ -37,7 +37,7 @@ gg_ordisurf<-function(ord,
   
   # Calculate default binwidth
   if(missing(binwidth)) {
-    r <- range(env.var)
+    r <- range(env.var, na.rm = TRUE)
     binwidth <- (r[2]-r[1])/15
   }
   
@@ -49,6 +49,7 @@ gg_ordisurf<-function(ord,
             text = element_text(size = gen.text.size),
             plot.title = element_text(size = title.text.size)) +
       labs(title = var.label) +
+      geom_point(data=df_ord[!is.na(env.var),], aes(x=x, y=y), color = "#DCC8F5", size=pt.size+2) +
       geom_point(data=df_ord, aes(x=x, y=y, colour=env.var), size=pt.size) +
       scale_color_gradientn(colours=viridis(n=6)) +
       xlab(xlab) + ylab(ylab) +
@@ -62,6 +63,7 @@ gg_ordisurf<-function(ord,
             text = element_text(size = gen.text.size),
             plot.title = element_text(size = title.text.size)) +
       labs(title = var.label) +
+      geom_point(data=df_ord[!is.na(env.var),], aes(x=x, y=y), color = "#DCC8F5", size=pt.size+2) +
       geom_point(data=df_ord, aes(x=x, y=y, colour=env.var), shape=21, size=pt.size) +
       xlab(xlab) + ylab(ylab) +
       scale_color_gradientn(colours=viridis(n=6)) +
