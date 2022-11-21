@@ -1328,4 +1328,25 @@ p_gmo <- ggplot(data = env_vis,
 
 ggplotly(p_gmo)
 ```
+#map gnmds1
+```{r}
+xy_t<- ggplot(data = env_vis,
+                      aes(x = X.y.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_vis$gnmds1), max(env_vis$gnmds1)), #match variable acting as colour
+                        colors=c('green','yellow','red'))+
+  ggtitle("Geography (X v Y) - coloured by mean gnmds1") #amend
 
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/HiDens1030_SOFT_WARM__X_v_Y_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
