@@ -59,6 +59,16 @@ biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope
 
 env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```
+add S3 classes
+```{r}
+s3Lookup<-read_xlsx(file.path(dataPath, "inputs/Tabell oversetter SOSI_NiN2_NGU_ADB.xlsx"), sheet=2)
+head(s3Lookup)
+
+s3Lookup$sedclass <- s3Lookup$SOSI_kode #set both names to sedclass so we can use for merge
+
+env_sub_meta <- merge(env_sub_meta, s3Lookup, by = "sedclass")
+
+```
 
 
 ### a colour palette for discrete plots (see later in script)
@@ -374,6 +384,120 @@ DCA_sponge <- ggplot(data = env_sub_meta,
 
 DCA_sponge #plot
 ggplotly(DCA_sponge)
+
+```
+
+
+
+
+#### Gnmds w S3F
+```{r}
+#use NGU column but add NiN symbol and descriptions
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    S3Fdesc = case_when(
+            NGU_S3F == "0" ~ "0 uten finmateriale", 
+            NGU_S3F == "a" ~ "a finmaterialfattig",
+            NGU_S3F == "b" ~ "b litt finmaterialrik",
+            NGU_S3F == "c" ~ "c temmelig finmaterialrik",
+            NGU_S3F == "Ø" ~ "¤ finmaterialdominert",
+            NGU_S3F == "x" ~ "uklassifisert"
+    ))
+
+
+
+gnmds_S3F <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by S3F",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$S3Fdesc))) + 
+   scale_colour_manual(values=c("0 uten finmateriale"="red",
+                               "a finmaterialfattig"="lightblue",
+                               "b litt finmaterialrik"="cornflowerblue",
+                               "c temmelig finmaterialrik"="royalblue",
+                               "¤ finmaterialdominert"="darkblue",
+                               "uklassifisert"="grey")) +
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+#gnmds_S3F #plot
+ggplotly(gnmds_S3F)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3F.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+#### Gnmds w S3E
+```{r}
+#use NGU column but add NiN symbol and descriptions
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    S3Edesc = case_when(
+            NGU_S3E == "0" ~ "0 ingen erosjonsmotstand", ########### ALL NEW NAMES NEED ADDING!
+            NGU_S3E == "1" ~ "a svært liten erosjonsmotstand",
+            NGU_S3E == "2" ~ "b temmelig liten erosjonsmotstand",
+            NGU_S3E == "3" ~ "c intermediær erosjonsmotstand",
+            NGU_S3E == "4" ~ "d temmelig erosjonsmotstand",
+            NGU_S3E == "5" ~ "e stor erosjonsmotstand",
+            NGU_S3E == "6" ~ "f svært stor erosjonsmotstand",
+            NGU_S3E == "7" ~ "+ fast fjell",
+            NGU_S3E == "x" ~ "uklassifisert",
+
+    ))
+
+
+
+
+gnmds_S3E <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by S3E",
+          subtitle = "First run") +
+geom_point(aes(colour = factor(env_sub_meta$S3Edesc))) + 
+   scale_colour_manual(values=c("0 ingen erosjonsmotstand"="darkseagreen",
+                               "a svært liten erosjonsmotstand"="darkseagreen3",
+                               "b temmelig liten erosjonsmotstand"="darkseagreen2",
+                               "c intermediær erosjonsmotstand"="khaki",
+                               "d temmelig erosjonsmotstand"="darkorange",
+                               "e stor erosjonsmotstand"="darkorange3",
+                               "f svært stor erosjonsmotstand"="darkorange4",
+                               "+ fast fjell"="darkorchid4",
+                               "uklassifisert"="grey")) +
+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+
+ggplotly(gnmds_S3E)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3E.png"), #amend
+       device = "png",
+       dpi=300 )
 
 ```
 
