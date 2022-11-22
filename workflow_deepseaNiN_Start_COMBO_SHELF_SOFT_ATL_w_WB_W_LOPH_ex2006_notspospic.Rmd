@@ -1055,10 +1055,16 @@ env_os_m <- env[,c("Tmean_Robinson", #top corr
                   "CSpdmean_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdmax_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  "spd_mean",
+                  "spd_max",
+                  "spd_std",
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "sand",
-                  "cobB",
+                  "vMud",
+                  "vPebble",
+                  "vSand",
+                  "vSandy_mud",
                   "bathy" #intuitive for comparisons
                 )]
 
@@ -1091,8 +1097,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 4)
+                         nrow = 7,
+                         ncol = 3)
 
 ordsrfs_plt_m
 ```
@@ -1101,8 +1107,8 @@ ordsrfs_plt_m
 ```{r}
 ggexport(ordsrfs_plt_m,
           filename = file.path(dataPath,"outputs/COMBO_SH_SOFT_ATL_WBWx2006__ordisurfs_man_sel_adjusted.png"),
-          width = 1000,
-          height = 800)
+          width = 800,
+          height = 1500)
 
 ```
 
@@ -1165,33 +1171,47 @@ env_os_m_envfit <- env[,c("Tmean_Robinson", #top corr
                   "CSpdmean_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdmax_Robinson", #comparison to top corr ax2 (blended model)
                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+                  "spd_mean",
+                  "spd_max",
+                  "spd_std",
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "sand",
-                  "cobB",
-                  "bathy" #intuitive for comparisons
+                  "vMud",
+                  "vPebble",
+                  "vSand",
+                  "vSandy_mud",
+                  "bathy" #intuitive for comparisonss
                 )]
 
+
 colnames(env_os_m_envfit)<-c("T", #top corr
-                  "Smax", #comparison to top corr
+                  "S", #comparison to top corr
                   "Dens", #top corr
-                  "dissoxmean",#top corr
+                  "O2",#top corr
                   "X", #comparison to Y
                   "Y", #top corr
                   "CSmean", #comparison to top corr ax2 (blended model)
                   "CSmax", #comparison to top corr ax2 (blended model)
                   "CSsd", #comparison to top corr ax2 (blended model)
+                  "spd_mean",
+                  "spd_max",
+                  "spd_std",
                   "mud", #highest sed var ax1 + corr
                   "gravel",#highest sed var ax1 - corr
                   "sand",
-                  "cobB",
+                  "vMud",
+                  "vPebble",
+                  "vSand",
+                  "vSandy_mud",
                   "bathy" #intuitive for comparisons
                 )
 
 ## Envfot plot
 gg_envfit(ord = ord,
           env = env_os_m_envfit,
-          pt.size = 1)
+          pt.size = 1
+          )
 
 ## Envfit analysis
 
