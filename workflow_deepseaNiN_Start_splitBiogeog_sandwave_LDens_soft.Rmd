@@ -239,7 +239,7 @@ ggplotly(xy_t) #interactive plot
 <!--        dpi=300 ) -->
 <!-- ``` -->
 
-#### X v Y - temp
+#### X v Y - spdmax
 ```{r}
 xy_swspdmax<- ggplot(data = env_sub_meta,
                       aes(x = X,
@@ -283,6 +283,31 @@ ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_Rob_spd_ma
        dpi=300 )
 
 ```
+
+#X Y GNMDS1
+```{r}
+xy_GNMDS1<- ggplot(data = env_sub_meta,
+                      aes(x = X,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1), max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by gnmds1") #amend
+
+
+ggplotly(xy_GNMDS1) #interactive plot
+
+```
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+
 
 ## Plots with DISCRETE colour scales (variables)
 
@@ -500,7 +525,67 @@ ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3E.png
        dpi=300 )
 
 ```
+#### Gnmds w VF
+```{r}
+#provisional SOSI-VF translations based on påvirkning knyttet til strøm (not waves)
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    VFdesc = case_when(
+            NiN2_VF_S == "0" ~ "0 stille vann", ########### ALL NEW NAMES NEED ADDING!
+            NiN2_VF_S == "a" ~ "a Svært svak energi",
+            NiN2_VF_S == "b" ~ "b Temmelig svak energi",
+            NiN2_VF_S == "c" ~ "c Litt svak energi",
+            NiN2_VF_S == "d" ~ "d Moderat energi",
+            NiN2_VF_S == "e" ~ "e Litt sterk energi",
+            NiN2_VF_S == "f" ~ "f Temmelig sterk energi",
+            NiN2_VF_S == "g" ~ "g Svært sterk energi",
+            NiN2_VF_S == "h" ~ "h Ekstremt sterk energi",
+            NiN2_VF_S == "¤" ~ "¤ Disruptiv energi",          
 
+    ))
+
+
+
+
+gnmds_VF <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by VF",
+          subtitle = "First run") +
+geom_point(aes(colour = factor(env_sub_meta$VFdesc))) + 
+   scale_colour_manual(values=c("0 stille vann"="slategray2",
+                               "a Svært svak energi"="paleturquoise1",
+                               "b Temmelig svak energi"="turquoise2",
+                               "c Litt svak energi"="turquoise3",
+                               "d Moderat energi"="turquoise4",
+                               "e Litt sterk energi"="steelblue1",
+                               "f svært stor erosjonsmotstand"="steelblue2",
+                               "g Svært sterk energi"="steelblue3",
+                               "h Ekstremt sterk energi"="steelblue4",
+                               "¤ Disruptiv energi"="slateblue")) +
+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+
+ggplotly(gnmds_VF)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_VF.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
 
 
 ### MAP OF CATEGORICAL VARIABLE
