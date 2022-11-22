@@ -65,8 +65,6 @@ env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 
 
 ```{r}
-#S3Info<-read_xlsx(file.path(dataPath, "inputs/Tabell oversetter SOSI_NiN2_NGU_ADB.xlsx"), sheet=1) %>%
-#  select(-c(x_coordinate_UTM33N, y_coordinate_UTM33N))
 
 s3Lookup<-read_xlsx(file.path(dataPath, "inputs/Tabell oversetter SOSI_NiN2_NGU_ADB.xlsx"), sheet=2)
 head(s3Lookup)
@@ -515,9 +513,62 @@ ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_S3F.png"), #a
 
 ```
 
+#### Gnmds w S3E
+```{r}
+#use NGU column but add NiN symbol and desciptions
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    S3Edesc = case_when(
+            NGU_S3E == "0" ~ "0 ingen erosjonsmotstand", ########### ALL NEW NAMES NEED ADDING!
+            NGU_S3E == "1" ~ "a svært liten erosjonsmotstand",
+            NGU_S3E == "2" ~ "b temmelig liten erosjonsmotstand",
+            NGU_S3E == "3" ~ "c intermediær erosjonsmotstand",
+            NGU_S3E == "4" ~ "d temmelig erosjonsmotstand",
+            NGU_S3E == "5" ~ "e stor erosjonsmotstand",
+            NGU_S3E == "6" ~ "f svært stor erosjonsmotstand",
+            NGU_S3E == "7" ~ "+ fast fjell",
+            NGU_S3E == "x" ~ "uklassifisert",
 
+    ))
 
+gnmds_s3E <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by S3E",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$S3Edesc))) + 
+   scale_colour_manual(values=c("0 ingen erosjonsmotstand"="darkseagreen",
+                               "a svært liten erosjonsmotstand"="darkseagreen3",
+                               "b temmelig liten erosjonsmotstand"="darkseagreen2",
+                               "c intermediær erosjonsmotstand"="khaki",
+                               "d temmelig erosjonsmotstand"="darkorange",
+                               "e stor erosjonsmotstand"="darkorange3",
+                               "f svært stor erosjonsmotstand"="darkorange4",
+                               "+ fast fjell"="darkorchid4",
+                               "uklassifisert"="grey")) +
 
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+#gnmds_gmo #plot
+ggplotly(gnmds_s3E)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_S3E.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
 
 
 ### MAP OF CATEGORICAL VARIABLE
