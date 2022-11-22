@@ -1231,7 +1231,25 @@ p_sed <- ggplot(data = env_vis,
   ggtitle("GNMDS coloured by sediment class",
           subtitle = "First run") +
   geom_point(aes(colour = factor(sedclassName))) +
-   scale_colour_manual(values=c25)+
+    scale_colour_manual(values=c("Biogenic"="darkslateblue",
+                               "gmSand"="darkgoldenrod3",
+                               "GravBlock"="deeppink1",
+                               "gSand"="goldenrod1",
+                               "gsMud"="skyblue3",
+                               "HardSed"="saddlebrown",
+                               "mSand"="yellow3",
+                               "MSG"="lightsalmon3",
+                               "Mud"="lightblue",
+                               "Rock"="lightcoral",
+                               "S/MwG/B"="darkolivegreen4",
+                               "Sand"="yellow",
+                               "SedCoverR"="pink",
+                               "SGBalt"="chocolate",
+                               "SGBmix"="sienna2",
+                               "sGravel"="lightsalmon",
+                               "sMud"="lightseagreen",
+        "MwBlock"="steelblue" #added after Deep plotting
+                               )) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -1333,6 +1351,26 @@ p_dann <- ggplot(data = env_vis,
   ggtitle("GNMDS coloured by sed dann",
           subtitle = "First run") +
   geom_point(aes(colour = factor(seddanName))) +
+   scale_colour_manual(values=c("Morraine_indet"="yellowgreen",
+                               "Morraine_thick"="green",
+                               "Morraine_marginal"="darkgreen",
+                               "Rock"="pink",
+                               "Suspension"="lightblue",
+                               "Bottom_current"="goldenrod1",
+                               "Glaciomarine"="mediumblue",
+                               "Debris_flow"="salmon",
+                               "Bioclastic"="midnightblue",
+                               "Carbonate_crust"="black",
+                               "Morraine_glaciomarineCover"="aquamarine3",
+                               "Slide_part_cover"="darkorchid1",
+                               "Channel_deposit"="tan1",
+                               "Contourite"="gold1",
+                               "Layered_over_debris_flow"="tomato3",
+                               "Slide_w_cover"="purple4",
+                               "Sedimentary_rock"="saddlebrown"
+
+  )) +
+
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -1376,6 +1414,13 @@ p_sedmil <- ggplot(data = env_vis,
   ggtitle("GNMDS coloured by sed env",
           subtitle = "First run") +
   geom_point(aes(colour = factor(sedmilName))) +
+    scale_colour_manual(values=c("Deposition from suspension"="cornflowerblue",
+                               "Deposition from suspension, local erosion"="skyblue",
+                               "Deposition from bottom currents"="lightblue1",
+                               "Erosion"="salmon",
+                               "Erosion, local deposition"="lightsalmon",
+                               "No/very slow deposition"="slateblue")) +
+
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
