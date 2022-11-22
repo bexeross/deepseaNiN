@@ -1,0 +1,307 @@
+---
+title: "VISUALISE SPLITS - MAREANO, Deep Sea NiN v 3.0 R Notebook"
+output: html_notebook
+---
+
+After deciding all splits, this script uses the rules applied to make the splits in order to generate a single dataset with all splits labelled.
+
+# Inputs
+ Need the all samples dataset and the rules needed to apply each split.
+ 
+## Libraries
+```{r}
+library(tidyverse)
+library(oce)
+library(RColorBrewer)
+library(plotly)
+```
+
+## Load data
+ 
+```{r}
+#NB 2022-09-29 was the topcopy (all sample/Oslo) dataset being used before the latest species cleaning
+#NB 2022-10-19 latest (all sample/Oslo) species cleaning applied so smaller spp dataset
+
+# USE DIFFERENT SCRIPT FOR 1perR station dataset
+
+env_orig <- read.csv(file.path(dataPath,"inputs/envDataOslo_2022-10-19.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputs/widedataOslo_2022-10-19.csv")) %>% as.data.frame
+
+
+
+#left join and split to ensure ordered identically
+
+#joinedDat<-otu_orig%>% dplyr::left_join(.,env_orig, by="SampID")
+joinedDat<- left_join(otu_orig,env_orig, by=c("SampID"="SampID2"))
+```
+
+## Add variables for explorations
+
+
+### sea water density
+```{r}
+joinedDat$swDensRob_avs<-swRho(salinity=joinedDat$Smean_Robinson,
+                         temperature=joinedDat$Tmean_Robinson,
+                         pressure=(joinedDat$bathy*-1),
+                         eos="unesco")
+joinedDat$bathyPositive<-joinedDat$bathy*-1
+```
+
+### MLD-bathy vars
+```{r}
+joinedDat<-joinedDat %>% 
+  mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
+          "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
+          "MLDmax_bathy"=MLDmax_Robinson-(bathy*-1))
+
+joinedDat$MLDmean_bathy<-cut(joinedDat$MLDmean_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
+joinedDat$MLDmin_bathy<-cut(joinedDat$MLDmin_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
+joinedDat$MLDmax_bathy<-cut(joinedDat$MLDmax_bathy, 
+      breaks=c(-2560, -20,20,130),#checked range of values first (min -2554, max 123)
+      labels=c('belowMLD','onPycno','inMixLayer'))
+```
+
+
+### EUNIS, seddan, sedmil
+
+You can look up EUNIS column meanings here - p14 on: https://archimer.ifremer.fr/doc/00723/83528/88577.pdf
+Sediment miljø (erosion/deposition stuff) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_Sedimentasjonsmiljo.pdf
+Sediment dannelse (genesis) https://www.ngu.no/upload/Kartkatalog/Presentasjonsregler_Marin_SedimentDannelse.pdf
+```{r}
+envExtra<-read.csv(file.path(dataPath,"inputs/samples_env_plus.csv")) %>% as.data.frame
+envExtra<-envExtra %>% select(c("SampID2", 
+                                "Energy",#EUNIS #TEXT
+                                "Biozone",#EUNIS #TEXT
+                                "Substrate",#EUNIS #TEXT
+                                "EUNIScomb",#EUNIS #TEXT
+                                "EUNIScombD",#EUNIS #TEXT
+                                "Allcomb",#EUNIS #TEXT
+                                "AllcombD",#EUNIS #TEXT
+                                "MSFD_BBHT",#EUNIS #TEXT
+                                "EUNIS2019C",#EUNIS #TEXT
+                                "EUNIS2019D",#EUNIS #TEXT
+                                "All2019D",#EUNIS #TEXT
+                                "All2019DL2",#EUNIS #TEXT
+                                "sedmil", #erosion/deposition #CATEGORICAL
+                                "seddan", #sed genesis #CATEGORICAL 
+                                "sw_spd_max", #sandwave model max current speed
+                                "sw_spd_mean", #sandwave model mean current speed
+                                "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing preliminary model 10/2022 top 10cm prediction)
+))
+
+
+#save envEtra for later, but add TOC now for use in correlations
+envTOC<-envExtra %>% select(c("SampID2", "TOC0.10cm_median"))
+
+joinedDat<-left_join(joinedDat,envTOC, by=c("SampID"="SampID2"))
+```
+
+
+
+### video sediment fractions
+The list of video fractions needs consolidating to be backwards compatible with earlier records to avoid NAs
+
+
+
+```{r}
+sedVid_long<-read.csv(file.path(dataPath,"inputs/sedimMeans.csv")) %>% as.data.frame
+sedVid<-sedVid_long %>% pivot_wider(id_cols=SampID,
+                                    names_from = vSubstrate,
+                                    values_from=mean_percent,
+                                    values_fill=NA)
+
+joinedDat<-left_join(joinedDat,sedVid, by=c("SampID"))
+
+
+
+```
+
+
+
+
+
+
+# Label splits
+
+The following rules need to be applied:
+
+Barents Sea - Ice:
+
+* <1030 density, >305 dissox, >0 max ice cover
+
+Barents Sea - No ice (inc WBE):
+* <1030 density, >dissox 300.5 dissox, 0 max ice cover (NB WBE was dissox 300.5 - 305)
+
+
+Atlantic (inc WBW):
+
+* <1030 density, <300.5 dissox (NB WBW was 294-300.5 dissox)
+
+Deep shelf break (excl Aktivneset):
+
+* >1030 density, >2.5*C (retained (x_coord>30000)&(x_coord<600000))
+
+
+Deep cold:
+
+* >1030 density, <2.5*C
+
+***NB SOME INDIVIDUALLY IDENTIFIED OUTLIERS MAY NOT BE LABELLED YET***
+
+
+```{r}
+joinedDat <- joinedDat %>% 
+  mutate("split"=case_when(
+    bathyPositive>100 & swDensRob_avs<1030 & BO22_dissoxmean_bdmean>300.5 & BO22_icecoverltmax_ss>0~"Barents_Ice", #technically >305 but wanted to capture the ice cover that occurred at 305
+    bathyPositive>100 & swDensRob_avs<1030 & BO22_dissoxmean_bdmean>300.5 & BO22_icecoverltmax_ss==0~"Barents_noICE",
+    bathyPositive>100 & swDensRob_avs<1030 & BO22_dissoxmean_bdmean<=300.5 & cruise_no!=2006612~"Atlantic",
+    bathyPositive>100 & swDensRob_avs>=1030 & Tmean_Robinson>2.5 & (x_coord>30000 &x_coord<600000)~"Deep_Warm",
+    bathyPositive>100 & swDensRob_avs>=1030 & Tmean_Robinson<=2.5~"Deep_Cold",
+    bathyPositive<=100~"OUTLIERS<100m",
+   TRUE~"OUTLIERS-other"
+         
+))
+
+summary(as.factor(joinedDat$split))
+```
+
+
+#Map the splits
+
+### a colour palette for discrete plots (see later in script)
+```{r}
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# discrete colur pallete for up to 74 colours/categories
+n <- 74
+qual_col_pals <-brewer.pal.info[brewer.pal.info$category == 'qual',]
+
+col_vector <-unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+pie(rep(1,n), col=sample(col_vector, n))
+```
+
+#### X v Y with gnmds ax 1 as HC categories
+```{r}
+map_spl <- ggplot(data = joinedDat,
+              aes(x = x_coord,
+                  y = y_coord)) +
+  theme_classic() +
+  geom_point(aes(colour = joinedDat$split), #change at will - categorical vars only
+             size = 1) +
+  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+   scale_colour_manual(values=c("Atlantic"="gold",
+                               "Barents_Ice"="springgreen",
+                               "Barents_noICE"="green4",
+                               "Deep_Cold"="navy",
+                               "Deep_Warm"="royalblue1",
+                               "OUTLIERS<100m"="gray70",
+                               "OUTLIERS-other"="gray40"
+                               )) +
+ # scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by Split") #amend
+
+#cat_xy_ax1 #plot
+ggplotly(map_spl) #interactive plot
+
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/Splits_plot.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+#### X v Y - Lophelia
+```{r}
+xy_t<- ggplot(data = joinedDat,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = Lophelia_pertusa),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(0.0001, max(joinedDat$Lophelia_pertusa)), #match variable acting as colour
+                        colors=c('blue','green','red'))+
+  ggtitle("Geography (X v Y) - coloured by Lophelia pertusa") #amend
+
+#xy_t #plot
+ggplotly(xy_t) #interactive plot
+
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__X_v_Y_loph.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
+***temporary***
+
+## explore video sediments
+
+```{r}
+crvl<-joinedDat %>% select(SampID,cruise_no,VL)
+
+sedVid_long<-left_join(sedVid_long, crvl)
+
+
+table(sedVid_long$cruise_no,sedVid_long$Substrate)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
