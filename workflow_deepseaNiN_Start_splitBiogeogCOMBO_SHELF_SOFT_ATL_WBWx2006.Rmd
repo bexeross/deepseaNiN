@@ -1,5 +1,5 @@
 ---
-title: "MAREANO - NiN:splitting biogeographic regions_Deep"
+title: "MAREANO - NiN:splitting biogeographic regions_COMBO_Atlantic_WBW"
 output: html_notebook
 ---
 **NB THESE ARE ALL EXAMPLES OF PLOTS TO SPEED UP YOUR CUSTOM PLOT MAKING: NO NEED TO RUN ALL - JUST USE THIS SCRIPT AS A TEMPLATE**
@@ -213,6 +213,111 @@ ggplotly(gnmds_sm)
 ##### Save the plot
 ```{r}
 ggsave(filename = file.path(dataPath,"outputs/COMBO_ATL_WBWx2006__gnmds_sedmil.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+
+#### X v Y w gnmds ax 1
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X, #change at will
+                          y = Y)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = gnmds1),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Xvs Y - coloured by gnmds r6 ax1") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/COMBO_ATL_WBWx2006_x_vs_y_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+#### X v Y w Lophelia
+```{r}
+tb_ax1<- ggplot(data = env_sub_meta,
+                      aes(x = X, #change at will
+                          y = Y)) +#change at will
+  theme_classic() +
+  geom_point(aes(colour = env_sub_meta$vLophelia_rubble),#change at will - continuous vars only
+             size = 1) +
+  scale_colour_gradientn(limits = c(min(env_sub_meta$gnmds1),max(env_sub_meta$gnmds1)), #match variable acting as colour
+                        colors=c('red','yellow','green'))+
+  ggtitle("Xvs Y - coloured by vLophelia_rubble") #amend
+
+#tb_ax1 #plot
+ggplotly(tb_ax1) #interactive plot
+```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/COMBO_ATL_WBWx2006_x_vs_y_gnmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+
+
+#### Gnmds w biotope
+```{r}
+
+gnmds_gmo <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by biotope",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$BiotopeDesc))) + #change at will - categorical vars only
+ scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+   geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+gnmds_gmo #plot
+ggplotly(gnmds_gmo)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/COMBO_ATL_WBWx2006__gnmds_biotope.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+
+#### X v Y with biotope
+```{r}
+cat_xy_ax1 <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = env_sub_meta$BiotopeDesc), #change at will - categorical vars only
+             size = 1) +
+ scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
+   # scale_colour_brewer(palette = "Spectral") + # ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by biotope") #amend
+
+cat_xy_ax1 #plot
+ggplotly(cat_xy_ax1) #interactive plot
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/COMBO_ATL_WBWx2006__XvY_biotope.png"), #amend
        device = "png",
        dpi=300 )
 
