@@ -1,6 +1,6 @@
 ---
-title: "MAREANO - NiN - sandwave lodensity, soft"
-authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan
+title: "MAREANO - NiN - SHELF ATLANTIC + WEST BARENTS WEST HARD BOTTOM TAXA"
+authors: Thijs van Son, Rune Halvorsen, Rebecca Ross, Genoveva Gonzales-Mirelis, Margaret Dolan (updated 18.11.22)
 date: "Last Rendered on `r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_notebook: 
@@ -37,32 +37,30 @@ library(plotly)
 library(purrr)
 library(furrr)
 
+library(readxl)
+
 
 source("gg_ordisurf_viridis.R")
 ```
 
 <!-- LOAD OBJECTS IF HAVE RUN ALREADY -->
 <!-- ```{r} -->
-<!-- geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_pa.rds")) -->
-<!-- geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_geodist_r6.rds")) -->
+<!-- geodist_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/SHELF/SH_SOFT_WB_W_exclSPOSPIC_geodist_pa.rds")) -->
+<!-- geodist_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/SHELF/SH_SOFT_WB_W_exclSPOSPIC_geodist_r6.rds")) -->
 
-<!-- mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_pa.rds")) -->
-<!-- mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6.rds")) -->
-<!-- #mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_mds_r6_1000rep.rds")) -->
+<!-- mds_pa<-readRDS(file.path(dataPath,"inputs/SPLITS/SHELF/SH_SOFT_WB_W_exclSPOSPIC_mds_pa.rds")) -->
+<!-- mds_r6<-readRDS(file.path(dataPath,"inputs/SPLITS/SHELF/SH_SOFT_WB_W_exclSPOSPIC_mds_r6.rds")) -->
+<!-- #mds_r6_1000<-readRDS(file.path(dataPath,"inputs/SPLITS/SHELF/SH_SOFT_WB_W_exclSPOSPIC_mds_r6_1000rep.rds")) -->
 
 <!-- ep<-0.8 #epsilon (to avoid having to find and run just this line from code blocks where the mds objects were made) -->
 <!-- ``` -->
 
 
 ## Data
-
-for the sandwave case study we are not using a split - input the original full dataset and select the relevant area later
-2.11.22 soft fauna only in this script
-
 ```{r}
+env_sort <- read.csv(file.path(dataPath,"inputs/ATLANTICSHELFhard_env_2022-10-24.csv")) %>% as.data.frame
+otu_sort <- read.csv(file.path(dataPath,"inputs/ATLANTICSHELFhard_otu_2022-10-24.csv")) %>% as.data.frame
 
-env_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_soft_env2022-11-02.csv")) %>% as.data.frame
-otu_sort <- read.csv(file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_LDens_soft_otu2022-11-02.csv")) %>% as.data.frame
 
 table(env_sort$SampID2 == otu_sort$SampID)
 
@@ -72,29 +70,20 @@ table(env_sort$SampID2 == otu_sort$SampID)
 dim(env_sort)
 dim(otu_sort)
 ```
-### Round 2 - Remove outliers identified in round 1 
-```{r}
-#remove 439_02
-env_sort<-env_sort %>% 
-  filter(!grepl('439_02', SampID))
-
-otu_sort<-otu_sort %>% 
-  filter(!grepl('439_02', SampID))
-
-dim(env_sort)
-dim(otu_sort)
 
 
-#remove 390_02
-env_sort<-env_sort %>% 
-  filter(!grepl('390_02', SampID))
+<!-- ##remove samples from station 439_ previously identified as outliers in soft analysis and also causing problems in procrustes in first run here  -->
+<!-- ```{r} -->
+<!-- #remove 439_ -->
+<!-- env_sort<-env_sort %>%  -->
+<!--   filter(!grepl('439_', SampID)) -->
 
-otu_sort<-otu_sort %>% 
-  filter(!grepl('390_02', SampID))
+<!-- otu_sort<-otu_sort %>%  -->
+<!--   filter(!grepl('439_', SampID)) -->
 
-dim(env_sort)
-dim(otu_sort)
-```
+<!-- dim(env_sort) -->
+<!-- dim(otu_sort) -->
+<!-- ``` -->
 
 ### Additional env data
 
@@ -104,18 +93,18 @@ Sediment dannelse (genesis) https://www.ngu.no/upload/Kartkatalog/Presentasjonsr
 ```{r}
 envExtra<-read.csv(file.path(dataPath,"inputs/samples_env_plus.csv")) %>% as.data.frame
 envExtra<-envExtra %>% select(c("SampID2", 
-                                #"Energy",#EUNIS #TEXT
-                                #"Biozone",#EUNIS #TEXT
-                                #"Substrate",#EUNIS #TEXT
-                                #"EUNIScomb",#EUNIS #TEXT
-                                #"EUNIScombD",#EUNIS #TEXT
-                                #"Allcomb",#EUNIS #TEXT
-                                #"AllcombD",#EUNIS #TEXT
-                                #"MSFD_BBHT",#EUNIS #TEXT
-                                #"EUNIS2019C",#EUNIS #TEXT
-                                #"EUNIS2019D",#EUNIS #TEXT
-                                #"All2019D",#EUNIS #TEXT
-                                #"All2019DL2",#EUNIS #TEXT
+                                "Energy",#EUNIS #TEXT
+                                "Biozone",#EUNIS #TEXT
+                                "Substrate",#EUNIS #TEXT
+                                "EUNIScomb",#EUNIS #TEXT
+                                "EUNIScombD",#EUNIS #TEXT
+                                "Allcomb",#EUNIS #TEXT
+                                "AllcombD",#EUNIS #TEXT
+                                "MSFD_BBHT",#EUNIS #TEXT
+                                "EUNIS2019C",#EUNIS #TEXT
+                                "EUNIS2019D",#EUNIS #TEXT
+                                "All2019D",#EUNIS #TEXT
+                                "All2019DL2",#EUNIS #TEXT
                                 "sedmil", #erosion/deposition #CATEGORICAL
                                 "seddan", #sed genesis #CATEGORICAL 
                                 "sw_spd_max", #sandwave model max current speed
@@ -123,18 +112,26 @@ envExtra<-envExtra %>% select(c("SampID2",
                                 "TOC0.10cm_median" #Total Organic Carbon (Markus Diesing preliminary model 10/2022 top 10cm prediction)
 ))
 
-env_sort<-left_join(env_sort,envExtra, by=c("SampID"="SampID2"))
+
+#save envEtra for later, but add TOC now for use in correlations
+envTOC<-envExtra %>% select(c("SampID2", "TOC0.10cm_median"))
+
+env_sort<-left_join(env_sort,envTOC, by=c("SampID"="SampID2"))
 ```
 
 
 
 #### remove any variables with not enough coverage
 ```{r}
-
-env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
-                               "BO22_lightbotltmax_bdmean",
-                               "BO22_lightbotltmin_bdmean",
-                               "BO22_lightbotrange_bdmean"))
+# lightvars<-env_sort %>% select(c("SampID",
+#                                 "BO22_lightbotmean_bdmean",
+#                                 "BO22_lightbotltmax_bdmean",
+#                                 "BO22_lightbotltmin_bdmean",
+#                                 "BO22_lightbotrange_bdmean"))
+# env_sort <- env_sort %>% select(-c("BO22_lightbotmean_bdmean",
+#                                "BO22_lightbotltmax_bdmean",
+#                                "BO22_lightbotltmin_bdmean",
+#                                "BO22_lightbotrange_bdmean"))
 ```
 
 
@@ -154,31 +151,34 @@ env_sort_locations<- ggplot(data = env_sort,
 env_sort_locations
 ```
 
-<!-- #### Plot map to check SampleIDs -->
-<!-- ```{r} -->
-<!-- env_sort_SampID<- ggplot(data = env_sort, -->
-<!--                       aes(x = X.y, -->
-<!--                           y = Y)) + -->
-<!--   theme_classic() + -->
-<!--   geom_point(aes(colour = factor(SampID)), size=1) + -->
-<!--   ggtitle("Location of samplesIDs in sorted env file") -->
+#### Plot map to check SampleIDs
+```{r}
+env_sort_SampID<- ggplot(data = env_sort,
+                      aes(x = X.y,
+                          y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = factor(SampID)), size=1) +
+  ggtitle("Location of samplesIDs in sorted env file")
 
-<!-- ggplotly(env_sort_SampID) -->
+ggplotly(env_sort_SampID)
 
-<!-- ``` -->
+```
 
 
 
 ### Data cleaning
-by using complete cases here since env_sort contains the sandwave current data, we automatically select the sandwave area
 ```{r}
 ## Removing NAs
 otuCompl <- otu_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 envCompl <- env_sort[complete.cases(env_sort[, -c(1:which(colnames(env_sort)=="bathy")-1)]), ]
 
-## Removing observations with less than 13 OTUs
 
-otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Urasterias_lincki")))]!=0) #CHANGE TO LAST OCCURING SPECIES IN DATASET
+#set NAs in OTU resulting from table combination to 0 
+otuCompl[is.na(otuCompl)] <- 0
+
+## Removing observations with less than 4 OTUs
+
+otuCompl$SpR<-rowSums(otuCompl[,c(3:(which(colnames(otuCompl)=="Tunicata_trunk")))]!=0)
 
 sel <- otuCompl$SpR>4
 inv.sel<-otuCompl$SpR<=4
@@ -189,6 +189,9 @@ otuCompl<-otuCompl %>% select(-c("SpR"))
 otuSel <- otuCompl[sel, ]
 envSel <- envCompl[sel, ]
 
+
+otuSelSpR<-as.data.frame(rowSums(otuSel[,c(3:(which(colnames(otuSel)=="Tunicata_trunk")))]!=0))
+summary(otuSelSpR)
 
 ## Removing phosphate
 #envSel <- envSel %>% select(-phosphate_mean.tif)
@@ -253,36 +256,9 @@ env.invSel_locations
 
 
 
-#### Plot map to check SampleIDs
-```{r}
-env_sort_SampID<- ggplot(data = envSel,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = factor(SampID)), size=1) +
-  ggtitle("Location of samplesIDs in sorted env file")
-
-ggplotly(env_sort_SampID)
-
-```
-
-#### Plot map to check Landscape
-```{r}
-env_sort_SampID<- ggplot(data = envSel,
-                      aes(x = X.y,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = factor(landscape)), size=1) +
-  ggtitle("Location of samplesIDs in sorted env file")
-
-ggplotly(env_sort_SampID)
-
-```
-
-
 ### Whole dataset for first run
 ```{r}
-otu<-otuSel[,-c(1:which(colnames(otuSel)=="Actiniaria.yellow")-1)] #CHANGE TO 1st SPECIES IN DATASET
+otu<-otuSel[,-c(1:which(colnames(otuSel)=="Acesta_excavata")-1)]
 env<-envSel[, -c(1:which(colnames(env_sort)=="bathy")-1)]
 
 table(is.na(otu))
@@ -292,7 +268,6 @@ table(is.na(env))
 #str(otuSel)
 #str(envSel)
 ```
-
 
 
 ## Abundance weighting
@@ -342,7 +317,7 @@ geodist_pa <- isomapdist(dist = dist_pa, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_pa,
-        file = (file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_SOFT_geodist_pa.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/SHELF/SHELF_HARD_ATL_geodist_pa.rds")))
 ```
 
 #### Ordination
@@ -399,7 +374,7 @@ Sys.time() - start_t
 can take a few mins
 ```{r}
 saveRDS(mds_pa,
-        file = file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_SOFT_mds_pa.rds"))
+        file = file.path(dataPath,"inputs/SPLITS/SHELF/SHELF_HARD_ATL_mds_pa.rds"))
 ```
 
 
@@ -445,7 +420,7 @@ protest(mds_best_pa,
 
 plot(procr_pa)
 
-png(file=file.path(dataPath,"outputs/sandwave_Ldens_SOFT_procrustes_pa.png"), width=1000, height=700)
+png(file=file.path(dataPath,"outputs/SHELF_HARD_ATL_procrustes_pa.png"), width=1000, height=700)
 plot(procr_pa)
 dev.off()
 ```
@@ -475,7 +450,7 @@ ggcorr(axis_pa,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_correlationPCAvsNMDS_PA.png"),
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_correlationPCAvsNMDS_PA.png"),
        device = "png",
        dpi=300 )
 
@@ -505,7 +480,7 @@ geodist_r6 <- isomapdist(dist = dist_r6, epsilon = ep)
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(geodist_r6,
-        file = (file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_SOFT_geodist_r6.rds")))
+        file = (file.path(dataPath,"inputs/SPLITS/SHELF/SHELF_HARD_ATL_geodist_r6.rds")))
 ```
 
 
@@ -564,7 +539,7 @@ Sys.time() - start_t
 ##### Save the result - don't run if loading saved object
 ```{r}
 saveRDS(mds_r6,
-        file = file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_SOFT_mds_r6.rds")) 
+        file = file.path(dataPath,"inputs/SPLITS/SHELF/SHELF_HARD_ATL_mds_r6.rds")) 
 ```
 
 ##### Best nmds solution r6 200 rep 
@@ -610,7 +585,7 @@ protest(mds_best_r6,
 
 plot(procr_r6)
 
-png(file.path(dataPath,"outputs/sandwave_Ldens_SOFT_procrustes_r6.png"), width=1000, height=700,) #added 1000
+png(file.path(dataPath,"outputs/SHELF_HARD_ATL_procrustes_r6.png"), width=1000, height=700,) #added 1000
 plot(procr_r6)
 dev.off()
 ```
@@ -642,7 +617,7 @@ ggcorr(axis_r6,
 
 ##### Save the figure
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_correlationPCAvsNMDS_r6.png"),
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_correlationPCAvsNMDS_r6.png"),
        device = "png",
        dpi=300 )
 
@@ -674,8 +649,8 @@ p_gnmds_r6 <- ggplot(data = otu_6,
              colour = "lightgray")
 
 p_dca_r6 <- ggplot(data = otu_6,
-                   aes(x = dca1,
-                       y = dca2)) +
+                   aes(x = dca2,
+                       y = -dca1)) +
   theme_classic() +
   coord_fixed() +
   ggtitle("DCA",
@@ -695,14 +670,14 @@ p_gnmds_r6 + p_dca_r6
 
 ##### Save the figure
 ```{r}
-ggsave(file.path(dataPath,"outputs/sandwave_Ldens_SOFT_gnmds_dca_r6.png"),
+ggsave(file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_dca_r6.png"),
        device = "png", 
        dpi=300)
 ```
 
 ## Check outlier species Richness
 ```{r}
-otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Urasterias_lincki"))]!=0)
+otu_6$spRich<-rowSums(otu_6[,c(1:which(colnames(otu_6)=="Tunicata_trunk"))]!=0)
 
 summary(otu_6$spRich)
 
@@ -726,11 +701,7 @@ p_spR <- ggplot(data = otu_6,
 
 ggplotly(p_spR)
 ```
-```{r}
-ggsave(file.path(dataPath,"outputs/sandwave_Ldens_SOFT_gnmds_SpRichr6.png"),
-       device = "png", 
-       dpi=300)
-```
+
 
 
 ## Check outlier SampIDs
@@ -759,32 +730,8 @@ ggplotly(p_gmo)
 ```
 
 
-## Check outlier SampIDs
-```{r}
-d_gmo <- ggplot(data = otu_6,
-                     aes(x = dca1,
-                         y = dca2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("DCA coloured by sample",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour="none", size="none")
-
-ggplotly(d_gmo)
-```
 
 
-Round 1:
-Need to trim off outlying samples 439_02 and 390_02 - outliers at both GNMDS and DCA and also the only surving samples from those VLs - others have been filtered out.
-
-Round 2: no major outliers
 
 ------------------------
 
@@ -813,8 +760,29 @@ axis <- ord$points %>% as.data.frame
 ```
 
 ### Create additional variables
+Add  
+- seddan/sedmil/EUNIS records
+- sediment records from biological video analysis
+```{r}
+
+env$SampID<-envSel$SampID
+envExtra<-envExtra %>% select (-c("TOC0.10cm_median")) 
+env<-left_join(env,envExtra, by=c("SampID"="SampID2"))
+
+
+sedVid_long<-read.csv(file.path(dataPath,"inputs/sedimMeans.csv")) %>% as.data.frame
+sedVid<-sedVid_long %>% pivot_wider(id_cols=SampID,
+                                    names_from = vSubstrate,
+                                    values_from=mean_percent,
+                                    values_fill=NA)
+
+env<-left_join(env,sedVid, by=c("SampID"))
+```
+
 decided to make MLD-bathy vars
 ```{r}
+
+
 env<-env %>% 
   mutate ("MLDmean_bathy"=MLDmean_Robinson-(bathy*-1),
           "MLDmin_bathy"=MLDmin_Robinson-(bathy*-1),
@@ -843,12 +811,19 @@ env$swDensRob_avs<-swRho(salinity=env$Smean_Robinson,
 #### Removing non-env vars
 ```{r}
 env_cont<-env%>% select(-c(landscape,sedclass,gmorph, MLDmean_bathy, MLDmax_bathy, MLDmin_bathy, #categorical
-                           #optional, #not a var
+                           optional, #not a var
                            MLDmax_Robinson, MLDmean_Robinson, MLDmin_Robinson,  #replaced by new vars
                            MLDsd_Robinson, #not meaningful
-                           #Energy, Biozone, Substrate, EUNIScomb,EUNIScombD,Allcomb,AllcombD,MSFD_BBHT,EUNIS2019C,EUNIS2019D,All2019D,All2019DL2, #EUNIS TEXT
-                           sedmil,seddan #sed erosion/genesis # NEW CATEGORICAL
-                           ))
+                           Energy, Biozone, Substrate, EUNIScomb, EUNIScombD, Allcomb, AllcombD, MSFD_BBHT, EUNIS2019C, EUNIS2019D, All2019D, All2019DL2, #EUNIS TEXT
+                           sedmil, seddan, #sed erosion/genesis # NEW CATEGORICAL 
+                           SampID,
+                           BO22_icecoverltmin_ss, BO22_icecovermean_ss, # zero in this area
+                           BO22_icethickltmin_ss, BO22_icethickmean_ss,# zero in this area
+                           sw_spd_max, sw_spd_mean, #not relevant in this area
+                           vSand_with_biomaterial, vGelatinous_snow, #too many NAs
+                           vClayOutcrop, vClay, vBiobush, vConsolidated_clay, vMud, #too many NAs
+                           vCoral_rubble, vDead_lophelia, vLive_lophelia, vLophelia_rubble, #too many NAs 
+                           "NA",vKarbonatskorpe, vCompacted_sediment, vSand_with_shells, vClay_spicules)) #too many NAs
 env_cont<-env_cont%>% mutate_if(is.integer,as.numeric)
 env_corr <- env_cont #%>% select(-c(SampID))
 
@@ -856,6 +831,7 @@ env_corr <- env_cont #%>% select(-c(SampID))
 # env_corr$coords.x2<-as.numeric(env_corr$coords.x2)
 
 env_corr[(!is.numeric(env_corr)),]
+summary (env_corr)
 ```
 
 #### Correlations
@@ -893,7 +869,7 @@ cor_tab <- data.frame(env = names(env_corr),
 cor_tab
 
 write.csv(x = cor_tab,
-          file = file.path(dataPath,"inputs/SPLITS/sandwave/sandwave_Ldens_SOFT_cor-table_r6_200rep.csv"),
+          file = file.path(dataPath,"inputs/SPLITS/SHELF/SHELF_HARD_ATL_cor-table_r6_200rep_MLD-bathy.csv"),
           row.names = FALSE)
 ```
 ### Dot chart to check for gaps in correlation
@@ -911,7 +887,7 @@ cor_a2_sort<-cor_tab%>%
 
 dotchart(cor_a1_sort$abs_ord_ax1, main="Absolute (+/-) correlations between envVars and gnmds axis 1")
 
-cor_cut<-0.25 #decide
+cor_cut<-0.22 #decide
 
 cor_sel<-subset(cor_a1_sort,abs_ord_ax1>cor_cut)
 cor_sel
@@ -949,55 +925,69 @@ for (i in seq(ncol(env_os))) {
 }
 
 ordsrfs_plt <- ggarrange(plotlist = ordsrfs,
-                         nrow = 3,
-                         ncol = 3)
+                         nrow = 4,
+                         ncol = 4)
 
 ordsrfs_plt
 ```
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt,
-          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_ordisurfs_top_corr.png"),
+          filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_ordisurfs_top_corr.png"),
           width = 1000,
           height = 1000)
 
 ```
 
-Needs further splitting - not at local variation yet.
-
-
-
 
 ### Sel env var (manual)
 ```{r}
-env_os_m <- env[,c(#"Tmean_Robinson", #top corr
-                  # "salt_max", #top corr
-                  # "Smax_Robinson", #comparison to top corr
-                  # "swDensRob_avs", #top corr
-                  # "BO22_icecoverltmax_ss",#top corr ax2
-                  # "BO22_icecovermean_ss",#top corr
-                  # "BO22_dissoxmean_bdmean",#top corr
-                  #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
-                  #"BO22_ppltmin_ss", #top corr
-                  #"X", #comparison to Y
-                  #"Y", #top corr
-                  #"spd_std", #top corr ax2 (blended model)
-                  #"CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
-                  "mud", #highest sed var ax1 + corr
-                  "gravel",#highest sed var ax1 - corr
+# env_os_m <- env[,c("Tmean_Robinson", #top corr
+#                   "salt_max", #top corr
+#                   "Smax_Robinson", #comparison to top corr
+#                   "swDensRob_avs", #top corr
+#                  # "BO22_icecoverltmax_ss",#top corr ax2
+#                   #"BO22_icecovermean_ss",#top corr
+#                   "BO22_dissoxmean_bdmean",#top corr
+#                   #"BO22_carbonphytoltmin_bdmean",#top corr - no clear gradient in ordisurf
+#                   "BO22_ppltmin_ss", #top corr
+#                   "X.y", #comparison to Y
+#                   "Y", #top corr
+#                   "spd_std", #top corr ax2 (blended model)
+#                   "CSpdsd_Robinson", #comparison to top corr ax2 (blended model)
+#                   "mud", #highest sed var ax1 + corr
+#                   "gravel",#highest sed var ax1 - corr
+#                   "BO22_silicateltmax_bdmean", #just under top corr ax1
+#                   "bathy" #intuitive for comparisons
+#                 )]
+
+env_os_m <- env[,c("Tmean_Robinson", 
+                  "Smean_Robinson", 
+                  "swDensRob_avs", #LKM DL
+                  "BO22_dissoxmean_bdmean",#top corr
+                  "X.y", #comparison to Y
+                  "Y", #top corr
+                  "CSpdmean_Robinson", #LKM VF
+                  "CSpdmax_Robinson", #LKM VF
+                  "CSpdsd_Robinson", #LKM VF
+                  "spd_mean",#LKM VF
+                  "spd_max",#LKM VF
+                  "spd_std",#LKM VF
+                  "temp_mean", #cf Rob
+                  "salt_mean",#cf Rob
+                  "mud", 
+                  "gravel",
                   "sand",
                   "cobB",
-                  "sw_spd_mean",
-                  "sw_spd_max",
-                  "spd_mean",
-                  "spd_max",
-                  "CSpdmean_Robinson",
-                  "CSpdmax_Robinson",
-                  "TOC0.10cm_median"
-                  
-                  #"BO22_silicateltmax_bdmean", #just under top corr ax1
-                  #"bathy" #intuitive for comparisons
+                  "rock",
+                  "bathy" #intuitive for comparisons
                 )]
+
+
+
+
+
+
 env_os_m
 str(env_os_m)
 
@@ -1022,8 +1012,8 @@ for (i in seq(ncol(env_os_m))) {
 }
 
 ordsrfs_plt_m <- ggarrange(plotlist = ordsrfs_m,
-                         nrow = 4,
-                         ncol = 3)
+                         nrow = 5,
+                         ncol = 4)
 
 ordsrfs_plt_m
 ```
@@ -1031,9 +1021,9 @@ ordsrfs_plt_m
 ##### Save some outputs
 ```{r}
 ggexport(ordsrfs_plt_m,
-          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_ordisurfs_man_sel.png"),
+          filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_ordisurfs_man_sel_adjusted.png"),
           width = 1000,
-          height = 1000)
+          height = 800)
 
 ```
 
@@ -1043,49 +1033,54 @@ ggexport(ordsrfs_plt_m,
 ### Envfit
 ```{r}
 ## Select if any var should be excluded from envfit (makes less busy to read)
-env_os_m_envfit<-env_os_m [,c(
-                  # "BO22_chlorange_ss", #top corr
-                  # "BO22_dissoxltmin_bdmean", #top corr
-                  # "Y", #top corr
-                  # "temp_max", #top corr
-                  # "BO22_carbonphytoltmin_bdmean",#top corr
-                  # "BO22_dissoxmean_bdmean",#top corr
-                  # "temp_mean", #top corr
-                  # "BO22_ppltmin_ss", #top corr
-                  # "BO22_chloltmin_ss", #top corr
-                  "mud", #manual
-                  "gravel",#manual
-                  "sw_spd_mean", #manual
-                  "sw_spd_max", #manual
-                  "spd_mean", #manual
-                  "spd_max", #manual
-                  "CSpdmean_Robinson", #manual
-                  "CSpdmax_Robinson",#manual
-                  "TOC0.10cm_median"#manual
-                  #"bathy" #intuitive for comparisons
-)]
+
+
+
+env_os_m_envfit <- env[,c(
+                  #"Tmean_Robinson", 
+                  #"Smean_Robinson", 
+                  "swDensRob_avs", #LKM DL
+                  #"BO22_dissoxmean_bdmean",#top corr
+                  "X.y", #comparison to Y
+                  "Y", #top corr
+                  #"CSpdmean_Robinson", #LKM VF
+                  #"CSpdmax_Robinson", #LKM VF
+                  #"CSpdsd_Robinson", #LKM VF
+                  "spd_mean",#LKM VF
+                  "spd_max",#LKM VF
+                  "spd_std",#LKM VF
+                  "temp_mean",
+                  "salt_mean",
+                  "mud", 
+                  "gravel",
+                  "sand",
+                  "cobB",
+                  "rock",
+                  "bathy" #intuitive for comparisons
+                )]
 
 colnames(env_os_m_envfit)<-c(
-                  # "chlorange", #top corr
-                  # "dissoxltmin", #top corr
-                  # "Y", #top corr
-                  # "temp_max", #top corr
-                  # "Cphytoltmin",#top corr
-                  # "dissoxmean",#top corr
-                  # "temp_mean", #top corr
-                  # "ppltmin", #top corr
-                  # "chloltmin", #top corr
-                  "mud", #manual
-                  "gravel",#manual
-                  "sw_spd_mean", #manual
-                  "sw_spd_max", #manual
-                  "spd_mean", #manual
-                  "spd_max", #manual
-                  "RobSpdmean", #manual
-                  "RobSpdmax", #manual
-                  "TOC"
-                  #"bathy" #intuitive for comparisons
-                 )
+                  #"T_rob", 
+                  #"S_rob", 
+                  "Dens", #LKM DL
+                  #"dissoxmean",#top corr
+                  "X", #comparison to Y
+                  "Y", #top corr
+                  #"Spdmean_rob", #LKM VF
+                  #"Spdmax_rob", #LKM VF
+                  #"Spdsd_rob", #LKM VF
+                  "spd_mean",#LKM VF
+                  "spd_max",#LKM VF
+                  "spd_std",#LKM VF
+                  "temp_mean",
+                  "salt_mean",
+                  "mud", 
+                  "gravel",
+                  "sand",
+                  "cobB",
+                  "rock",
+                  "bathy" #intuitive for comparisons
+                )
 
 ## Envfot plot
 gg_envfit(ord = ord,
@@ -1098,15 +1093,13 @@ ef <- envfit(ord = ord,
              env = env_os_m_envfit,
              # na.rm = TRUE
              )
-ef
 efDF <- as.data.frame(scores(ef,
                              display = "vectors"))
-efDF
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_EnvFit_man_sel.png"),
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_EnvFit_man_sel_cln_adjusted.png"),
        device = "png",
        dpi=300 )
 ```
@@ -1123,49 +1116,49 @@ env_vis$dca1 <- otu_6$dca1
 env_vis$dca2 <- otu_6$dca2
 ```
 
-#### gnmds w mld mean - bathy
-```{r}
-dca_int <- ggplot(data = env_vis,
-                     aes(x = dca1,
-                         y = dca2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("Interactive DCA sample ID plot",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")
+<!-- #### gnmds w mld mean - bathy -->
+<!-- ```{r} -->
+<!-- dca_int <- ggplot(data = env_vis, -->
+<!--                      aes(x = dca1, -->
+<!--                          y = dca2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("Interactive DCA sample ID plot", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(SampID))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") -->
 
-ggplotly(dca_int)
-```
-
-
+<!-- ggplotly(dca_int) -->
+<!-- ``` -->
 
 
 
-#### gnmds w mld mean - bathy
-```{r}
-p_mld <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by proximity to mixed layer depth",
-          subtitle = "First run") +
-  geom_point(aes(colour = MLDmean_bathy)) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")
 
-p_mld
-```
+
+<!-- #### gnmds w mld mean - bathy -->
+<!-- ```{r} -->
+<!-- p_mld <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by proximity to mixed layer depth", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = MLDmean_bathy)) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") -->
+
+<!-- p_mld -->
+<!-- ``` -->
 
 #### gnmds w sedclass
 ##### deal with sedclass codes
@@ -1216,6 +1209,12 @@ c25 <- c(
   "darkturquoise", "green1", "yellow4", "yellow3",
   "darkorange4", "brown"
 )
+
+
+
+
+
+
 ```
 
 
@@ -1231,7 +1230,7 @@ p_sed <- ggplot(data = env_vis,
   ggtitle("GNMDS coloured by sediment class",
           subtitle = "First run") +
   geom_point(aes(colour = factor(sedclassName))) +
-    scale_colour_manual(values=c("Biogenic"="darkslateblue",
+   scale_colour_manual(values=c("Biogenic"="darkslateblue",
                                "gmSand"="darkgoldenrod3",
                                "GravBlock"="deeppink1",
                                "gSand"="goldenrod1",
@@ -1261,12 +1260,15 @@ p_sed <- ggplot(data = env_vis,
 p_sed
 ```
 
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sedclass.png"), #amend
-       device = "png",
-       dpi=300 )
 
+##### Save the plot
+```{r}
+ggexport(p_sed,
+          filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_sedclass.png"),
+          width = 1000,
+          height = 800)
 ```
+
 
 #### gnmds w lanscape
 ##### deal with sedclass codes
@@ -1308,154 +1310,25 @@ p_land <- ggplot(data = env_vis,
 
 p_land
 ```
+
+##### deal with geomorphon codes
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_land.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-```{r}
-env_vis<- env_vis %>%
-  mutate(
-    seddanName = case_when(
-            seddan == "10" ~ "Moraine_indet", ########### ALL NEW NAMES NEED ADDING!
-            seddan == "11" ~ "Moraine_thick",
-            seddan == "15" ~ "Moraine_marginal",
-            seddan == "140" ~ "Rock",
-            seddan == "150" ~ "Sedimentary_rock",
-            seddan == "200" ~ "Suspension",
-            seddan == "201" ~ "Bottom_current",
-            seddan == "202" ~ "Glaciomarine",
-            seddan == "211" ~ "Contourite",
-            seddan == "213" ~ "Debris_flow",
-            seddan == "215" ~ "Channel_deposit",
-            seddan == "217" ~ "Bioclastic",
-            seddan == "219" ~ "Layered_over_debris_flow",
-            seddan == "220" ~ "Carbonate_crust",
-            seddan == "230" ~ "Moraine_glaciomarineCover",
-            seddan == "240" ~ "Slide_w_cover",
-            seddan == "241" ~ "Slide_part_cover"
-    ))
-```
-
-
-
-```{r}
-
-p_dann <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sed dann",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(seddanName))) +
-   scale_colour_manual(values=c("Morraine_indet"="yellowgreen",
-                               "Morraine_thick"="green",
-                               "Morraine_marginal"="darkgreen",
-                               "Rock"="pink",
-                               "Suspension"="lightblue",
-                               "Bottom_current"="goldenrod1",
-                               "Glaciomarine"="mediumblue",
-                               "Debris_flow"="salmon",
-                               "Bioclastic"="midnightblue",
-                               "Carbonate_crust"="black",
-                               "Morraine_glaciomarineCover"="aquamarine3",
-                               "Slide_part_cover"="darkorchid1",
-                               "Channel_deposit"="tan1",
-                               "Contourite"="gold1",
-                               "Layered_over_debris_flow"="tomato3",
-                               "Slide_w_cover"="purple4",
-                               "Sedimentary_rock"="saddlebrown"
-
-  )) +
-
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-p_dann
-ggplotly(p_dann)
-```
-
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_seddan.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-```{r}
-env_vis<- env_vis %>%
-  mutate(
-    sedmilName = case_when(
-            sedmil == "1" ~ "Deposition from suspension", ########### ALL NEW NAMES NEED ADDING!
-            sedmil == "2" ~ "Deposition from suspension, local erosion of fine-grained sediments",
-            sedmil == "7" ~ "No/very slow deposition",
-            sedmil == "3" ~ "Deposition from bottom currents",
-            sedmil == "4" ~ "Erosion, local deposition of sediments in topographic lows",
-            sedmil == "5" ~ "Erosion"
-    ))
-```
-
-
-```{r}
-
-p_sedmil <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sed env",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(sedmilName))) +
-    scale_colour_manual(values=c("Deposition from suspension"="cornflowerblue",
-                               "Deposition from suspension, local erosion"="skyblue",
-                               "Deposition from bottom currents"="lightblue1",
-                               "Erosion"="salmon",
-                               "Erosion, local deposition"="lightsalmon",
-                               "No/very slow deposition"="slateblue")) +
-
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=1))
-
-p_sedmil
-ggplotly(p_sedmil)
-```
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sedmil.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-```{r}
-env_vis<- env_vis %>%
+env_vis<- env_vis %>% 
   mutate(
     gmorphName = case_when(
-            gmorph == "1" ~ "flat", ########### ALL NEW NAMES NEED ADDING!
+            gmorph == "1" ~ "flat",
             gmorph == "2" ~ "peak",
             gmorph == "3" ~ "ridge",
             gmorph == "4" ~ "shoulder",
-            gmorph == "5" ~ "convex slope",
+            gmorph == "5" ~ "convexSlope",
             gmorph == "6" ~ "slope",
-            gmorph == "7" ~ "concave slope",
+            gmorph == "7" ~ "concaveSlope",
             gmorph == "8" ~ "footslope",
             gmorph == "9" ~ "valley",
             gmorph == "10" ~ "pit"
-    ))
+    )
+  )
 ```
-
 
 #### Gnmds w gmorph
 ```{r}
@@ -1465,7 +1338,7 @@ p_gmo <- ggplot(data = env_vis,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by geomorphon class",
+  ggtitle("GNMDS coloured by landscape class",
           subtitle = "First run") +
   geom_point(aes(colour = factor(gmorphName))) +
   geom_vline(xintercept = 0,
@@ -1480,38 +1353,36 @@ p_gmo
 ```
 
 
-
+```{r}
+cat_var_plots<-p_sed+p_land
+```
 ##### Save the plot
 ```{r}
-ggexport(morph_plots,
-          filename = file.path(dataPath,"outputs/sandwave_Ldens_SOFT_gnmds_gmorph.png"),
+ggexport(cat_var_plots,
+          filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_catvar.png"),
           width = 1000,
           height = 800)
 ```
 
+<!-- #### Sample identification in the mdsplot -->
 
+<!-- ```{r} -->
+<!-- p_gmo <- ggplot(data = env_vis, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by sample", -->
+<!--           subtitle = "First run") + -->
+<!--   geom_point(aes(colour = factor(SampID))) + -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")+ -->
+<!--   guides(colour="none", size="none") -->
 
-
-#### Sample identification in the mdsplot
-
-```{r}
-p_gmo <- ggplot(data = env_vis,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by sample",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(SampID))) +
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour="none", size="none")
-
-ggplotly(p_gmo)
-```
-
+<!-- ggplotly(p_gmo) -->
+<!-- ``` -->
 

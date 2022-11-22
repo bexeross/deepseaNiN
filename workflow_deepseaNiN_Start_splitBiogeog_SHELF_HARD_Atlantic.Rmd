@@ -31,8 +31,8 @@ should include all env Vars and otus to explore, and make species richness varia
 
 ```{r}
 #add species data and sp richness variable
-env_sub_meta1<-cbind(env,otu_6)
-env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Urasterias_lincki"))]!=0)
+env_sub_meta1<-left_join(env,otu_6,by="SampID")
+env_sub_meta1$spRich<-rowSums(otu_6[,-c(1:which(colnames(otu_6)=="Tunicata_trunk"))]!=0)
 
 #add light at the bottom back in
 #env_sub_meta1<-left_join(env_sub_meta1,lightvars)
@@ -59,8 +59,13 @@ biotopeLookup<-read_xlsx(file.path(dataPath, "inputs/MAREANO_provisional_biotope
 
 env_sub_meta<-left_join(env_sub_meta1,biotopeInfo)
 ```
-add S3 classes
+
+
+### Add S3E S3F env file
+
+
 ```{r}
+
 s3Lookup<-read_xlsx(file.path(dataPath, "inputs/Tabell oversetter SOSI_NiN2_NGU_ADB.xlsx"), sheet=2)
 head(s3Lookup)
 
@@ -68,7 +73,9 @@ s3Lookup$sedclass <- s3Lookup$SOSI_kode #set both names to sedclass so we can us
 
 env_sub_meta <- merge(env_sub_meta, s3Lookup, by = "sedclass")
 
+
 ```
+
 
 
 ### a colour palette for discrete plots (see later in script)
@@ -89,19 +96,33 @@ pie(rep(1,n), col=sample(col_vector, n))
 
 ## MAKE ADDITIONAL VARS
 
-**INSER YOURS HERE - E.G. COMBINED SPECIES LISTS?**
-
-###sponge spicule bottom var
+**INSERT YOURS HERE - E.G. COMBINED SPECIES LISTS?**
 ```{r}
-env_sub_meta<-env_sub_meta %>%
-   mutate(SpongeSpic= case_when(
-     str_detect(BiotopeDesc,regex("Atl.UB.MxSanSpicu.MxSponSpic"))~"SpSpic",
-     str_detect(BiotopeDesc,regex("Atl.UB.MxSanMu.DensSponSpic"))~"SpSpic",
-     TRUE~"other"))
+### seddan classes
+
+env_sub_meta<- env_sub_meta %>% 
+  mutate(
+    seddanName = case_when(
+            seddan == "10" ~ "Moraine_indet",
+            seddan == "11" ~ "Moraine_thick",
+            seddan == "15" ~ "Moraine_marginal",
+            seddan == "140" ~ "Rock",
+            seddan == "150" ~ "Sedimentary_rock",
+            seddan == "200" ~ "Suspension",
+            seddan == "201" ~ "Bottom_current",
+            seddan == "202" ~ "Glaciomarine",
+            seddan == "211" ~ "Contourite",
+            seddan == "213" ~ "Debris_flow",
+            seddan == "215" ~ "Channel_deposit",
+            seddan == "217" ~ "Bioclastic",
+            seddan == "219" ~ "Layered_over_debris_flow",
+            seddan == "220" ~ "Carbonate_crust",
+            seddan == "230" ~ "Moraine_glaciomarineCover",
+            seddan == "240" ~ "Slide_w_cover",
+            seddan == "241" ~ "Slide_part_cover"
+    ))
 
 ```
-
-
 
 ### List variables you can play with
 ```{r}
@@ -115,14 +136,10 @@ GIVEN HERE ARE EXAMPLES OF DIFFERENT TYPES OF PLOTS - you should modify the vara
 
 
 **INSERT YOURS HERE - SEE BELOW FOR TEMPLATE CHUNKS**
+
 ```{r}
 
 ```
-
-
-
-
-
 
 
 
@@ -148,70 +165,70 @@ tb_ax1<- ggplot(data = env_sub_meta,
 #tb_ax1 #plot
 ggplotly(tb_ax1) #interactive plot
 ```
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_bathy_v_temp_nmds1.png"), #amend
+       device = "png",
+       dpi=300 )
+```
+
+<!-- #### GNMDS BIPLOT -->
+<!-- ```{r} -->
+<!-- gnmds_spR <- ggplot(data = env_sub_meta, -->
+<!--                      aes(x = gnmds1, -->
+<!--                          y = gnmds2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("GNMDS coloured by species Richness")+ #amend -->
+<!--   geom_point(aes(colour = spRich)) + #change at will - continuous vars only -->
+<!--   scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour -->
+<!--                         colors=c('red','yellow','green'))+ -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")#+ -->
+<!--   #guides(colour="none", size="none") -->
+
+<!-- #p_spR #plot -->
+<!-- ggplotly(gnmds_spR) #interactive plot -->
+<!-- ``` -->
 <!-- ##### Save the plot -->
 <!-- ```{r} -->
-<!-- ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_v_temp_nmds1.png"), #amend -->
+<!-- ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_bathy_gnmds_spR.png"), #amend -->
 <!--        device = "png", -->
 <!--        dpi=300 ) -->
 <!-- ``` -->
 
-#### GNMDS BIPLOT
-```{r}
-gnmds_spR <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by species Richness")+ #amend
-  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
-  scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour
-                        colors=c('red','yellow','green'))+
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")#+
-  #guides(colour="none", size="none")
+<!-- #### DCA BIPLOT -->
+<!-- ```{r} -->
+<!-- dca_spR <- ggplot(data = env_sub_meta, -->
+<!--                      aes(x = dca1, -->
+<!--                          y = dca2)) + -->
+<!--   theme_classic() + -->
+<!--   coord_fixed() + -->
+<!--   ggtitle("DCA coloured by species Richness")+ #amend -->
+<!--   geom_point(aes(colour = spRich)) + #change at will - continuous vars only -->
+<!--   scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour -->
+<!--                         colors=c('red','yellow','green'))+ -->
+<!--   geom_vline(xintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray") + -->
+<!--   geom_hline(yintercept = 0, -->
+<!--              linetype = 2, -->
+<!--              colour = "lightgray")#+ -->
+<!--   #guides(colour="none", size="none") -->
 
-#p_spR #plot
-ggplotly(gnmds_spR) #interactive plot
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_gnmds_spR.png"), #amend
-       device = "png",
-       dpi=300 )
-```
-
-#### DCA BIPLOT
-```{r}
-dca_spR <- ggplot(data = env_sub_meta,
-                     aes(x = dca1,
-                         y = dca2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("DCA coloured by species Richness")+ #amend
-  geom_point(aes(colour = spRich)) + #change at will - continuous vars only
-  scale_colour_gradientn(limits = c(min(env_sub_meta$spRich),max(env_sub_meta$spRich)),#match variable acting as colour
-                        colors=c('red','yellow','green'))+
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")#+
-  #guides(colour="none", size="none")
-
-#p_spR #plot
-ggplotly(dca_spR) #interactive plot
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1bathy_dca_spR.png"), #amend
-       device = "png",
-       dpi=300 )
-```
+<!-- #p_spR #plot -->
+<!-- ggplotly(dca_spR) #interactive plot -->
+<!-- ``` -->
+<!-- ##### Save the plot -->
+<!-- ```{r} -->
+<!-- ggsave(filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH_bathy_dca_spR.png"), #amend -->
+<!--        device = "png", -->
+<!--        dpi=300 ) -->
+<!-- ``` -->
 
 
 ### MAP OF VARIABLE
@@ -232,57 +249,36 @@ xy_t<- ggplot(data = env_sub_meta,
 ggplotly(xy_t) #interactive plot
 
 ```
-<!-- ##### Save the plot -->
-<!-- ```{r} -->
-<!-- ggsave(filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_X_v_Y_tmeanR.png"), #amend -->
-<!--        device = "png", -->
-<!--        dpi=300 ) -->
-<!-- ``` -->
-
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_X_v_Y_tmeanR.png"), #amend
+       device = "png",
+       dpi=300 )
+```
 #### X v Y - temp
 ```{r}
-xy_swspdmax<- ggplot(data = env_sub_meta,
+xy_bathy<- ggplot(data = env_sub_meta,
                       aes(x = X,
                           y = Y)) +
   theme_classic() +
-  geom_point(aes(colour = sw_spd_max),#change at will - continuous vars only
+  geom_point(aes(colour = bathy),#change at will - continuous vars only
              size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$sw_spd_max), max(env_sub_meta$sw_spd_max)), #match variable acting as colour
+  scale_colour_gradientn(limits = c(min(env_sub_meta$bathy), max(env_sub_meta$bathy)), #match variable acting as colour
                         colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by max speed") #amend
+  ggtitle("Geography (X v Y) - coloured by bathy") #amend
 
-xy_swspdmax #plot
-ggplotly(xy_swspdmax) #interactive plot
+#xy_t #plot
+ggplotly(xy_bathy) #interactive plot
 
 ```
-
+##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_sw_spd_max.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_X_v_Y_bathy.png"), #amend
        device = "png",
        dpi=300 )
-
 ```
-```{r}
-xy_spdmaxRob<- ggplot(data = env_sub_meta,
-                      aes(x = X,
-                          y = Y)) +
-  theme_classic() +
-  geom_point(aes(colour = CSpdmax_Robinson),#change at will - continuous vars only
-             size = 1) +
-  scale_colour_gradientn(limits = c(min(env_sub_meta$CSpdmax_Robinson), max(env_sub_meta$CSpdmax_Robinson)), #match variable acting as colour
-                        colors=c('blue','green','red'))+
-  ggtitle("Geography (X v Y) - coloured by max speed") #amend
 
-xy_spdmaxRob #plot
-ggplotly(xy_spdmaxRob) #interactive plot
 
-```
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_XY_Rob_spd_max.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
 
 ## Plots with DISCRETE colour scales (variables)
 
@@ -312,6 +308,7 @@ gnmds_biotope <- ggplot(data = env_sub_meta,
   ggtitle("GNMDS coloured by biotope",
           subtitle = "First run") +
   geom_point(aes(colour = factor(env_sub_meta$BiotopeDesc))) + #change at will - categorical vars only
+  scale_colour_manual(values=col_vector) +# non-ordered colourblind pallette
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -320,106 +317,76 @@ gnmds_biotope <- ggplot(data = env_sub_meta,
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=2))
 
-gnmds_biotope #plot
+#gnmds_gmo #plot
 ggplotly(gnmds_biotope)
 
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_biotope.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_biotope.png"), #amend
        device = "png",
        dpi=300 )
 
 ```
 
 
+#### Gnmds w seddan
 ```{r}
 
-gnmds_sponge <- ggplot(data = env_sub_meta,
-                     aes(x = gnmds1,
-                         y = gnmds2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("GNMDS coloured by SpongeSpic",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$SpongeSpic))) + #change at will - categorical vars only
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-gnmds_sponge #plot
-ggplotly(gnmds_sponge)
-
-```
-##### Save the plot
-```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_sponge.png"), #amend
-       device = "png",
-       dpi=300 )
-
-```
-
-```{r}
-
-DCA_sponge <- ggplot(data = env_sub_meta,
-                     aes(x = dca1,
-                         y = dca2)) +
-  theme_classic() +
-  coord_fixed() +
-  ggtitle("DCA coloured by SpongeSpic",
-          subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$SpongeSpic))) + #change at will - categorical vars only
-  geom_vline(xintercept = 0,
-             linetype = 2,
-             colour = "lightgray") +
-  geom_hline(yintercept = 0,
-             linetype = 2,
-             colour = "lightgray")+
-  guides(colour=guide_legend(ncol=2))
-
-DCA_sponge #plot
-ggplotly(DCA_sponge)
-
-```
-
-
-
-
-#### Gnmds w S3F
-```{r}
-#use NGU column but add NiN symbol and descriptions
+### seddan classes
 env_sub_meta<- env_sub_meta %>%
-    mutate(
-    S3Fdesc = case_when(
-            NGU_S3F == "0" ~ "0 uten finmateriale", 
-            NGU_S3F == "a" ~ "a finmaterialfattig",
-            NGU_S3F == "b" ~ "b litt finmaterialrik",
-            NGU_S3F == "c" ~ "c temmelig finmaterialrik",
-            NGU_S3F == "Ø" ~ "¤ finmaterialdominert",
-            NGU_S3F == "x" ~ "uklassifisert"
+  mutate(
+    seddanName = case_when(
+            seddan == "10" ~ "Moraine_indet", ########### ALL NEW NAMES NEED ADDING!
+            seddan == "11" ~ "Moraine_thick",
+            seddan == "15" ~ "Moraine_marginal",
+            seddan == "140" ~ "Rock",
+            seddan == "150" ~ "Sedimentary_rock",
+            seddan == "200" ~ "Suspension",
+            seddan == "201" ~ "Bottom_current",
+            seddan == "202" ~ "Glaciomarine",
+            seddan == "211" ~ "Contourite",
+            seddan == "213" ~ "Debris_flow",
+            seddan == "215" ~ "Channel_deposit",
+            seddan == "217" ~ "Bioclastic",
+            seddan == "219" ~ "Layered_over_debris_flow",
+            seddan == "220" ~ "Carbonate_crust",
+            seddan == "230" ~ "Moraine_glaciomarineCover",
+            seddan == "240" ~ "Slide_w_cover",
+            seddan == "241" ~ "Slide_part_cover"
     ))
 
 
 
-gnmds_S3F <- ggplot(data = env_sub_meta,
+
+gnmds_seddan <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
-  ggtitle("GNMDS coloured by S3F",
+  ggtitle("GNMDS coloured by seddan",
           subtitle = "First run") +
-  geom_point(aes(colour = factor(env_sub_meta$S3Fdesc))) + 
-   scale_colour_manual(values=c("0 uten finmateriale"="red",
-                               "a finmaterialfattig"="lightblue",
-                               "b litt finmaterialrik"="cornflowerblue",
-                               "c temmelig finmaterialrik"="royalblue",
-                               "¤ finmaterialdominert"="darkblue",
-                               "uklassifisert"="grey")) +
+  geom_point(aes(colour = factor(env_sub_meta$seddanName))) + #change at will - categorical vars only
+  scale_colour_manual(values=c("Moraine_indet"="yellowgreen",
+                               "Moraine_thick"="green",
+                               "Moraine_marginal"="darkgreen",
+                               "Rock"="pink",
+                               "Suspension"="lightblue",
+                               "Bottom_current"="goldenrod1",
+                               "Glaciomarine"="mediumblue",
+                               "Debris_flow"="salmon",
+                               "Bioclastic"="midnightblue",
+                               "Carbonate_crust"="black",
+                               "Moraine_glaciomarineCover"="aquamarine3",
+                               "Slide_part_cover"="darkorchid1",
+                               "Channel_deposit"="tan1",
+                               "Contourite"="gold1",
+                               "Layered_over_debris_flow"="tomato3",
+                               "Slide_w_cover"="purple4",
+                               "Sedimentary_rock"="saddlebrown"
+
+  )) +
   geom_vline(xintercept = 0,
              linetype = 2,
              colour = "lightgray") +
@@ -428,14 +395,119 @@ gnmds_S3F <- ggplot(data = env_sub_meta,
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=1))
 
-#gnmds_S3F #plot
-ggplotly(gnmds_S3F)
+#gnmds_gmo #plot
+ggplotly(gnmds_seddan)
 
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3F.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_seddan.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+
+#### Gnmds w sedmil
+```{r}
+
+### seddan classes
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    sedmilName = case_when(
+            sedmil == "1" ~ "Deposition from suspension", ########### ALL NEW NAMES NEED ADDING!
+            sedmil == "2" ~ "Deposition from suspension, local erosion of fine-grained sediments",
+            sedmil == "7" ~ "No/very slow deposition",
+            sedmil == "3" ~ "Deposition from bottom currents",
+            sedmil == "4" ~ "Erosion, local deposition of sediments in topographic lows",
+            sedmil == "5" ~ "Erosion"
+    ))
+
+
+
+
+gnmds_sedmil <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by sedmil",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$sedmilName))) + #change at will - categorical vars only
+   scale_colour_manual(values=c("Deposition from suspension"="cornflowerblue",
+                               "Deposition from suspension, local erosion"="skyblue",
+                               "Deposition from bottom currents"="lightblue1",
+                               "Erosion"="salmon",
+                               "Erosion, local deposition"="lightsalmon",
+                               "No/very slow deposition"="slateblue")) +
+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+#gnmds_gmo #plot
+ggplotly(gnmds_sedmil)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_sedmil.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
+
+#### Gnmds w S3F
+```{r}
+
+env_sub_meta<- env_sub_meta %>%
+    mutate(
+    S3Fdesc = case_when(
+            NGU_S3F == "0" ~ "0 uten finmateriale", ########### ALL NEW NAMES NEED ADDING!
+            NGU_S3F == "a" ~ "a finmaterialfattig",
+            NGU_S3F == "b" ~ "b litt finmaterialrik",
+            NGU_S3F == "c" ~ "c temmelig finmaterialrik",
+            NGU_S3F == "Ø" ~ "¤ finmaterialdominert",
+            NGU_S3F == "x" ~ "uklassifisert"
+    ))
+
+gnmds_s3F <- ggplot(data = env_sub_meta,
+                     aes(x = gnmds1,
+                         y = gnmds2)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("GNMDS coloured by S3F",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(env_sub_meta$S3Fdesc))) + #change at will - categorical vars only
+   scale_colour_manual(values=c("0 uten finmateriale"="red",
+                               "a finmaterialfattig"="lightblue",
+                               "b litt finmaterialrik"="cornflowerblue",
+                               "c temmelig finmaterialrik"="royalblue",
+                               "¤ finmaterialdominert"="darkblue",
+                               "uklassifisert"="grey")) +
+
+  geom_vline(xintercept = 0,
+             linetype = 2,
+             colour = "lightgray") +
+  geom_hline(yintercept = 0,
+             linetype = 2,
+             colour = "lightgray")+
+  guides(colour=guide_legend(ncol=1))
+
+#gnmds_gmo #plot
+ggplotly(gnmds_s3F)
+
+```
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_S3F.png"), #amend
        device = "png",
        dpi=300 )
 
@@ -443,7 +515,7 @@ ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3F.png
 
 #### Gnmds w S3E
 ```{r}
-#use NGU column but add NiN symbol and descriptions
+#use NGU column but add NiN symbol and desciptions
 env_sub_meta<- env_sub_meta %>%
     mutate(
     S3Edesc = case_when(
@@ -459,17 +531,14 @@ env_sub_meta<- env_sub_meta %>%
 
     ))
 
-
-
-
-gnmds_S3E <- ggplot(data = env_sub_meta,
+gnmds_s3E <- ggplot(data = env_sub_meta,
                      aes(x = gnmds1,
                          y = gnmds2)) +
   theme_classic() +
   coord_fixed() +
   ggtitle("GNMDS coloured by S3E",
           subtitle = "First run") +
-geom_point(aes(colour = factor(env_sub_meta$S3Edesc))) + 
+  geom_point(aes(colour = factor(env_sub_meta$S3Edesc))) + 
    scale_colour_manual(values=c("0 ingen erosjonsmotstand"="darkseagreen",
                                "a svært liten erosjonsmotstand"="darkseagreen3",
                                "b temmelig liten erosjonsmotstand"="darkseagreen2",
@@ -488,19 +557,18 @@ geom_point(aes(colour = factor(env_sub_meta$S3Edesc))) +
              colour = "lightgray")+
   guides(colour=guide_legend(ncol=1))
 
-
-ggplotly(gnmds_S3E)
+#gnmds_gmo #plot
+ggplotly(gnmds_s3E)
 
 ```
 
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LoDens_SOFT_gnmds_S3E.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_gnmds_S3E.png"), #amend
        device = "png",
        dpi=300 )
 
 ```
-
 
 
 ### MAP OF CATEGORICAL VARIABLE
@@ -520,16 +588,59 @@ cat_xy_ax1 <- ggplot(data = env_sub_meta,
 ggplotly(cat_xy_ax1) #interactive plot
 ```
 
+
+
 ##### Save the plot
 ```{r}
-ggsave(filename = file.path(dataPath,"outputs/sandwave_LDens_SOFT_XvY_ax1cat.png"), #amend
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL_XvY_ax1cat.png"), #amend
        device = "png",
        dpi=300 )
 
 ```
 
 
+#### X v Y with seddan
+```{r}
+cat_xy_seddan <- ggplot(data = env_sub_meta,
+              aes(x = X,
+                  y = Y)) +
+  theme_classic() +
+  geom_point(aes(colour = env_sub_meta$seddanName), #change at will - categorical vars only
+             size = 1) +
+ # scale_colour_manual(values=cbPalette) +# non-ordered colourblind pallette
+  scale_colour_manual(values=c("Moraine_indet"="yellowgreen",
+                               "Moraine_thick"="green",
+                               "Moraine_marginal"="darkgreen",
+                               "Rock"="pink",
+                               "Suspension"="lightblue",
+                               "Bottom_current"="goldenrod1",
+                               "Glaciomarine"="mediumblue",
+                               "Debris_flow"="salmon",
+                               "Bioclastic"="midnightblue",
+                               "Carbonate_crust"="black",
+                               "Moraine_glaciomarineCover"="aquamarine3",
+                               "Slide_part_cover"="darkorchid1",
+                               "Channel_deposit"="tan1",
+                               "Contourite"="gold1",
+                               "Layered_over_debris_flow"="tomato3",
+                               "Slide_w_cover"="purple4",
+                               "Sedimentary_rock"="saddlebrown"
+                                )) +# ordered colourblind pallette
+  ggtitle("Easting vs Northing - coloured by seddan") #amend
 
+#cat_xy_ax1 #plot
+ggplotly(cat_xy_seddan) #interactive plot
+```
+
+
+
+##### Save the plot
+```{r}
+ggsave(filename = file.path(dataPath,"outputs/SHELF_HARD_ATL__XvY_seddan.png"), #amend
+       device = "png",
+       dpi=300 )
+
+```
 
 
 
@@ -542,7 +653,7 @@ comp<-xy_t+cat_y_ax1+p_spR
 ```{r}
 ##### Save some outputs
 ggexport(comp,
-          filename = file.path(dataPath,"outputs/LoDensNoSB1031p1_compare.png"), #amend
+          filename = file.path(dataPath,"outputs/SHELF_SOFT_WB_W_LOPH__compare.png"), #amend
           width = 1500, #amend with/height for expected shape ratio
           height = 500)
 
@@ -555,7 +666,7 @@ ggexport(comp,
 EDIT AREA FIRST!
 
 ```{r}
-#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_LoDensNoSB1031p1.RData") # edit area first
+#save.image("I:/Scripts/deepseaNiN/Renv_deepseaNiN_SHELF_SOFT_WB_W_LOPH_.RData") # edit area first
 
 ```
 
