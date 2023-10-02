@@ -1,0 +1,96 @@
+---
+title: "R Notebook - map taxa turnover"
+output: html_notebook
+---
+
+Want to creat a map of the Mareano region that shows species turnover spatially to see what it suggests in terms of biogeographic regions/boudaries - theoretically these may be highlighted by regions of higher turnover...
+
+
+
+---based on example from https://github.com/ptitle/epm/wiki/Creating-epmGrid-objects-from-point-occurrences
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+library(epm)
+```
+
+#Inputs
+Use same dataset as is the basis for NiN work...
+
+```{r}
+otu_orig <- read.csv(file.path(dataPath,"inputsMS/Afot1pVL_otu_sort_2023-08-04.csv")) %>% as.data.frame %>% select(-"X")
+
+sampInfo <- read.csv(file.path(dataPath,"inputs/sample_info.csv")) %>% as.data.frame
+```
+
+
+
+# Reformat
+Needs to be in long form, with coordinates
+
+```{r}
+library(reshape2)
+otu_long<-melt(otu_orig, id.vars="SampID" )
+otu_l_georef<-left_join(otu_long, sampInfo, by=c("SampID"="SampID2")) %>%
+  mutate(PresAbs=if_else(value>0,1,0))
+otu_l_georef_p<-otu_l_georef[otu_l_georef$PresAbs==1,] #only want occurrences
+otu_l_georef_p$variable<-factor(otu_l_georef_p$variable) # else end up with weird phantoms in otuList
+
+```
+
+
+#split into per spp list
+```{r}
+otuList <- split(otu_l_georef_p, otu_l_georef_p$variable)
+
+```
+
+
+# Create spatial points list
+
+```{r}
+library(sf)
+otuSfPtsList <- lapply(otuList, function(x) st_as_sf(x[, c('variable', 'x_coord', 'y_coord', 'SampID', 'cruise_no')], coords = c('x_coord', 'y_coord'), crs = 32633))
+
+otuSfPtsListEA <- lapply(otuSfPtsList, function(x) st_transform(x, crs = "+proj=aea +lat_0=30 +lon_0=10 +lat_1=43 +lat_2=62 +x_0=0 +y_0=0 +ellps=intl +units=m +no_defs +type=crs"))#crs = EAproj looks to be deprecated
+
+```
+
+
+#Plot EPM grid
+Attempted with 1000m resolution - stopped it after 2 hrs of running. 1000 took about 5mins
+```{r}
+otuPtsEA_EPM1000 <- createEPMgrid(otuSfPtsListEA, resolution = 5000, cellType = 'hex')
+
+library(tmap)
+plot(otuPtsEA_EPM1000)
+```
+
+#Calculate and map turnover
+
+```{r}
+library(spdep)
+Sys.time()
+beta_taxonomic_full <- betadiv_taxonomic(otuPtsEA_EPM1000, 
+  radius=10000,
+  
+  component = "full",
+  focalCoord = NULL,
+  slow = FALSE,
+  nThreads = 1)
+Sys.time()
+```
+#Plot beta map
+```{r}
+plot(beta_taxonomic_full, border="transparent", scale=5, pal=rev(heat.colors(10, alpha=1)))
+```
+
+
+
+
+
+
+
+
