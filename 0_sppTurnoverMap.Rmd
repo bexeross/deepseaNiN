@@ -65,7 +65,7 @@ Attempted with 1000m resolution - stopped it after 2 hrs of running. 1000 took a
 otuPtsEA_EPM1000 <- createEPMgrid(otuSfPtsListEA, resolution = 5000, cellType = 'hex')
 
 library(tmap)
-plot(otuPtsEA_EPM1000)
+plot(otuPtsEA_EPM1000, borderCol = "transparent")
 ```
 
 #Calculate and map turnover
@@ -84,7 +84,8 @@ Sys.time()
 ```
 #Plot beta map
 ```{r}
-plot(beta_taxonomic_full, border="transparent", scale=5, pal=rev(heat.colors(10, alpha=1)))
+library(tmap)
+plot(beta_taxonomic_full, border="transparent", pal=rev(heat.colors(10, alpha=1)))
 ```
 
 
