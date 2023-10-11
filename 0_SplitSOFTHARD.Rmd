@@ -43,7 +43,26 @@ NB Up-to-date live version of taxonary available at dataPath_2, but snapshot ver
 
 taxonary <- read_xlsx(file.path(dataPath, "inputsMS/Taxonary_oct2022.xlsx"), sheet=1)%>%
  mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
- mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+ mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE)) 
+
+
+taxonary <- taxonary  %>%
+  mutate(across('clean_taxonomy', str_replace,'Hexactinellida_urn-shaped', 'Hexactinellida_urn.shaped'))
+
+
+# AMEND SOMTIME
+
+# Warning: There was 1 warning in `mutate()`.
+# ℹ In argument: `across(...)`.
+# Caused by warning:
+# ! The `...` argument of `across()` is deprecated as of dplyr 1.1.0.
+# Supply arguments directly to `.fns` through an anonymous function instead.
+# 
+#   # Previously
+#   across(a:b, mean, na.rm = TRUE)
+# 
+#   # Now
+#   across(a:b, \(x) mean(x, na.rm = TRUE))
 ```
 
 # SPLIT DATASET INTO SOFT/HARD
@@ -85,10 +104,18 @@ print("HARD--------------")
 n_distinct(otu_long_hard$Taxon)
 unique(otu_long_hard$Taxon) #list of hard species to see what to expect
 otu_long_soft<-otu_long %>%filter(Taxon %in% softspp$clean_taxonomy)
-otu_long_hard<-otu_long %>%filter(Taxon %in% hardspp$clean_taxonomy)
 print("SOFT--------------")
 n_distinct(otu_long_soft$Taxon)
 unique(otu_long_soft$Taxon) #list of soft species to see what to expect (number restarts from 1)
+```
+## Check for skipped samples/species
+
+```{r}
+otu_long_skipped<-otu_long %>%
+  filter(!Taxon %in% hardspp$clean_taxonomy) %>% 
+  filter(!Taxon %in% softspp$clean_taxonomy)
+
+otu_long_skipped
 ```
 
 
@@ -119,9 +146,13 @@ env_orig<- left_join(env_orig,count_hard, by="SampID")
 env_orig<- left_join(env_orig,count_soft, by="SampID")
 
 env_orig<- env_orig %>% 
-  mutate (PredomHardSoft=if_else(countHard>countSoft,"Hard","Soft"))
+  mutate (countHard=coalesce(countHard,0),
+          countSoft=coalesce(countSoft,0),
+    PredomHardSoft=if_else(countHard>countSoft,"Hard","Soft"))
 
-head(env_orig)
+table(env_orig$PredomHardSoft)
+
+leftovers<-subset(env_orig, is.na(PredomHardSoft))
 
 ```
 
@@ -129,7 +160,7 @@ head(env_orig)
 
 
 
-## Match hard/soft otu sample data to env sample data
+## Match hard/soft otu sample data to env sample data and check we labelled everything...
 ```{r}
 env_hard<-env_orig %>% filter(PredomHardSoft=="Hard")
 env_soft<-env_orig %>% filter(PredomHardSoft=="Soft")
@@ -141,6 +172,11 @@ print("Number of samples in hard dataset...")
 nrow(env_hard)
 print("Number of samples in soft dataset...")
 nrow(env_soft)
+
+print("Total Number of samples in hard/soft datasets...")
+sum(nrow(env_hard)+nrow(env_soft))
+print("Total Number of samples in env_orig...")
+length(unique(env_orig$SampID))
 
 ```
 
