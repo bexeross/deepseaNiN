@@ -1,0 +1,320 @@
+---
+title: "Splitting data into SOFT and HARD dasets - for NiN v 3 analyses - R Notebook"
+output: html_notebook
+---
+
+#INPUTS
+Whatever MAREANO dataset you are working with, it may be that there are too many hardbottom environments and taxa, and that these are confounding your M5 (soft bottom) analysis. If this is the case you may need to split your dataset into soft and hard datasets to analyse separately (as it is still useful to do an evaluation of M2 with the hard data)
+
+This is done here using the sediment proportions, with a check of the taxon splits afterwards
+
+PREVIOUSLY:
+
+This is done using the taxonary to apply the split based on whether the taxa are obligate hard or soft bottom taxa. Any that could occur in either environment (e.g. those that are mobile or those where it is not so clear cut) are considered both and are retained in both datasets. This allows you to retain all samples, but only (roughly) the portions that are hard or soft separately.
+
+
+## Libraries
+
+```{r}
+library(readxl)
+library(tidyverse)
+```
+
+
+## load datasets to be split into hard and soft
+
+
+```{r}
+# PREFERABLY KEEP ALL LINES AND COMMENT OUT IF APPLYING TO NEW DATASET SO THAT THEY CAN BE TRACKED/REPEATED EASILY
+
+# After SHELFoct1perR analysis, but now applied to all sample (Oslo) dataset
+env_orig <- read.csv(file.path(dataPath,"inputsMS/Afot_env_sort_2023-08-04.csv")) %>% as.data.frame
+otu_orig <- read.csv(file.path(dataPath,"inputsMS/Afot_otu_sort_2023-08-04.csv")) %>% as.data.frame
+sedm_orig<- read.csv(file.path(dataPath,"inputsMS/sedimMeans.csv")) %>% as.data.frame
+
+dim(env_orig)
+dim(otu_orig)
+dim(sedm_orig)
+```
+Sort out sedm_orig - pivot wider, allocate to hard sand/grav soft
+```{r}
+sedm_wide<-pivot_wider(sedm_orig,
+                      id_cols="SampID",
+                      names_from="vSubstrate",
+                      values_from = "mean_percent")%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
+
+names(sedm_wide)
+
+env_orig<-left_join(env_orig, sedm_wide)
+```
+
+# prep helper columns
+
+```{r}
+
+# HI sed proportion technique
+
+vsoftCols<-c("vClay", "vClayOutcrop",   "vClay_spicules", "vMud", "vSandy_mud" )
+vcoarseCols<-c("vSand",  "vSand_with_biomaterial", "vSand_with_shells", "vPebble")
+vhardCols<-c("vBedrock", "vBoulder",  "vCobble", "vCompacted_sediment", "vKarbonatskorpe", "vDead_lophelia", "vCoral_rubble",  "vConsolidated_clay")
+
+
+env_orig<-env_orig %>% 
+  rowwise() %>%
+  mutate(vHard=sum(c_across(all_of(vhardCols)),na.rm=T),
+         vCoarse=sum(c_across(all_of(vcoarseCols)),na.rm=T),
+         vSoft=sum(c_across(all_of(vsoftCols)),na.rm=T))
+
+
+# NGU sed proportion technique
+
+
+env_orig<-env_orig %>% 
+  mutate (HardNGU=sum(c_across(all_of(c("cobB", "rock"))),na.rm=T),
+          CoarseNGU=sum(c_across(all_of(c("gravel", "sand"))),na.rm=T),
+          SoftNGU=mud)
+```
+
+#Split based on sample sediment proportions
+
+We are trying this three different ways to see what the difference in results is
+```{r}
+
+# HI sed proportion technique
+
+env_orig<-env_orig %>% 
+  mutate (sedPropCatHI=if_else(vHard>vCoarse & vHard>vSoft, "Hard", if_else(vSoft>vCoarse & vSoft>vHard, "Soft","Coarse")))
+
+print("HI sed proportions - sample predominantly:")
+table(env_orig$sedPropCatHI)
+
+
+# NGU Sed class technique
+env_orig<-env_orig %>% 
+  mutate (sedclassCatNGU=if_else(sedclass>173, "Hard", if_else(sedclass<94, "Soft","Coarse")))
+
+print("NGU sed categories - sample predominantly:")
+table(env_orig$sedclassCatNGU)
+
+# NGU sed proportion technique
+
+
+env_orig<-env_orig %>% 
+  mutate (sedPropCatNGU=if_else(HardNGU>CoarseNGU & HardNGU>SoftNGU, "Hard", if_else(SoftNGU>CoarseNGU & SoftNGU>HardNGU, "Soft","Coarse")))
+
+print("NGU sed proportions - sample predominantly:")
+table(env_orig$sedPropCatNGU)
+
+
+```
+
+
+
+
+
+
+# TAXONARY PREP
+## load taxonary and make hard/soft lookup tables
+NB Up-to-date live version of taxonary available at dataPath_2, but snapshot version from 20.10.22 is available in dataPath (includes hardSoft checked by bex & gjertrud)
+
+was previously using this as the primary split method, but cannot assign without knowing diversity ratios. Suspecting 3:1 hard diverity:soft diversity. 
+
+```{r}
+# taxonary <- read_xlsx(file.path(dataPath_2, "Taxonary.xlsx"), sheet=1) %>%
+#   mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+#   mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE))
+
+taxonary <- read_xlsx(file.path(dataPath, "inputsMS/Taxonary_oct2022.xlsx"), sheet=1)%>%
+ mutate(clean_taxonomy = gsub(" ","_",`Reference List`)) %>%#ensure names match format in otu_orig
+ mutate(clean_taxonomy = gsub("\\;",".",clean_taxonomy, fixed=FALSE)) 
+
+
+taxonary <- taxonary  %>%
+  mutate(across('clean_taxonomy', str_replace,'Hexactinellida_urn-shaped', 'Hexactinellida_urn.shaped'))
+
+
+# AMEND SOMTIME
+
+# Warning: There was 1 warning in `mutate()`.
+# ℹ In argument: `across(...)`.
+# Caused by warning:
+# ! The `...` argument of `across()` is deprecated as of dplyr 1.1.0.
+# Supply arguments directly to `.fns` through an anonymous function instead.
+# 
+#   # Previously
+#   across(a:b, mean, na.rm = TRUE)
+# 
+#   # Now
+#   across(a:b, \(x) mean(x, na.rm = TRUE))
+```
+
+# SPLIT DATASET INTO SOFT/HARD
+
+## Format datasets for fitering spp
+```{r}
+otu_orig[otu_orig==0]<-NA
+otu_long<-otu_orig %>% pivot_longer(cols=!c("X","SampID"),
+                                    names_to="Taxon",
+                                    values_to="Density",
+                                    values_drop_na=T)
+unique(otu_long$Taxon) #list of species to see what to expect
+```
+
+## Split taxonary into hard/soft lookup tables
+Will retain only "soft" and "both" categories in the soft dataset
+Will retain only "hard" and "both" categories in the hard dataset
+
+N/A applies to pelagic species and objects to ensure they are also removed
+```{r}
+# softsppincNA<-subset(taxonary,HardSoft_Affiliated!="Hard")
+# softspp<-subset(softsppincNA,HardSoft_Affiliated!="N/A")
+# print("Soft includes..")
+# unique(softspp$HardSoft_Affiliated)
+# table(softspp$HardSoft_Affiliated)
+# 
+# hardsppincNA<-subset(taxonary,HardSoft_Affiliated!="Soft")
+# hardspp<-subset(hardsppincNA,HardSoft_Affiliated!="N/A")
+# print("Hard includes..")
+# unique(hardspp$HardSoft_Affiliated)
+# table(hardspp$HardSoft_Affiliated)
+
+
+softsppincNA<-subset(taxonary,HardSoft_Affiliated=="Soft")
+softspp<-subset(softsppincNA,HardSoft_Affiliated!="N/A")
+print("Soft includes..")
+unique(softspp$HardSoft_Affiliated)
+table(softspp$HardSoft_Affiliated)
+
+hardsppincNA<-subset(taxonary,HardSoft_Affiliated=="Hard")
+hardspp<-subset(hardsppincNA,HardSoft_Affiliated!="N/A")
+print("Hard includes..")
+unique(hardspp$HardSoft_Affiliated)
+table(hardspp$HardSoft_Affiliated)
+```
+
+## filter otu_long by hard/soft taxa
+
+```{r}
+otu_long_hard<-otu_long %>%filter(Taxon %in% hardspp$clean_taxonomy)
+print("HARD--------------")
+n_distinct(otu_long_hard$Taxon)
+unique(otu_long_hard$Taxon) #list of hard species to see what to expect
+otu_long_soft<-otu_long %>%filter(Taxon %in% softspp$clean_taxonomy)
+print("SOFT--------------")
+n_distinct(otu_long_soft$Taxon)
+unique(otu_long_soft$Taxon) #list of soft species to see what to expect (number restarts from 1)
+```
+## Check for skipped samples/species
+
+```{r}
+otu_long_skipped<-otu_long %>%
+  filter(!Taxon %in% hardspp$clean_taxonomy) %>% 
+  filter(!Taxon %in% softspp$clean_taxonomy)
+
+otu_long_skipped
+```
+
+
+## pivot wider again
+```{r}
+otu_hard<-pivot_wider(otu_long_hard,
+                      id_cols="SampID",
+                      names_from="Taxon",
+                      values_from = "Density",
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
+
+otu_soft<-pivot_wider(otu_long_soft,
+                      id_cols="SampID",
+                      names_from="Taxon",
+                      values_from = "Density",
+                      values_fill = 0)%>%
+  select("SampID",sort(colnames(.))) #nice to have the cols alphabetical
+```
+
+
+## Decide if sample predominantly hard or soft (new step)
+```{r}
+#Taxon technique
+count_hard<-otu_hard%>% mutate(countHard=(rowSums(.>0))) %>% select(c(SampID, countHard))
+count_soft<-otu_soft%>% mutate(countSoft=(rowSums(.>0))) %>% select(c(SampID, countSoft))
+
+env_orig<- left_join(env_orig,count_hard, by="SampID")
+env_orig<- left_join(env_orig,count_soft, by="SampID")
+
+env_orig<- env_orig %>% 
+  mutate (countHard=coalesce(countHard,0),
+          countSoft=coalesce(countSoft,0),
+    PredomTaxaHardSoft=if_else(countHard>(3*countSoft),"Hard","Soft"))
+
+table(env_orig$PredomTaxaHardSoft)
+
+
+#Create Hard, Soft and Mix categories:
+# Hard if > 80% hard
+# Soft if <20% soft
+# Mix if 20-80% hard
+
+env_orig<-env_orig %>% 
+  mutate (propHard=countHard/(countHard+countSoft),
+          HardSoftMix=if_else(propHard>0.90, "Hard", if_else(propHard<0.50, "Soft","Mix")))
+
+table(env_orig$HardSoftMix)
+
+leftovers<-subset(env_orig, is.na(PredomHardSoft))
+
+```
+
+
+
+
+
+## Match hard/soft otu sample data to env sample data and check we labelled everything...
+```{r}
+env_hard<-env_orig %>% filter(PredomHardSoft=="Hard")
+env_soft<-env_orig %>% filter(PredomHardSoft=="Soft")
+
+otu_hard<-otu_hard %>% filter(SampID%in%env_hard$SampID)
+otu_soft<-otu_soft %>% filter(SampID%in%env_soft$SampID)
+
+print("Number of samples in hard dataset...")
+nrow(env_hard)
+print("Number of samples in soft dataset...")
+nrow(env_soft)
+
+print("Total Number of samples in hard/soft datasets...")
+sum(nrow(env_hard)+nrow(env_soft))
+print("Total Number of samples in env_orig...")
+length(unique(env_orig$SampID))
+
+```
+
+
+```{r}
+# env_hard<-env_orig%>% filter(SampID%in%otu_hard$SampID) 
+# #check lengths match
+# length(unique(env_hard$SampID)) # samp in env dataset
+# length(unique(otu_hard$SampID)) # samp in otu dataset
+# 
+# env_soft<-env_orig%>% filter(SampID%in%otu_soft$SampID) 
+# #check lengths match 
+# length(unique(env_soft$SampID)) # samp in env dataset
+# length(unique(otu_soft$SampID)) # samp in otu dataset
+
+```
+# Write HARD and SOFT datasets
+```{r}
+# BE SURE TO EDIT FILENAMES
+
+# HARD DATSET
+write.csv(otu_hard, file=file.path(dataPath,(paste0("inputsMS/afot_hard_otu_", Sys.Date(),".csv"))))
+write.csv(env_hard, file=file.path(dataPath,(paste0("inputsMS/afot_hard_env_", Sys.Date(),".csv"))))
+# SOFT DATASNAW
+write.csv(otu_soft, file=file.path(dataPath,(paste0("inputsMS/afot_soft_otu_", Sys.Date(),".csv"))))
+write.csv(env_soft, file=file.path(dataPath,(paste0("inputsMS/afot_soft_env_", Sys.Date(),".csv"))))
+```
+
+
+
+
