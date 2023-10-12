@@ -55,9 +55,9 @@ env_orig<-left_join(env_orig, sedm_wide)
 
 # HI sed proportion technique
 
-vsoftCols<-c("vClay", "vClayOutcrop",   "vClay_spicules", "vMud", "vSandy_mud" )
+vsoftCols<-c("vClay",   "vClay_spicules", "vMud", "vSandy_mud" )
 vcoarseCols<-c("vSand",  "vSand_with_biomaterial", "vSand_with_shells", "vPebble")
-vhardCols<-c("vBedrock", "vBoulder",  "vCobble", "vCompacted_sediment", "vKarbonatskorpe", "vDead_lophelia", "vCoral_rubble",  "vConsolidated_clay")
+vhardCols<-c("vBedrock", "vBoulder",  "vCobble", "vCompacted_sediment", "vKarbonatskorpe", "vDead_lophelia", "vCoral_rubble",  "vConsolidated_clay", "vClayOutcrop")
 
 
 env_orig<-env_orig %>% 
@@ -67,6 +67,20 @@ env_orig<-env_orig %>%
          vSoft=sum(c_across(all_of(vsoftCols)),na.rm=T))
 
 
+
+# NGU sed class technique
+
+softNGUCats<-c("10", "15", "20", "21", "30", "40", "50", "60", "100", "115")
+coarseNGUCats<-c("70", "80","90", "95", "100", "105", "120", "130", "140", "150", "160", "170")
+hardNGUCats<-c("1", "5", "174", "175", "180", "185", "190", "205", "206", "210", "215", "300", "500")
+
+# 
+# env_orig<-env_orig %>% 
+#   rowwise() %>%
+#   mutate(HardNGUClass=sum(c_across(all_of(hardNGUCats)),na.rm=T),
+#          CoarseNGUClass=sum(c_across(all_of(coarseNGUCats)),na.rm=T),
+#          SoftNGUClass=sum(c_across(all_of(softNGUCats)),na.rm=T))
+
 # NGU sed proportion technique
 
 
@@ -74,6 +88,10 @@ env_orig<-env_orig %>%
   mutate (HardNGU=sum(c_across(all_of(c("cobB", "rock"))),na.rm=T),
           CoarseNGU=sum(c_across(all_of(c("gravel", "sand"))),na.rm=T),
           SoftNGU=mud)
+
+
+
+
 ```
 
 #Split based on sample sediment proportions
@@ -84,15 +102,23 @@ We are trying this three different ways to see what the difference in results is
 # HI sed proportion technique
 
 env_orig<-env_orig %>% 
-  mutate (sedPropCatHI=if_else(vHard>vCoarse & vHard>vSoft, "Hard", if_else(vSoft>vCoarse & vSoft>vHard, "Soft","Coarse")))
+  mutate (sedPropCatHI=if_else(vHard>vCoarse & vHard>vSoft, "Hard", if_else(vSoft>vCoarse & vSoft>vHard, "Soft",if_else(vCoarse>vSoft & vCoarse>vHard,"Coarse", "na"))))
 
 print("HI sed proportions - sample predominantly:")
 table(env_orig$sedPropCatHI)
 
 
 # NGU Sed class technique
-env_orig<-env_orig %>% 
-  mutate (sedclassCatNGU=if_else(sedclass>173, "Hard", if_else(sedclass<94, "Soft","Coarse")))
+
+env_orig<-env_orig %>%
+  mutate (sedclassCatNGU=if_else(sedclass %in% hardNGUCats, "Hard", if_else(sedclass %in% softNGUCats, "Soft",if_else(sedclass %in% coarseNGUCats,"Coarse","na"))))
+
+
+# env_orig<-env_orig %>%
+#   mutate (sedclassCatNGU=if_else((sedclass>173)|(sedclass>0 & sedclass<6), "Hard", if_else(sedclass>5 & sedclass<94, "Soft","Coarse")))
+
+# env_orig<-env_orig %>% 
+#   mutate (sedclassCatNGU=if_else(HardNGUClass>CoarseNGUClass & HardNGUClass>SoftNGUClass, "Hard", if_else(SoftNGUClass>CoarseNGUClass & SoftNGUClass>HardNGUClass, "Soft","Coarse")))
 
 print("NGU sed categories - sample predominantly:")
 table(env_orig$sedclassCatNGU)
@@ -101,7 +127,7 @@ table(env_orig$sedclassCatNGU)
 
 
 env_orig<-env_orig %>% 
-  mutate (sedPropCatNGU=if_else(HardNGU>CoarseNGU & HardNGU>SoftNGU, "Hard", if_else(SoftNGU>CoarseNGU & SoftNGU>HardNGU, "Soft","Coarse")))
+  mutate (sedPropCatNGU=if_else(HardNGU>CoarseNGU & HardNGU>SoftNGU, "Hard", if_else(SoftNGU>CoarseNGU & SoftNGU>HardNGU, "Soft",if_else(CoarseNGU>SoftNGU & CoarseNGU>HardNGU,"Coarse", "na"))))
 
 print("NGU sed proportions - sample predominantly:")
 table(env_orig$sedPropCatNGU)
