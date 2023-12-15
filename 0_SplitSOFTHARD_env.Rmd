@@ -18,6 +18,8 @@ This is done using the taxonary to apply the split based on whether the taxa are
 ```{r}
 library(readxl)
 library(tidyverse)
+library(ggplot2)
+library(gridExtra)
 ```
 
 
@@ -51,6 +53,7 @@ env_orig<-left_join(env_orig, sedm_wide)
 
 # prep helper columns
 
+HI
 ```{r}
 
 # HI sed proportion technique
@@ -60,39 +63,50 @@ vcoarseCols<-c("vSand",  "vSand_with_biomaterial", "vSand_with_shells", "vPebble
 vhardCols<-c("vBedrock", "vBoulder",  "vCobble", "vCompacted_sediment", "vKarbonatskorpe", "vDead_lophelia", "vCoral_rubble",  "vConsolidated_clay", "vClayOutcrop")
 
 
+
+
 env_orig<-env_orig %>% 
   rowwise() %>%
   mutate(vHard=sum(c_across(all_of(vhardCols)),na.rm=T),
          vCoarse=sum(c_across(all_of(vcoarseCols)),na.rm=T),
          vSoft=sum(c_across(all_of(vsoftCols)),na.rm=T))
 
+plot(y=env_orig$vHard, x=env_orig$VL)
+plot(env_orig$vSoft)
+plot(env_orig$vCoarse)
 
 
+
+
+```
+
+
+NGU cats
+```{r}
 # NGU sed class technique
 
 softNGUCats<-c("10", "15", "20", "21", "30", "40", "50", "60", "100", "115")
 coarseNGUCats<-c("70", "80","90", "95", "100", "105", "120", "130", "140", "150", "160", "170")
 hardNGUCats<-c("1", "5", "174", "175", "180", "185", "190", "205", "206", "210", "215", "300", "500")
 
-# 
-# env_orig<-env_orig %>% 
-#   rowwise() %>%
-#   mutate(HardNGUClass=sum(c_across(all_of(hardNGUCats)),na.rm=T),
-#          CoarseNGUClass=sum(c_across(all_of(coarseNGUCats)),na.rm=T),
-#          SoftNGUClass=sum(c_across(all_of(softNGUCats)),na.rm=T))
+plot(as.factor(env_orig$sedclass))
+```
 
-# NGU sed proportion technique
+NGU Props
 
+```{r}
 
 env_orig<-env_orig %>% 
   mutate (HardNGU=sum(c_across(all_of(c("cobB", "rock"))),na.rm=T),
           CoarseNGU=sum(c_across(all_of(c("gravel", "sand"))),na.rm=T),
           SoftNGU=mud)
 
-
-
-
+plot(env_orig$HardNGU)
+plot(env_orig$SoftNGU)
+plot(env_orig$CoarseNGU)
 ```
+
+
 
 #Split based on sample sediment proportions
 
@@ -135,9 +149,159 @@ table(env_orig$sedPropCatNGU)
 
 ```
 
+Plot to compare where diff techniques see as hard/coarse/soft
+```{r}
+#HI technique
+p_HIvsed <- ggplot(data = env_orig,
+                     aes(x = x_coord,
+                         y = y_coord)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("HI sediment proportions classified as Hard/Coarse/Soft",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedPropCatHI))) +
+  # geom_vline(xintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray") +
+  # geom_hline(yintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_HIvsed
+```
+```{r}
+#NGU class technique
+p_NGUclsed <- ggplot(data = env_orig,
+                     aes(x = x_coord,
+                         y = y_coord)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("NGU sediment classes classified as Hard/Coarse/Soft",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedclassCatNGU))) +
+  # geom_vline(xintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray") +
+  # geom_hline(yintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_NGUclsed
+```
 
 
 
+```{r}
+#NGU proportions technique
+p_NGUpropsed <- ggplot(data = env_orig,
+                     aes(x = x_coord,
+                         y = y_coord)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("NGU sediment proportions classified as Hard/Coarse/Soft",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(sedPropCatNGU))) +
+  # geom_vline(xintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray") +
+  # geom_hline(yintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_NGUpropsed
+```
+
+
+```{r}
+grid.arrange(p_NGUpropsed,  p_NGUclsed, p_HIvsed, ncol=3)
+```
+Add concept of mixed to sediment categorisations
+
+
+
+```{r}
+
+# HI sed proportion technique
+
+env_orig<-env_orig %>% 
+  mutate (sedPropCatHImix=if_else(vHard>0.5, "Hard", if_else(vSoft>0.5, "Soft",if_else(vCoarse>0.5,"Coarse", "Mixed"))))
+
+print("HI sed proportions inc mix - sample predominantly:")
+table(env_orig$sedPropCatHImix)
+
+
+# NGU Sed class technique
+
+
+# softNGUCats<-c("10", "15", "20", "21", "30", "40", "50", "60", "100", "115")
+# coarseNGUCats<-c("70", "80","90", "95", "100", "105", "120", "130", "140", "150", "160", "170")
+# hardNGUCats<-c("1", "5", "174", "175", "180", "185", "190", "205", "206", "210", "215", "300", "500")
+
+#assume that if used first in if_else list will be labelled mix even if repeated in other category list (above)
+mixNGUCats<-c("1","185","190","205","206","210", "215","500")
+
+
+
+
+
+env_orig<-env_orig %>%
+  mutate (sedclassCatNGUmix=if_else(sedclass %in% mixNGUCats, "Mixed",if_else(sedclass %in% hardNGUCats, "Hard", if_else(sedclass %in% softNGUCats, "Soft",if_else(sedclass %in% coarseNGUCats,"Coarse","na")))))
+
+
+# env_orig<-env_orig %>%
+#   mutate (sedclassCatNGU=if_else((sedclass>173)|(sedclass>0 & sedclass<6), "Hard", if_else(sedclass>5 & sedclass<94, "Soft","Coarse")))
+
+# env_orig<-env_orig %>% 
+#   mutate (sedclassCatNGU=if_else(HardNGUClass>CoarseNGUClass & HardNGUClass>SoftNGUClass, "Hard", if_else(SoftNGUClass>CoarseNGUClass & SoftNGUClass>HardNGUClass, "Soft","Coarse")))
+
+print("NGU sed categories inc mix - sample predominantly:")
+table(env_orig$sedclassCatNGUmix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# NEED TO FIX THE BELOW WHICH IS DOING SOMETHING WEIRD...
+
+
+# [1] "HI sed proportions inc mix - sample predominantly:"
+# 
+# Coarse   Hard  Mixed   Soft 
+#    122   3759     45    720 
+# [1] "NGU sed categories inc mix - sample predominantly:"
+# 
+# Coarse   Hard  Mixed   Soft     na 
+#   2041    237    587   1770     11 
+# [1] "NGU sed inc mix proportions - sample predominantly:"
+# 
+# Hard Soft 
+#  939 3707 
+
+
+
+# NGU sed proportion technique
+
+
+env_orig<-env_orig %>% 
+  mutate (sedPropCatNGUmix=if_else(HardNGU>0.5, "Hard", if_else(CoarseNGU>0.5,"Coarse", if_else(SoftNGU>0.5, "Soft", "Mixed"))))
+
+print("NGU sed inc mix proportions - sample predominantly:")
+table(env_orig$sedPropCatNGUmix)
+
+
+```
 
 
 # TAXONARY PREP
@@ -288,9 +452,36 @@ env_orig<-env_orig %>%
 
 table(env_orig$HardSoftMix)
 
-leftovers<-subset(env_orig, is.na(PredomHardSoft))
-
+leftovers<-subset(env_orig, is.na(PredomTaxaHardSoft))
+leftovers
 ```
+
+
+
+compare plot of hard soft mix with sediment plots
+
+```{r}
+#NGU proportions technique
+p_taxaPropHSMix <- ggplot(data = env_orig,
+                     aes(x = x_coord,
+                         y = y_coord)) +
+  theme_classic() +
+  coord_fixed() +
+  ggtitle("NGU sediment proportions classified as Hard/Coarse/Soft",
+          subtitle = "First run") +
+  geom_point(aes(colour = factor(HardSoftMix))) +
+  # geom_vline(xintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray") +
+  # geom_hline(yintercept = 0,
+  #            linetype = 2,
+  #            colour = "lightgray")+
+  guides(colour=guide_legend(ncol=2))
+
+p_taxaPropHSMix
+```
+
+
 
 
 
